@@ -19,5 +19,6 @@ var image = filtered.median();
 
 var clipped = image.clip(geometry)
 
+Map.addLayer(urban, {color: 'blue'}, 'Urban Areas')
 Map.addLayer(clipped, rgbVis, 'Clipped')
 
