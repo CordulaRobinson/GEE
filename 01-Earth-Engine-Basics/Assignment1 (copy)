@@ -35,19 +35,40 @@ var nighttimeVis = {
 };
 
 
+// May 2015
 var filtered = dataset.filter(ee.Filter.date('2015-05-01', '2015-05-31'));
 var image = ee.Image(filtered.first());
 var clipped = image.clip(geometry);
-Map.addLayer(clipped, nighttimeVis, 'Clipped')
+Map.addLayer(clipped, nighttimeVis, 'Clipped 2015')
 
-var exportImage = clipped.select('B.*')
+var exportImage = clipped.select('avg_rad')
 
 Export.image.toDrive({
     image: exportImage,
-    description: 'Albany_Night_Lights',
+    description: 'Albany_Night_Lights_May_2015',
     folder: 'earthengine',
-    fileNamePrefix: 'albany_night_lights',
+    fileNamePrefix: 'albany_night_lights_May_2015',
     region: geometry,
     scale: 20,
     maxPixels: 1e9
 })
+
+
+// May 2020
+var filtered = dataset.filter(ee.Filter.date('2020-05-01', '2020-05-31'));
+var image = ee.Image(filtered.first());
+var clipped = image.clip(geometry);
+Map.addLayer(clipped, nighttimeVis, 'Clipped 2020')
+
+var exportImage = clipped.select('avg_rad')
+
+Export.image.toDrive({
+    image: exportImage,
+    description: 'Albany_Night_Lights_May_2020',
+    folder: 'earthengine',
+    fileNamePrefix: 'albany_night_lights_may_2020',
+    region: geometry,
+    scale: 20,
+    maxPixels: 1e9
+})
+
