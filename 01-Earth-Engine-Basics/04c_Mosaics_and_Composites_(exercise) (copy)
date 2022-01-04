@@ -1,0 +1,31 @@
+var geometry = ee.Geometry.Point([-71.0892, 42.3398])
+Map.centerObject(geometry, 15)
+var s2 = ee.ImageCollection("COPERNICUS/S2");
+
+var rgbVis = {
+  min: 0.0,
+  max: 3000,
+  bands: ['B4', 'B3', 'B2'], 
+};
+var filtered = s2.filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 30))
+  .filter(ee.Filter.date('2019-01-01', '2020-01-01'))
+  .filter(ee.Filter.bounds(geometry))
+
+var image2019 = filtered.median();
+Map.addLayer(image2019, rgbVis, '2019')
+
+// Create a median composite for 2020 and load it to the map
+var filtered2 = s2.filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 30))
+  .filter(ee.Filter.date('2020-01-01', '2021-01-01'))
+  .filter(ee.Filter.bounds(geometry));
+  
+var image2020 = filtered2.median();
+Map.addLayer(image2020, rgbVis, '2020');
+
+for (var i = 2010; i <= 2020; i++) {
+  var filtered3 = s2.filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 30))
+  .filter(ee.Filter.date(i.toString() + '-01-01', (i+1).toString() + '-01-01'))
+  .filter(ee.Filter.bounds(geometry));
+  var imageX = filtered3.median();
+  Map.addLayer(imageX, rgbVis, i.toString());
+}
