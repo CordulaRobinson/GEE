@@ -4,6 +4,7 @@ var gcp = ee.FeatureCollection("users/ujavalgandhi/e2e/arkavathy_gcps");
     
 var arkavathy = basin.filter(ee.Filter.eq('HYBAS_ID', 4071139640))
 var boundary = arkavathy.geometry()
+Map.centerObject(boundary);
 var rgbVis = {
   min: 0.0,
   max: 3000,
