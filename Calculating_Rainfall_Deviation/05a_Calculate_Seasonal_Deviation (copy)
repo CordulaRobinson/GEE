@@ -62,3 +62,11 @@ var visParams = {
   palette: ['#d7191c','#fdae61','#ffffbf','#abd9e9','#2c7bb6']
 }
 Map.addLayer(seasonalDeviation.clip(karnataka), visParams, 'Deviation')
+
+Export.image.toAsset({
+  image: seasonalDeviation,
+  description: "Seasonal_Deviation_2016",
+  assetId: "users/raymondeah/e2e_projects/2016_rainfall_deviation",
+  region: karnataka.geometry(),
+  scale: 5000})
+  
