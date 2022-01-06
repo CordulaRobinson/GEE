@@ -146,7 +146,7 @@ Map.addLayer(styledImage, visParamsDev, 'District Deviations');
 var outline = styledImage.paint({
   featureCollection: districtDeviation,
   color: -70,
-  width: 1
+  width: 2
 });
 
 Map.addLayer(outline, visParamsDev, 'District Deviations with outline');
