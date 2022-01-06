@@ -1,0 +1,64 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var chirps = ee.ImageCollection("UCSB-CHG/CHIRPS/PENTAD"),
+    karnataka = ee.FeatureCollection("users/ujavalgandhi/public/karnataka");
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+// 2016 was a major drought year in Karnataka
+// Let's compute seasonal rainfall deviation for the state
+var lpaYears = ee.List.sequence(1986, 2015)
+var months = ee.List.sequence(1, 12)
+
+// Map over the years and create a monthly totals collection
+var monthlyImages = lpaYears.map(function(year) {
+  return months.map(function(month) {
+    var filtered = chirps
+      .filter(ee.Filter.calendarRange(year, year, 'year'))
+      .filter(ee.Filter.calendarRange(month, month, 'month'))
+    var monthly = filtered.sum()
+    return monthly.set({'month': month, 'year': year})
+  })
+}).flatten()
+
+// We now have 1 image per month for entire long-period duratioon
+var monthlyCol = ee.ImageCollection.fromImages(monthlyImages)
+
+// We can compute average for each month across all years
+// i.e. Average July precipitation for all July months in the collection
+var longTermMeans = months.map(function(month) {
+    var filtered = monthlyCol.filter(ee.Filter.eq('month', month))
+    var monthlyMean = filtered.mean()
+    return monthlyMean.set('month', month)
+})
+var monthlyRainfall = ee.ImageCollection.fromImages(longTermMeans)
+// Now we take 2016 data and compute monthly average
+var filtered = chirps
+  .filter(ee.Filter.date('2016-01-01', '2016-12-31'))
+
+// Calculate monthly average rainfall
+var monthlyTotals = months
+  .map(function(month) {
+    return filtered
+      .filter(ee.Filter.calendarRange(month, month, 'month'))
+        .sum()
+        .set('month', month);
+});
+var currentRainfall = ee.ImageCollection.fromImages(monthlyTotals)
+
+// Calculate Seasonal Deviation
+var startMonth = 7
+var endEnd = 9
+
+var combinedFilter = ee.Filter.and(
+  ee.Filter.gte('month', 7),
+  ee.Filter.lte('month', 9))
+
+var rainfallNormal = monthlyRainfall.filter(combinedFilter).sum()
+var rainfallObserved = currentRainfall.filter(combinedFilter).sum()
+
+var seasonalDeviation = ((rainfallObserved.subtract(rainfallNormal)).divide(rainfallNormal)).multiply(100)
+
+var visParams = {
+  min: -60,
+  max: 20,
+  palette: ['#d7191c','#fdae61','#ffffbf','#abd9e9','#2c7bb6']
+}
+Map.addLayer(seasonalDeviation.clip(karnataka), visParams, 'Deviation')
