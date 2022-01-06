@@ -1,0 +1,26 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var chirps = ee.ImageCollection("UCSB-CHG/CHIRPS/PENTAD"),
+    bangalore = ee.FeatureCollection("users/ujavalgandhi/public/bangalore_boundary");
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+var filtered = chirps
+  .filter(ee.Filter.date('2017-01-01', '2017-12-31'))
+
+var total = filtered.sum().clip(bangalore)
+Map.centerObject(bangalore);
+
+
+var palette = ['white', 'blue']
+var visParams = {
+  min:0,
+  max: 2000,
+  palette: palette
+}
+Map.addLayer(total, visParams, 'Total Precipitation')
+
+// Calculate average rainfall in Bangalore
+var stats = total.reduceRegion({
+  reducer: ee.Reducer.mean(), 
+  geometry: bangalore.geometry(), 
+  scale: 5000
+});
+print(stats.get('precipitation'))
