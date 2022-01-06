@@ -31,3 +31,20 @@ var monthlyRainfall = months.map(function(month) {
   return monthlyMean.set('month', month)
 })
 print(monthlyRainfall)
+
+var chart = ui.Chart.image.series({
+  imageCollection: monthlyRainfall,
+  region: bangalore,
+  reducer: ee.Reducer.mean(),
+  scale: 5000,
+  xProperty: 'month'
+}).setOptions({
+      lineWidth: 1,
+      pointSize: 3,
+      title: 'Long Term Monthly Mena Rainfall Over Bangalore',
+      vAxis: {title: 'Rainfall (mm)'},
+      hAxis: {title: 'Month', gridlines: {count:12}}
+})
+print(chart);
+
+
