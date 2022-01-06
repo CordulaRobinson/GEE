@@ -1,0 +1,21 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var chirps = ee.ImageCollection("UCSB-CHG/CHIRPS/PENTAD");
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+// Search for CHIIRPS Pentad data and load it.
+
+// Filter to Year 2017 data
+var filtered = chirps.filter(ee.Filter.date('2017-01-01', '2017-12-31'));
+
+print(filtered);
+// Find the cumulative rainfall and show on map
+var total = filtered.reduce(ee.Reducer.sum());
+
+print(total);
+
+var visParams = {
+  min: 0,
+  max: 2000,
+  palette: ['white', 'blue']
+};
+
+Map.addLayer(total, visParams, 'Total Rainfall')
