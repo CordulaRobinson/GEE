@@ -28,5 +28,6 @@ var monthlyCol = ee.ImageCollection.fromImages(monthlyImages)
 var monthlyRainfall = months.map(function(month) {
   var filtered = monthlyCol.filter(ee.Filter.eq('month', month))
   var monthlyMean = filtered.mean()
-  return monthlyMean.set('month': month)
+  return monthlyMean.set('month', month)
 })
+print(monthlyRainfall)
