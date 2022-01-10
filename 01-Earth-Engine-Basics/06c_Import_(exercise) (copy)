@@ -1,7 +1,0 @@
-// Apply a filter to select only large urban areas
-// Use the property 'area_sqkm' and select all features 
-// with area > 400 sq.km
-
-var urban = ee.FeatureCollection("users/ujavalgandhi/e2e/ne_10m_urban_areas");
-var largeUrban = urban.filter(ee.Filter.gt('area_sqkm', 400))
-Map.addLayer(largeUrban, {color: 'blue'}, 'Urban Areas')
