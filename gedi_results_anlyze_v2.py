@@ -18,6 +18,15 @@ Inputs are a .nc file
 
 Output is a .kml for google earth plotting plus some figures for now
 
+Requirements: 
+The EGM2008 dataset interpreter interp_2p5min.f is located from:/scratch/e.conway/GEDI/
+Once compiled, it reads the EGM2008 parameters Und_min2.5x2.5_egm2008_isw=82_WGS84_TideFree_SE located at /scratch/e.conway/GEDI/
+It wil compile in your cwd. 
+This code, below, creates the inputs.dat and the fortran code outputs the GEOID elevation above the wgs84 ellipsoid in outputs.dat
+We pass the fortran code the location of inputs.dat and outputs.dat respectively
+
+These allow us to get height above MSL.
+
 """
 
 import netCDF4 as nc4
@@ -31,7 +40,8 @@ from scipy.interpolate import LinearNDInterpolator
 from scipy.interpolate import NearestNDInterpolator
 import make_kmz_v2
 import os
-
+from osgeo import osr
+import glob
 
 parameters = {'axes.labelsize': 40,
           'axes.titlesize': 40,
@@ -40,19 +50,19 @@ parameters = {'axes.labelsize': 40,
           'legend.fontsize': 30}
 plt.rcParams.update(parameters)
 
-nmin = 16000
-nmax = 18000
+nmin = 17700#16000
+nmax = 17800#18000
 n = nmax-nmin
 
-l1bdir = 'C:/Users/e.conway/Research/GEDI/MyResults/'
+myresults = '/scratch/e.conway/GEDI/Testing/'
+outdir = '/scratch/e.conway/GEDI/Testing/'
 
-
-file = os.path.join(l1bdir,'GEDI01_B_2020287194837_O10409_03_T07670_02_005_02_V002.nc')
-#file = os.path.join(l1bdir,'GEDI01_B_2021072074834_O12742_03_T07685_02_005_02_V002.nc')
+files = glob.glob(myresults+'*.nc')
+file=files[0]
 
 beams = ['BEAM0001','BEAM0000','BEAM0010','BEAM0011']#,'BEAM0101','BEAM0110','BEAM1000','BEAM1011']
 
-
+geoid = []
 maxi = []
 maxi_lat = []
 maxi_lon = []
@@ -60,6 +70,7 @@ dem = []
 
 for beam in beams:
     maxi_zero = []
+    geoid_zero = []
     maxi_lat_zero = []
     maxi_lon_zero = []
     dem_zero = []
@@ -82,6 +93,7 @@ for beam in beams:
         lat = f.groups[beam].variables['Lat'][:]#[nmin:nmax]
         dem_srtm = f.groups[beam].variables['DEM_Srtm'][:]#[nmin:nmax]
         dem_x90=f.groups[beam].variables['DEM_x90'][:]#[nmin:nmax]
+        geoid_raw=f.groups[beam].variables['GEOID'][:]#[nmin:nmax]
 
   
     max_counter = 0
@@ -102,6 +114,7 @@ for beam in beams:
             if(int_sig[i] != -1 and max_count[i] != 0):
                 nmaxpnt = max_count[i]
                 maxi_zero.append( np.nanmax(max_elev[int(max_counter):int(max_counter+nmaxpnt)]))
+                geoid_zero.append(geoid_raw[iter])
                 # position of maximum feature in the vector
                 pointer = np.argmax(max_elev[int(max_counter):int(max_counter+nmaxpnt)])
                 # get the lon + lat's
@@ -114,22 +127,26 @@ for beam in beams:
                 maxi_lat_zero.append(np.nan)
                 maxi_lon_zero.append(np.nan)
                 dem_zero.append(np.nan)
+                geoid_zero.append(np.nan)
     maxi.append(maxi_zero)
     maxi_lat.append(maxi_lat_zero)
     maxi_lon.append(maxi_lon_zero)
     dem.append(dem_zero)    
+    geoid.append(geoid_zero)    
 
 
 maxi_full=np.zeros((len(dem),len(dem[0])))
 maxi_lon_full=np.zeros((len(dem),len(dem[0])))
 maxi_lat_full=np.zeros((len(dem),len(dem[0])))
 dem_full=np.zeros((len(dem),len(dem[0])))
+geoid_full=np.zeros((len(dem),len(dem[0])))
 
 for i in range(len(dem)):
     maxi_full[i,:] = maxi[i][:] 
     maxi_lat_full[i,:] = maxi_lat[i][:] 
     maxi_lon_full[i,:] = maxi_lon[i][:] 
     dem_full[i,:] = dem[i][:] 
+    geoid_full[i,:] = geoid[i][:] 
 
 
 
@@ -137,14 +154,14 @@ maxi = maxi_full
 maxi_lat=maxi_lat_full
 maxi_lon=maxi_lon_full
 dem = dem_full
+geoid = geoid_full
 
 
 
-
-print(np.nanmax(maxi_lat))
-print(np.nanmax(maxi_lon))
-print(np.nanmin(maxi_lat))
-print(np.nanmin(maxi_lon))
+#print(np.nanmax(maxi_lat))
+#print(np.nanmax(maxi_lon))
+#print(np.nanmin(maxi_lat))
+#print(np.nanmin(maxi_lon))
 
 
 
@@ -178,12 +195,6 @@ exit()
 """
 
     
-idx = np.array(dem>-100)
-dem[dem<-100] = np.nan
-
-dsm = maxi - dem
-#maxi=dsm
-
 
 """
 fig, ax1 = plt.subplots(sharex=True)
@@ -193,6 +204,7 @@ plt.show()
 exit()
 """
 
+msl = maxi - geoid
 
 if(np.nanmean(maxi) == np.nan):
     print('Change the bounds, maxi is full on nan vals')
@@ -202,19 +214,23 @@ if(np.nanmean(maxi) == np.nan):
 vmax = np.nanmax(maxi)
 vmin = np.nanmin(maxi)
 
-print(vmax,vmin)
+#print(vmax,vmin)
 
 
 color = 255*maxi.flatten() / vmax
 
 idx = np.isfinite(maxi.flatten())
 
-fname = file.split('nc')[0]
+fname = os.path.basename(file).split('nc')[0]
 fname=fname+'kml'
-fname = os.path.join(l1bdir,fname)
+fname = os.path.join(outdir,fname)
 
-make_kmz_v2.make_kml(maxi_lon.flatten()[idx],maxi_lat.flatten()[idx],maxi.flatten()[idx],color[idx],fname)
+msl = msl.flatten()[idx]
+maxi = maxi.flatten()[idx]
+maxi_lat = maxi_lat.flatten()[idx]
+maxi_lon=maxi_lon.flatten()[idx]
+color = color[idx]
 
-
+make_kmz_v2.make_kml(maxi_lon,maxi_lat,msl,color,fname)
 
 
