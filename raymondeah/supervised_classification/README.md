@@ -1,7 +1,7 @@
 # Supervised Classification: Albany Metropolitan Area
 
-These scripts use the Google Earth Engine API to perform supervised classifications on the Albany Metropolitan Area using remote sensing imagery and a Random Forest algorithm. 
-Each image pixel is labeled as one of four discrete categories.
+These scripts use the Google Earth Engine API to perform supervised classifications on the Albany Metropolitan Area using remote sensing imagery and a Random Forest algorithm.   
+Each image pixel is labeled as one of four discrete categories:
 * Urban
 * Bare
 * Vegetation
