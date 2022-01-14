@@ -15,7 +15,7 @@ Training data was manually labeled using geometry tools from Google Earth Engine
 | Color | Label      |
 | ----- | -----      |
 | gray  | urban      |
-| brown | bare       |
+| red   | bare       |
 | green | vegetation |
 | blue  | water      |
 
