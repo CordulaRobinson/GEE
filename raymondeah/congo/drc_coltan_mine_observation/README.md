@@ -79,7 +79,9 @@ Using the IPIS Research data, I identified a small area of active mining in the 
 ![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/2021_classified.png)
 11. Add a layer to the map that shows all pixels that changed from vegetation to bare earth
 ![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/v_to_b.PNG)
+
 12. Calculate the area of vegetation in both classifications
+
 13. Determine the percentage change of vegetation between 2019 and 2021 ((2019 area - 2021 area) / (2019 area) ) * 100
                 
 #### Results
