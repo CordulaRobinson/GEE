@@ -26,7 +26,7 @@ The Democratic Republic of the Congo is a leading producer of coltan, an ore fro
 
 ## Methods/Results
 
-###Locations of known/possible mines using existing datasets:
+### Locations of known/possible mines using existing datasets:
 
 #### Description
 
@@ -45,7 +45,7 @@ We found datasets of issued mining permits and active Coltan mines in the DRC an
 9. Add the locations of known active coltan mines as a layer to the map
                 
 
-#### Calculating Loss of Vegetation Using Classification:
+### Calculating Loss of Vegetation Using Classification:
 
 #### Description
 
