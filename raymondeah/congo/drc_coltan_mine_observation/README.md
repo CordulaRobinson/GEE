@@ -59,16 +59,31 @@ Using the IPIS Research data, I identified a small area of active mining in the 
 1. Import the Sentinel-2 and active Coltan mines datasets into a project file in the Google Earth Engine Code Editor
 2. Add the locations of active coltan mines a layer to the map
 3. Use the drawing tools in the code editor to create a rectangle around the region of interest (South Kivu area)
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/roi1.PNG)
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/roi2.PNG)
 4. Center the map around the region of interest
 5. Filter the Sentinel-2 data to a cloud percentage of less than 20%, apply a cloud masking function, and filter to the bounds of the region of interest
 6. Create a 'before' image by filtering the data in step 5 to the year 2019 and taking median values
 7. Create an 'after' image by filtering the data in step 5 to the year 2021 and taking median values
 8. Add the before and after images to the map as layers
+#### 2019 Median Composite
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/2019_median.PNG)
+#### 2021 Median Composite
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/2021_median.PNG)
 9. Mark training data for water, vegetation, and bare ground as FeatureCollections using the point tool in the code editor. Assign a 'landcover' property with a unique value for each class
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/training.PNG)
 10. Classify both images using a Random Forest classifier and add as layers to the map
-11. Add a layer to the map that shows all pixels that changed from vegetation to another class
-12. Calculate the area of vegetation in both classifications
-13. Determine the percentage change of vegetation between 2019 and 2021 ((2019 area - 2021 area) / (2019 area) ) * 100
-                
+#### 2019
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/2019_classified.png)
+#### 2021
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/2021_classified.png)
+11. Add a layer to the map that shows all pixels that changed from vegetation to bare earth
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/v_to_b.PNG)
 
+12. Calculate the area of vegetation in both classifications
+
+13. Determine the percentage change of vegetation between 2019 and 2021 ((area of vegetation -> bare) / (area of vegetation in 2019)) * 100
+                
 #### Results
+
+From 2019 to 2021, a net vegetation loss of 4.11% occurred in the region of interest.
