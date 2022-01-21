@@ -36,26 +36,37 @@ plt.rcParams.update(parameters)
 make_kml = False
 
 #@nb.jit(fastmath=True)#nopython=True)
-def listlists(list1,list2,list3,list4,list5,list6):
+def listlists(list1,list2,list3,list4,list5,list6,list7,list8,list9,list10,list11):
     n1=[]
     n2=[]
     n3=[]
     n4=[]
     n5=[]
     n6=[]
+    n7=[]
+    n8=[]
+    n9=[]
+    n10=[]
+    n11=[]
     n1 = [t1 for sublist in list1 for t1 in sublist ]
     n2 = [t2 for sublist in list2 for t2 in sublist ]
     n3 = [t3 for sublist in list3 for t3 in sublist ]
     n4 = [t4 for sublist in list4 for t4 in sublist ]
     n5 = [t5 for sublist in list5 for t5 in sublist ]
     n6 = [t6 for sublist in list6 for t6 in sublist ]
-    return(n1,n2,n3,n4,n5,n6)
+    n7 = [t7 for sublist in list7 for t7 in sublist ]
+    n8 = [t8 for sublist in list8 for t8 in sublist ]
+    n9 = [t9 for sublist in list9 for t9 in sublist ]
+    n10 =[t10 for sublist in list10 for t10 in sublist ]
+    n11 =[t11 for sublist in list11 for t11 in sublist ]
+    return(n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11)
 
 myresults = '/scratch/e.conway/GEDI/MyResults/'
 outdir = '/scratch/e.conway/GEDI/MyResults/'
 
-#x=glob.glob(cwd+'/GEDI01_B_2020*'+'*T05900_02_005_02_V002.nc')
+#files=glob.glob(myresults+'*O02458_04_T00568_02_005_01_V002.nc')
 files = glob.glob(myresults+'GEDI01_B_2020*'+'*.nc')
+
 
 beams = ['BEAM0000','BEAM0010','BEAM0001','BEAM0011','BEAM0101','BEAM0110','BEAM1000','BEAM1011']
 
@@ -72,6 +83,13 @@ maxi_lon = []
 dem = []
 beam_number = []
 
+# for all the strong points
+nmax_elev = []
+nmax_elev_beam = []
+nmax_elev_points = []
+nmax_elev_lon = [] 
+nmax_elev_lat = [] 
+
 for file in files:
     for beam in beams:
         maxi_zero = []
@@ -81,6 +99,11 @@ for file in files:
         dem_zero = []
         tzero = []
         bzero = []
+        nmax_elev_zero = []
+        nmax_elev_beam_zero = []
+        nmax_elev_points_zero = []
+        nmax_elev_lon_zero = [] 
+        nmax_elev_lat_zero = [] 
         with nc4.Dataset(file,'r') as f:
     
     
@@ -119,6 +142,45 @@ for file in files:
                 dem_zero.append(dem_choice[i])
                 tzero.append(ftime[i])
                 bzero.append(dic[beam])
+
+                if(nmaxpnt > 1):
+                    # here, let us pull out all the strongest features including the minima from the data
+                    elev_maxima = max_elev[int(max_counter):int(max_counter+nmaxpnt)]
+                    wv_maxima = max_wf[int(max_counter):int(max_counter+nmaxpnt)]
+                    # standard deviation in the noise is consistently approximately 4.0
+                    noise_stdev = 4.0
+                    mx_signal = np.nanmax(wv_maxima)
+                    thresh = 0.10 * mx_signal
+                    # kick out any weak signals
+                    idx = np.where((wv_maxima>thresh) & (wv_maxima>3.0*noise_stdev))
+                    elev_maxima=elev_maxima[idx] 
+                    wv_maxima=wv_maxima[idx] 
+                    for k in range(len(wv_maxima)-1):
+                        if(np.isfinite(elev_maxima[k]) and np.isfinite(elev_maxima[k+1])):
+                            if(abs(elev_maxima[k] - elev_maxima[k+1]) <= 2.0):
+                                idx_max = max(wv_maxima[k],wv_maxima[k+1])
+                                wx_max = np.where(wv_maxima==idx_max)
+                                elev_maxima[wx_max] = np.nan
+                                wv_maxima[wx_max] = np.nan
+                    ct = np.nansum(np.isfinite(elev_maxima))
+                    # split lon/lat into ct points
+                    tlat = np.linspace(lat[i]*0.99985,lat[i]*1.00015,ct)
+                    tlon = np.linspace(lon[i]*0.99985,lon[i]*1.00015,ct)
+                    nmax_elev_points_zero.append(ct)
+                    iterable=0
+                    for k in range(len(wv_maxima)):
+                        if(np.isfinite(elev_maxima[k])):
+                            nmax_elev_beam_zero.append(dic[beam])
+                            nmax_elev_zero.append(elev_maxima[k])
+                            nmax_elev_lon_zero.append(tlon[iterable])
+                            nmax_elev_lat_zero.append(tlat[iterable])
+                            iterable=iterable+1
+                else:
+                    nmax_elev_points_zero.append(0)                   
+                    nmax_elev_beam_zero.append(np.nan)
+                    nmax_elev_zero.append(np.nan)
+                    nmax_elev_lon_zero.append(np.nan)
+                    nmax_elev_lat_zero.append(np.nan)
                 max_counter = max_counter + nmaxpnt
             else:
                 maxi_zero.append(np.nan)
@@ -136,10 +198,16 @@ for file in files:
         geoid.append(geoid_zero)    
         beam_number.append(bzero) 
         time.append(tzero)
+
+        nmax_elev.append(nmax_elev_zero)
+        nmax_elev_beam.append(nmax_elev_beam_zero)
+        nmax_elev_points.append(nmax_elev_points_zero)
+        nmax_elev_lat.append(nmax_elev_lat_zero)
+        nmax_elev_lon.append(nmax_elev_lon_zero)
     
 
 
-maxi,maxi_lat,maxi_lon,geoid,beam_number,time = listlists(maxi,maxi_lat,maxi_lon,geoid,beam_number,time)
+maxi,maxi_lat,maxi_lon,geoid,beam_number,time,nmax_elev,nmax_elev_beam,nmax_elev_points,nmax_elev_lon,nmax_elev_lat = listlists(maxi,maxi_lat,maxi_lon,geoid,beam_number,time,nmax_elev,nmax_elev_beam,nmax_elev_points,nmax_elev_lon,nmax_elev_lat)
 
 
 
@@ -149,6 +217,12 @@ maxi_lat=np.array(maxi_lat)
 maxi_lon=np.array(maxi_lon)
 geoid = np.array(geoid)
 beam_number = np.array(beam_number)
+nmax_elev=np.array(nmax_elev)
+nmax_elev_beam=np.array(nmax_elev_beam)
+nmax_elev_points=np.array(nmax_elev_points)
+nmax_elev_lon=np.array(nmax_elev_lon)
+nmax_elev_lat=np.array(nmax_elev_lat)
+
 msl = maxi - geoid
 
 idx = np.where(np.isfinite(maxi)&np.isfinite(maxi_lon))
@@ -167,14 +241,23 @@ fname = os.path.join(outdir,fname)
 
 npts = len(maxi)
 
+nmaxima = len(nmax_elev)
+
 with nc4.Dataset(fname,'w',format='NETCDF4') as f:
     f.createDimension('Npts',npts)
-    time_nc = f.createVariable('Time','f8','Npts')
-    lon_nc = f.createVariable('Lon','f4','Npts')
-    lat_nc = f.createVariable('Lat','f4','Npts')
-    elev_msl = f.createVariable('ElevMSL','f4','Npts')
-    elev_wgs = f.createVariable('ElevWGS84','f4','Npts')
-    beam_nc = f.createVariable('BeamNumber','i2','Npts')
+    time_nc = f.createVariable('Time','f8','Npts',zlib=True)
+    lon_nc = f.createVariable('Lon','f4','Npts',zlib=True)
+    lat_nc = f.createVariable('Lat','f4','Npts',zlib=True)
+    elev_msl = f.createVariable('ElevMSL','f4','Npts',zlib=True)
+    elev_wgs = f.createVariable('ElevWGS84','f4','Npts',zlib=True)
+    beam_nc = f.createVariable('BeamNumber','i2','Npts',zlib=True)
+
+    f.createDimension('Nmaxima',nmaxima)
+    nmax_elev_lat_nc = f.createVariable('MaximaLat','f4','Nmaxima',zlib=True) 
+    nmax_elev_lon_nc = f.createVariable('MaximaLon','f4','Nmaxima',zlib=True) 
+    nmax_elev_nc = f.createVariable('MaximaElev','f4','Nmaxima',zlib=True) 
+    nmax_elev_beam_nc = f.createVariable('MaximaBeam','i2','Nmaxima',zlib=True)
+    nmax_elev_points_nc = f.createVariable('NpointsPerWv','i2','Npts',zlib=True)
 
     time_nc[:] = time
     lon_nc[:] = maxi_lon
@@ -182,7 +265,11 @@ with nc4.Dataset(fname,'w',format='NETCDF4') as f:
     elev_wgs[:] = maxi
     elev_msl[:] = msl
     beam_nc[:] = beam_number
-
+    nmax_elev_nc[:] =  nmax_elev
+    nmax_elev_beam_nc[:] = nmax_elev_beam
+    nmax_elev_points_nc[:] = nmax_elev_points
+    nmax_elev_lat_nc[:] =  nmax_elev_lat
+    nmax_elev_lon_nc[:] =  nmax_elev_lon
 
 if(make_kml == True):
     color = 255*maxi.flatten() / vmax
