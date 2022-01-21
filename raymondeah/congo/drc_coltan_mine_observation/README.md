@@ -43,9 +43,9 @@ We found datasets of issued mining permits and active Coltan mines in the DRC an
 ![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/issued_mining_permits.PNG)
 7. Filter the 'resource' property in the issued mining permits dataset to 'Ta' to extract locations of Tantalum mines
 8. Add the locations of issued mining permits for Tantalum to the map
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/issued_mining_permits_ta.PNG)
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/issued_mining_permits_ta.png)
 9. Add the locations of known active coltan mines as a layer to the map
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/active_mines.PNG)
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/active_mines.png)
                 
 
 ### Calculating Loss of Vegetation Using Classification:
