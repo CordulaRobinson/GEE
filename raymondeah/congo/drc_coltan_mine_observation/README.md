@@ -85,3 +85,5 @@ Using the IPIS Research data, I identified a small area of active mining in the 
 13. Determine the percentage change of vegetation between 2019 and 2021 ((2019 area - 2021 area) / (2019 area) ) * 100
                 
 #### Results
+
+From 2019 to 2021, a net vegetation loss of 4.11% occurred in the region of interest.
