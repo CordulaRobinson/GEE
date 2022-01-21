@@ -40,9 +40,10 @@ We found datasets of issued mining permits and active Coltan mines in the DRC an
 4. Extract the geometry of the DRC by filtering the FAO GAUL dataset
 5. Center the map around the DRC
 6. Add the locations of issued mining permits as a layer to the map
+![](https://github.com/CordulaRobinson/GEE/edit/main/raymondeah/congo/drc_coltan_mine_observation/images/issued_mining_permits.png)
 7. Filter the 'resource' property in the issued mining permits dataset to 'Ta' to extract locations of Tantalum mines
 8. Add the locations of issued mining permits for Tantalum to the map
-9. Add the locations of known active coltan mines as a layer to the map
+10. Add the locations of known active coltan mines as a layer to the map
                 
 
 ### Calculating Loss of Vegetation Using Classification:
