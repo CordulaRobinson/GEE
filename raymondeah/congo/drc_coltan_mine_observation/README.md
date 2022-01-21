@@ -68,10 +68,14 @@ Using the IPIS Research data, I identified a small area of active mining in the 
 8. Add the before and after images to the map as layers
 #### 2019 Median Composite
 ![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/2019_median.PNG)
+
 #### 2021 Median Composite
 ![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/2021_median.PNG)
+
 9. Mark training data for water, vegetation, and bare ground as FeatureCollections using the point tool in the code editor. Assign a 'landcover' property with a unique value for each class
+
 ![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/training.PNG)
+
 10. Classify both images using a Random Forest classifier and add as layers to the map
 #### 2019
 ![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/2019_classified.png)
