@@ -82,7 +82,7 @@ Using the IPIS Research data, I identified a small area of active mining in the 
 
 12. Calculate the area of vegetation in both classifications
 
-13. Determine the percentage change of vegetation between 2019 and 2021 ((2019 area - 2021 area) / (2019 area) ) * 100
+13. Determine the percentage change of vegetation between 2019 and 2021 ((area of vegetation -> bare) / (area of vegetation in 2019)) * 100
                 
 #### Results
 
