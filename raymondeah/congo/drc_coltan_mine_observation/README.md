@@ -60,7 +60,7 @@ Using the IPIS Research data, I identified a small area of active mining in the 
 2. Add the locations of active coltan mines a layer to the map
 3. Use the drawing tools in the code editor to create a rectangle around the region of interest (South Kivu area)
 ![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/roi1.PNG)
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/roi2.PNG()
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_coltan_mine_observation/images/roi2.PNG)
 4. Center the map around the region of interest
 5. Filter the Sentinel-2 data to a cloud percentage of less than 20%, apply a cloud masking function, and filter to the bounds of the region of interest
 6. Create a 'before' image by filtering the data in step 5 to the year 2019 and taking median values
