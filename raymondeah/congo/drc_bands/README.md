@@ -179,9 +179,15 @@ I took [Emily's SAR code](https://github.com/CordulaRobinson/GEE/blob/main/emily
 
 #### VV band:
 
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/vv.PNG)
+
 #### VH band:
 
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/vh.PNG)
+
 #### VV/VH ratio:
+
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/vvvh.PNG)
 
 ## Further Questions
 
