@@ -57,8 +57,11 @@ Using the IPIS Research data, I identified a region in the northern DRC with act
 8. Verified existence of mining activity using Google Earth
 	- Example for Region 1 (Kalimva):
 		- 2005: 
+		
 		![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/roi1_2_05.PNG)
+		
 		- 2012: 
+		
 		![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/roi1_4_12.PNG)
 		- 2020: 
 		![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/roi1_8_21.PNG)
