@@ -157,7 +157,7 @@ I created a cross section function that plots band values over a manually drawn 
 
 ![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/tailing_cross.PNG)
 
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/tailing_chart.PNG)
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/tailing_cross_chart.png)
 
 Band grouping along the tailing pond
 
@@ -165,7 +165,7 @@ Band grouping along the tailing pond
 
 ![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/bright_cross.PNG)
 
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/bright_chart.PNG)
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/bright_chart.png)
 
 <hr>
 
