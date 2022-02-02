@@ -63,7 +63,9 @@ Using the IPIS Research data, I identified a region in the northern DRC with act
 		- 2012: 
 		
 		![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/roi1_4_12.PNG)
+		
 		- 2020: 
+		- 
 		![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/roi1_8_21.PNG)
 
 #### Results and Conclusions
@@ -82,7 +84,13 @@ I used MODIS data to create an NDVI time series of the mines in Region 1, starti
 
 1. Imported the MODIS vegetation dataset as well as the geometry for Region 1 from the previous method
 2. Created NDVI layers from 2014-2020 and added them to the map (1 layer for each year). Layers were created by taking the median NDVI value across the whole year
+	-Example (2013)
+	
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/ndvi_2013.PNG)
+
 3. Plotted a time series of median NDVI per year in the region using matplotlib
+
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/modis_ndvi.PNG)
 
 #### Results and Conclusions
 
@@ -108,6 +116,12 @@ I added the 6 spectral indices/band ratios outlines in the project objectives an
 8. Created Clay Concentration layers
 9. Added all indices and band ratios to the 2014-2020 median composite images as properties
 10. Used matplotlib to create multiple time series of the entire region, of a tailing pond, and of a mining area close-up
+
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/region1_timeseries.PNG)
+
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/pond_timeseries.PNG)
+
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/mine_timeseries.PNG)
 
 #### Results and Conclusions
 
