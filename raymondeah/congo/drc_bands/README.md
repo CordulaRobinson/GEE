@@ -155,7 +155,17 @@ I created a cross section function that plots band values over a manually drawn 
 
 #### Tailing Pond:
 
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/tailing_cross.PNG)
+
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/tailing_chart.PNG)
+
+Band grouping along the tailing pond
+
 #### Mining Area (bright signature):
+
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/bright_cross.PNG)
+
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/bright_chart.PNG)
 
 <hr>
 
