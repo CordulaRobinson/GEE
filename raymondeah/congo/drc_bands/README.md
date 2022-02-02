@@ -54,6 +54,8 @@ Using the IPIS Research data, I identified a region in the northern DRC with act
 6. Chose region of active Coltan mining in the northern DRC
 7. Used the geometry tools in the Google Earth Engine Code Editor to map out 3 small sub-regions (2-3 mines) within that region to focus on
 ![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/rois.PNG)
+
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/rois2.PNG)
 8. Verified existence of mining activity using Google Earth
 	- Example for Region 1 (Kalimva):
 		- 2005: 
