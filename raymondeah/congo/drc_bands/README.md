@@ -6,18 +6,18 @@ Exploratory analysis of distinguishing characteristics of Coltan mining. Focus o
 
 ## Objectives
 
-1. region finding (clear and verifiable mining activity, 3 separate locations)
-2. NDVI time series starting from before mine construction
-3. view the following spectral indices and band ratios from 2014-2020:
+1. Region finding (clear and verifiable mining activity, 3 separate locations)
+2. NDVI time series, starting from before mine construction
+3. View the following spectral indices and band ratios from 2014-2020:
 	- NDVI (Normalized Difference Vegetation Index)
 	+ VIGS (Vegetation Index considering Greenness and Shortwave infrared, outlined [here](https://www.sciencedirect.com/science/article/pii/S0034425715301577?via%3Dihub))
 	+ NDMI (Normalized Difference Moisture Index)
 	+ BSI (Bare Soil Index)
 	+ Iron Concentration
 	+ Clay Concentration
-4. create time series of all, see what is significant and what is not
-5. inspect cross sections of visual anomalies, look for significant band activity
-6. inspect SAR data and look for any unique signatures
+4. Time series of spectral indices and band ratios, see what is significant and what is not
+5. Inspect cross sections of visual anomalies, look for trends and outliers in band values
+6. Inspect SAR data and look for any unique signatures
 
 ## Datasets
 
@@ -191,7 +191,7 @@ I took [Emily's SAR code](https://github.com/CordulaRobinson/GEE/blob/main/emily
 
 ## Further Questions
 
--TRMM
--elevation
--we derived 1 new spectral index, can we find or create more?
--looking far out: VHR data (paid?)
+- TRMM
+- elevation
+- hyperspectral data?
+- further indices, new indices beyond G/NIR
