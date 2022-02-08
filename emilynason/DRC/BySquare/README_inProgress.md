@@ -52,6 +52,14 @@ Additional Indices (Using Sentinel-2 data):
 7. Compose a function for each index that sets the desired requirements for a region to be considered a mining area. These include a baseline level for the start year OR a specified level of change between the start and end year
 8. Compose a function that incorporates all of steps 5-7 for each index. This function will test each region with each index. If a region passes the requirements for all indices, it will be added to the map as a composite image from the Sentinel-2 data for the end year, created in step 2. Additionally, for passing regions, this function will incorporate the NDMI and NIR/G ratios, along with the VV band from Sentinel-1, to map out potential water storage/sources for a mining area. Lastly, for passing regions, this function will use the IRON index to map out potential infrastructure for a mining area. These indices were calculated using the Sentinel-2 data for 2020. 
 
+## Breakdown of Files 
+ModisMineSquares_OnlyNDVI.ipynb
+- Only the NDVI index is incorporated in this file. 
+ModisMineSquares_Separate.ipynb
+- This file has all indices, however they are separated. Each index has a result map of regions that pass that index specifically
+ModisMineSquares.ipynb
+- This has all indices, and compiles them into one function. There is one resulting map, that only has the regions that passed all index requirements
+
 ## Illustrations
 
 ## Insights and Conclusions
