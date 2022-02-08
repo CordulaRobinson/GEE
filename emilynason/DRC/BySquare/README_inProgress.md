@@ -9,7 +9,6 @@ Determine which smaller regions within an area may be potential mining spots bas
 [MODIS Nadir BRDF-Adjusted Reflectance Daily 500m](https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MCD43A4) \
 [Sentinel-1 SAR GRD: C-band Synthetic Aperture Radar Ground Range Detected, log scaling](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S1_GRD) \
 [Sentinel-2 MSI: MultiSpectral Instrument, Level-2A](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR) \
-[USGS Landsat 8 Level 2, Collection 2, Tier 1](https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LC08_C02_T1_L2)
 
 ## Specifications
 Years: 2004-2020 \
