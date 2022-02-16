@@ -43,7 +43,7 @@ Band Names:
 3. Create a composite image for the given year using the RED, GREEN, and BLUE bands from the Sentinel-2 data for the selected region.
 4. Createa a composite image for the given year using the VH and VV bands from the Sentinel-1 data for the selected region.
 5. Compose a function that divides that given region of interest into smaller, evenly spaced square regions of 0.005X0.005 (LatitudeXLongitude). Note this may cause some uneven regions if the given rectangular area does not divide evenly into regions of 0.005X0.005.
-6. Compose a function that extracts the mean value for NDVI for a given region and year. \
+6. Compose a function that extracts the mean value for NDVI for a given region and year.
 7. Compose a function to determine which square regions have an average NDVI lower than 0.4, and adds the passing regions into a list. \
    a) Take that list and create a multipolygon. Add this to the map as a layer named "Pass", along with the composite image for the entire original region. \
    b) Within the "Pass" layer, use the NDVI index to map possible mines in purple. \
@@ -51,10 +51,8 @@ Band Names:
    d) Within the "Pass" layer, use the IRON index to map possible infrastructure in gray. 
 
 ## Breakdown of Files 
-SquaresPerYear.ipynb
-- Squares created are .01x.01 
-SquaresPerYear_0.005.ipynb
-- Squares created are .005x.005
+SquaresPerYear.ipynb: Squares created are .01x.01 \
+SquaresPerYear_0.005.ipynb: Squares created are .005x.005
 
 ## Illustrations
 
