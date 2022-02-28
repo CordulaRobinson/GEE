@@ -118,8 +118,6 @@ Combining everything together, we tested the effectiveness of the vegetation los
 
 ![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/decision_tree/images/area4.png)
 
-#### DRC, 10km x 10km squares
-
 #### Conclusions
 
 Judging from what we've seen so far, vegetation loss over time is an effective metric at narrowing down mining areas. However, it is not perfect, as it will also identify urban development and general deforestation unrelated to mining activity. Also, our current model sometimes struggles at identifying very small-scale mines. Possible solutions could include trying smaller squares (at the cost of performance) or attempting to run the model with data of higher spatial resolution.
