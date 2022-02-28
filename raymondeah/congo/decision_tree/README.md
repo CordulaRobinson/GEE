@@ -55,13 +55,15 @@ Since we were working with two separate datasets, we created two classifiers wit
 
 1. Create a median composite image over an area of interest for the year 1985. We used 1985 because we wanted our time period to span over as many years as possible, and 1985 was the earliest available image.
 2. Collect training data of bare earth and vegetation points using the geometry tools in the Google Earth Engine Code Editor
-3. Train a Random Forest Classifier using the image and the training data
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/decision_tree/images/ls_training.PNG)
+4. Train a Random Forest Classifier using the image and the training data
 
 #### Sentinel-2
 
 1. Create a median composite image over the same area of interest for the year 2021. We used 2021 because it was the most recent year available.
-2. Collection Training data of bare earth and vegetation points using the geometry tools in the Google Earth Engine Code Editor
-3. Train a Random Forest Classifier using the image and the training data
+2. Collect Training data of bare earth and vegetation points using the geometry tools in the Google Earth Engine Code Editor
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/decision_tree/images/s2_training.PNG)
+4. Train a Random Forest Classifier using the image and the training data
 
 <hr>
 
