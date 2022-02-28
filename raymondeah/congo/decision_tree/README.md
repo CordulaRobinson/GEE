@@ -100,13 +100,23 @@ Specific method details can be found in the "create_segments(geometry, size)" me
 
 Combining everything together, we tested the effectiveness of the vegetation loss metric at identifying mines for several different areas of interest in the DRC. Our current workflow is visualized below.
 
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/decision_tree/images/w.png)
+
 #### Area 1, 500m x 500m squares
+
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/decision_tree/images/area1.png)
 
 #### Area 2, 500m x 500m squares
 
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/decision_tree/images/area2.png)
+
 #### Area 3, 500m x 500m squares
 
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/decision_tree/images/area3.png)
+
 #### Area 4 (small-scale mining), 100m x 100m squares
+
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/decision_tree/images/area4.png)
 
 #### DRC, 10km x 10km squares
 
