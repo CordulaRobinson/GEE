@@ -8,7 +8,7 @@ Determine which smaller regions within an area may be potential mining spots bas
 [MODIS Terra Vegetation Indices 16-Day Global 250m](https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MOD13Q1) \
 [MODIS Nadir BRDF-Adjusted Reflectance Daily 500m](https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MCD43A4) \
 [Sentinel-1 SAR GRD: C-band Synthetic Aperture Radar Ground Range Detected, log scaling](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S1_GRD) \
-[Sentinel-2 MSI: MultiSpectral Instrument, Level-2A](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR) \
+[Sentinel-2 MSI: MultiSpectral Instrument, Level-2A](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR)
 
 ## Specifications
 Years: 2004-2020 \
@@ -52,12 +52,12 @@ Additional Indices (Using Sentinel-2 data):
 8. Compose a function that incorporates all of steps 5-7 for each index. This function will test each region with each index. If a region passes the requirements for all indices, it will be added to the map as a composite image from the Sentinel-2 data for the end year, created in step 2. Additionally, for passing regions, this function will incorporate the NDMI and NIR/G ratios, along with the VV band from Sentinel-1, to map out potential water storage/sources for a mining area. Lastly, for passing regions, this function will use the IRON index to map out potential infrastructure for a mining area. These indices were calculated using the Sentinel-2 data for 2020. 
 
 ## Breakdown of Files 
-ModisMineSquares_OnlyNDVI.ipynb
-- Only the NDVI index is incorporated in this file. 
-ModisMineSquares_Separate.ipynb
-- This file has all indices, however they are separated. Each index has a result map of regions that pass that index specifically
-ModisMineSquares.ipynb
-- This has all indices, and compiles them into one function. There is one resulting map, that only has the regions that passed all index requirements
+- ModisMineSquares_OnlyNDVI.ipynb
+  - Only the NDVI index is incorporated in this file.
+- ModisMineSquares_Separate.ipynb
+  - This file has all indices, however they are separated. Each index has a result map of regions that pass that index specifically
+- ModisMineSquares.ipynb
+  - This has all indices, and compiles them into one function. There is one resulting map, that only has the regions that passed all index requirements
 
 ## Illustrations
 
