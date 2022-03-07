@@ -16,7 +16,7 @@ Sentinel-1 images selected based on the following properties:
 - "orbitProperties_pass" = Descending
 - "resolution_meters" = 10 
 
-Square Region Size: 0.005X0.005 (LatitudeXLongitude) \
+Square Region Size: 0.01X0.01 (LatitudeXLongitude) \
 Selected Indices (Using Sentinel-2 data):
 - Normalized Difference Vegetation Index (NDVI)
   - (B8 - B4) / (B8 + B4)
@@ -42,17 +42,13 @@ Band Names:
 2. Input desired region under "area" variable, and desired year under "year" variable. Possible years range from 2018-2021. 
 3. Create a composite image for the given year using the RED, GREEN, and BLUE bands from the Sentinel-2 data for the selected region.
 4. Createa a composite image for the given year using the VH and VV bands from the Sentinel-1 data for the selected region.
-5. Compose a function that divides that given region of interest into smaller, evenly spaced square regions of 0.005X0.005 (LatitudeXLongitude). Note this may cause some uneven regions if the given rectangular area does not divide evenly into regions of 0.005X0.005.
+5. Compose a function that divides that given region of interest into smaller, evenly spaced square regions of 0.01X0.01 (LatitudeXLongitude). Note this may cause some uneven regions if the given rectangular area does not divide evenly into regions of 0.01X0.01.
 6. Compose a function that extracts the mean value for NDVI for a given region and year.
 7. Compose a function to determine which square regions have an average NDVI lower than 0.4, and adds the passing regions into a list. \
    a) Take that list and create a multipolygon. Add this to the map as a layer named "Pass", along with the composite image for the entire original region. \
    b) Within the "Pass" layer, use the NDVI index to map possible mines in purple. \
    c) Within the "Pass" layer, use the NDMI and NIR/G indices, along with the "VV" band from Sentinel-1, to map possible water/tailing ponds in blue. \
    d) Within the "Pass" layer, use the IRON index to map possible infrastructure in gray. 
-
-## Breakdown of Files 
-SquaresPerYear.ipynb: Squares created are .01x.01 \
-SquaresPerYear_0.005.ipynb: Squares created are .005x.005
 
 ## Illustrations
 
