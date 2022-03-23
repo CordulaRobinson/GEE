@@ -1,5 +1,4 @@
 import ee
-import geemap
 import math
 import csv
 import sys
