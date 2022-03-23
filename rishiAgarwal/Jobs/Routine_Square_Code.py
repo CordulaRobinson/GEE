@@ -573,7 +573,7 @@ def applyRoutine_squares(geometry, square_size):
 
 def create_csv(passed):
     header = ['Point 1', 'Point 2', 'Point 3', 'Point 4']
-    with open('/scratch/agarwal.rishi/countries.csv', 'w') as f:
+    with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/square_points.csv', 'w') as f:
         writer = csv.writer(f)
         writer.writerow(header)
         for square in passed:
