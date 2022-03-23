@@ -2,6 +2,7 @@ import ee
 import math
 import csv
 import sys
+import argparse
 
 ee.Initialize()
 
@@ -579,10 +580,18 @@ def create_csv(passed):
             coords = [square.coordinates().getInfo()[0]]
             writer.writerow([coords[0], coords[1], coords[2], coords[3]])
 
-def main(coords, square_size):
-  geometry = ee.Geometry.Polygon(coords)
+def main(square_size, minlong, minlat, maxlong, maxlat):
+  geometry = ee.Geometry.Polygon([[
+    [minlong, maxlat],
+    [minlong, minlat],
+    [maxlong, minlat],
+    [maxlong, maxlat]]])
+  print(geometry)
   passed_squares = applyRoutine_squares(geometry, square_size)
 
 if __name__ == '__main__':
-	main(sys.argv[1], int(sys.argv[2]))
+  main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
+
+
+#main(0.5, 27.350233348102517, -7.57841301205225, 27.436407359332986, -7.518171474050515)
 
