@@ -591,6 +591,7 @@ def main(square_size, minlong, minlat, maxlong, maxlat):
   create_csv(passed_squares)
 
 if __name__ == '__main__':
+  print(sys.argv[5])
   main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
 
 
