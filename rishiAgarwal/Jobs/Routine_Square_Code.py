@@ -4,7 +4,7 @@ import math
 import csv
 import sys
 
-ee.Initialize
+ee.Initialize()
 
 #Imported Satellites and Feature Collections
 ls5 = ee.ImageCollection('LANDSAT/LT05/C02/T1_L2')

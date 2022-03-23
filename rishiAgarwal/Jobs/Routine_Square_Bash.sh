@@ -5,7 +5,7 @@
 #SBATCH --partition=short
 
 module load anaconda3/3.7
-source acivate
+source activate
 source activate ee
 conda activate ee
 conda init bash
