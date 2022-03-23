@@ -12,7 +12,7 @@ with open(bash_filename,'w') as f:
     # plus the high res smaple size == 0.0025 degree
     f.write('#!/bin/bash'+'\n')
     f.write('#SBATCH --nodes=1'+'\n')
-    f.write('#SBATCH --time=01:00:00'+'\n')
+    f.write('#SBATCH --time=00:01:00'+'\n')
     f.write('#SBATCH --job-name=ten_plus_seven'+str(i)+'_'+str(j)+'\n')
     f.write('#SBATCH --partition=short'+'\n')
     f.write('#SBATCH --mem=1GB'+'\n')
