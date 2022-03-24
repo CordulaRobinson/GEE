@@ -21,7 +21,7 @@ with open(bash_filename,'w') as f:
     f.write('source activate ee'+'\n')
     f.write('conda activate ee'+'\n')
     f.write('conda init bash'+'\n')
-    f.write('python3 create_basic_gee_job.py'+'\n')
+    f.write('python3 basic_gee.py'+'\n')
 
 # now we will submit the job (the bash_filename) written abobe
 os.system("sbatch "+str(bash_filename))

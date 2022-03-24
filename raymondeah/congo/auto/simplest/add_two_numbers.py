@@ -6,7 +6,7 @@ def add(num1, num2):
 
     save_path = os.getcwd()
     file_name = 'sum'
-    complete_path = save_path + '/' + file_name + '.txt'
+    complete_path = save_path + '/output/' + file_name + '.txt'
 
     file = open(complete_path, 'w')
     text = str(num1) + ' + ' + str(num2) + ' = ' + str(sum) + '\n'

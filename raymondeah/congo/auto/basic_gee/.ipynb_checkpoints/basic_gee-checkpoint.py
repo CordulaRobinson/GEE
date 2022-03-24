@@ -10,8 +10,8 @@
 
 # test = ee.Number(2).add(ee.Number(3))
 
-import os
 import ee
+import geemap
 ee.Initialize()
 
 geometry = ee.Geometry.Polygon(
@@ -24,7 +24,7 @@ s2 = ee.ImageCollection("COPERNICUS/S2_SR")
 rgbVis = {
   'min': 0.0,
   'max': 3000,
-  'bands': ['B4', 'B3', 'B2']
+  'bands': ['B4', 'B3', 'B2'],
 }
 
 composite = s2.filter(ee.Filter.bounds(geometry)) \
@@ -34,27 +34,27 @@ composite = s2.filter(ee.Filter.bounds(geometry)) \
   .median() \
   .clip(geometry) \
 
-visualized = composite.visualize(['B4', 'B3', 'B2'], None, None, 0, 3000)
+# Map.centerObject(geometry, 15)
+# Map.addLayer(composite, rgbVis, 'Boston Commons') 
 
-# task = ee.batch.Export.image.toDrive(**{
-#     'image': composite,
-#     'description': 'Boston_Commons_Visualized',
-#     'folder': 'earthengine',
-#     'fileNamePrefix': 'boston_commons_visualized',
-#     'region': geometry,
-#     'scale': 20,
-#     'maxPixels': 1e9
-# })
 
-# task.start()
+visualized = composite.visualize(rgbVis)
+# Map = geemap.Map()
+# Map.centerObject(geometry, 15)
+# Map.addLayer(composite, rgbVis,'BC')
+# Map
+# print(visualized)
+# // Now the 'visualized' image is RGB image, no need to give visParams
+# Map.addLayer(visualized, {}, 'Visualized Image') 
 
-link = visualized.getDownloadUrl({
-  'name': 'boston_commons',
-  'bands': ['vis-red', 'vis-green', 'vis-blue'],
-  'scale': 20,
-  'region': geometry,
-  'filePerBand': False
+task = ee.batch.Export.image.toDrive(**{
+    'image': composite,
+    'description': 'Boston_Commons_Visualized',
+    'folder': 'earthengine',
+    'fileNamePrefix': 'boston_commons_visualized',
+    'region': geometry,
+    'scale': 20,
+    'maxPixels': 1e9
 })
 
-os.system("wget -O boston_commons.zip "+link)
-os.system("unzip boston_commons.zip")
+task.start()
