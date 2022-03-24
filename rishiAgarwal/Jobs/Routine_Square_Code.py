@@ -6,6 +6,13 @@ import argparse
 
 ee.Initialize()
 
+region = ee.Geometry.Polygon(
+    [[[ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[5])],
+      [ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[3])],
+      [ee.Number.parse(sys.argv[4]), ee.Number.parse(sys.argv[3])],
+      [ee.Number.parse(sys.argv[4]), ee.Number.parse(sys.argv[5])]]])
+
+
 #Imported Satellites and Feature Collections
 ls5 = ee.ImageCollection('LANDSAT/LT05/C02/T1_L2')
 s2 = ee.ImageCollection("COPERNICUS/S2_SR")
@@ -315,52 +322,6 @@ classifier_s2 = ee.Classifier.smileRandomForest(50).train(**{
 # Classify the image.
 classified = composite2021.classify(classifier_s2)
 
-#Divide GIven Geometry to Specficed Square Size (Km)
-"""
-Segment the given geometry into squares of given size (in km)
-:param geometry: rectangle form geometry object
-:return: list including all squares
-"""
-def create_segments(geometry, size):
-    segments = []
-    r_earth, dy, dx, pi = ee.Number(6378), ee.Number(size), ee.Number(size), ee.Number(math.pi)
-    
-    coords = ee.List(geometry.coordinates().get(0)).slice(0, -1)
-    
-    top = ee.Number(ee.List(coords.get(2)).get(1))
-    left = ee.Number(ee.List(coords.get(0)).get(0))
-    
-    width = int(ee.Geometry.Point(coords.get(0)).distance(ee.Geometry.Point(coords.get(1))).divide(1000 * size).getInfo())
-    height = int(ee.Geometry.Point(coords.get(1)).distance(ee.Geometry.Point(coords.get(2))).divide(1000 * size).getInfo())
-
-    for y in range(height + 1):
-        left = ee.Number(ee.List(coords.get(0)).get(0))
-        for x in range(width + 1):
-            #
-            first = top
-            second = dx.divide(r_earth)
-            third = ee.Number(180).divide(pi)
-            con = pi.divide(ee.Number(180))
-            fourth = left.multiply(con).multiply(con).cos()
-            
-            new_lon = first.subtract(second.multiply(third).divide(fourth))
-            #new_lon = top - (dx / r_earth) * (180 / pi) / math.cos(math.radians(left * pi/180))
-            #new_lat = left  + (dy / r_earth) * (180 / pi)
-            new_lat = left.add((dy.divide(r_earth)).multiply((ee.Number(180).divide(pi))))
-            
-            square = ee.Geometry.Polygon(
-                [[[left, new_lon],
-                  [new_lat, new_lon],
-                  [new_lat, top],
-                  [left, top]]])
-            
-            segments.append(square)
-            
-            left = new_lat
-        top = new_lon
-        
-    return segments
-
 #Calculation Methods
 #Calculating Percentange Change in Vegetation Loss
 def calculate_percentage_change(feature):
@@ -521,18 +482,103 @@ def calculate_sar_vh(feature):
     
     return feature.set('vh_percent', percent_mine)
 
-#Filtering Methods
-######### Creates Median Composite Images
-def create_median_composite(feature):
-    filtered = s2 \
-        .filter(ee.Filter.bounds(feature.geometry())) \
-        .filter(ee.Filter.date('2021-01-01', '2021-12-31')) \
-        .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)) \
-        .map(maskS2clouds) \
-        .select('B.*')
+#Divide GIven Geometry to Specficed Square Size (Km)
+"""
+Segment the given geometry into squares of given size (in km)
+:param geometry: rectangle form geometry object
+:return: list including all squares
+"""
+def create_segments(geometry, size):
+    segments = []
+    r_earth, dy, dx, pi = ee.Number(6378), ee.Number(size), ee.Number(size), ee.Number(math.pi)
     
-    composite = filtered.median().clip(feature.geometry())
-    return composite
+    coords = ee.List(geometry.coordinates().get(0)).slice(0, -1)
+    
+    top = ee.Number(ee.List(coords.get(2)).get(1))
+    left = ee.Number(ee.List(coords.get(0)).get(0))
+    
+    width = int(ee.Geometry.Point(coords.get(0)).distance(ee.Geometry.Point(coords.get(1))).divide(1000 * size).getInfo())
+    height = int(ee.Geometry.Point(coords.get(1)).distance(ee.Geometry.Point(coords.get(2))).divide(1000 * size).getInfo())
+
+    for y in range(height + 1):
+        left = ee.Number(ee.List(coords.get(0)).get(0))
+        for x in range(width + 1):
+            #
+            first = top
+            second = dx.divide(r_earth)
+            third = ee.Number(180).divide(pi)
+            con = pi.divide(ee.Number(180))
+            fourth = left.multiply(con).multiply(con).cos()
+            
+            new_lon = first.subtract(second.multiply(third).divide(fourth))
+            #new_lon = top - (dx / r_earth) * (180 / pi) / math.cos(math.radians(left * pi/180))
+            #new_lat = left  + (dy / r_earth) * (180 / pi)
+            new_lat = left.add((dy.divide(r_earth)).multiply((ee.Number(180).divide(pi))))
+            
+            square = ee.Geometry.Polygon(
+                [[[left, new_lon],
+                  [new_lat, new_lon],
+                  [new_lat, top],
+                  [left, top]]])
+            
+            segments.append(square)
+            
+            left = new_lat
+        top = new_lon
+        
+    return segments
+
+
+segments = ee.FeatureCollection(create_segments(region, ee.Number.parse(sys.argv[1]).getInfo()))
+
+
+def passing_mine(region):
+    region_veg = calculate_percentage_change(region)
+    region_vh = calculate_sar_vh(region)
+    region_nir_g = calculate_nirg_value(region)
+    region_swir1_b = calculate_swirb_value(region)
+    status = ((((ee.Number(region_veg.get('percent loss'))).gt(20)).Or((ee.Number(region_veg.get('percent bare'))).gt(10))) \
+        .And(ee.Number(region_vh.get('vh_percent')).gt(5)) \
+        .And(ee.Number(region_nir_g.get('nir/g')).lte(0.45)) \
+        .And(ee.Number(region_swir1_b.get('swir1/b')).lt(0.65)))
+    return ee.Feature(region.set('status', status))
+
+results = segments.map(passing_mine)
+
+def create_results(feature):
+    coords = ee.List(feature.geometry().coordinates().get(0))
+    lon_min = ee.List(coords.get(0)).get(0)
+    lon_max = ee.List(coords.get(1)).get(0)
+    lat_min = ee.List(coords.get(0)).get(1)
+    lat_max = ee.List(coords.get(2)).get(1)
+    status = feature.get('status')
+    row = ee.Array([lon_min, 
+           lat_min, 
+           lon_max,
+           lat_max,
+           status])
+    new_feature = ee.Feature(None, {'info': row})
+    return new_feature
+
+data_set = results.map(create_results)
+data_set2 = data_set.aggregate_array('info')
+data_set3 = data_set2.getInfo()
+
+header = ['min long', 'min lat', 'max long', 'max lat', 'status']
+
+f = open('/scratch/agarwal.rishi/gee/'+'gee_drc_'+sys.argv[1]+'_'+sys.argv[2]+'_'+sys.argv[3]+'_'+sys.argv[4]+'_'+sys.argv[5]+'.csv', 'a', newline='')
+
+writer = csv.writer(f)
+
+writer.writerow(header)
+writer.writerows(data_set3)
+
+f.close()
+
+"""
+
+#Filtering Methods
+
 
 ########## Filter by Veg Loss
 def filter_by_vegetation_loss(squares, threshold1, threshold2):
@@ -581,11 +627,11 @@ def create_csv(passed):
             writer.writerow([coords[0], coords[1], coords[2], coords[3]])
 
 def main(square_size, minlong, minlat, maxlong, maxlat):
-  geometry = ee.Geometry.Polygon([[
-    [minlong, maxlat],
-    [minlong, minlat],
-    [maxlong, minlat],
-    [maxlong, maxlat]]])
+  geometry = ee.Geometry.Polygon(
+    [[[minlong, maxlat],
+      [minlong, minlat],
+      [maxlong, minlat],
+      [maxlong, maxlat]]])
   print(geometry)
   passed_squares = applyRoutine_squares(geometry, square_size)
   create_csv(passed_squares)
@@ -597,3 +643,4 @@ if __name__ == '__main__':
 
 #main(0.5, 27.350233348102517, -7.57841301205225, 27.436407359332986, -7.518171474050515)
 
+"""
