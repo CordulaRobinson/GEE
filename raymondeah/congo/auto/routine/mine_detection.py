@@ -399,13 +399,14 @@ test_run = applyRoutine(region, 12, 1).getInfo()['features']
 # file.close()
 
 # csv file
-save_path = os.getcwd()
-file_name = str(job_num) + '_square_coords'
-complete_path = save_path + '/output/' + file_name + '.csv'
+if test_run:
+  save_path = os.getcwd()
+  file_name = str(job_num) + '_square_coords'
+  complete_path = save_path + '/output/' + file_name + '.csv'
 
-f = open(complete_path, 'a')
-writer = csv.writer(f)
-rows = [[[c[0]] + [c[1]] for c in element['geometry']['coordinates'][0][1:]] for element in test_run]
-writer.writerows(rows)
+  f = open(complete_path, 'a')
+  writer = csv.writer(f)
+  rows = [[[c[0]] + [c[1]] for c in element['geometry']['coordinates'][0][1:]] for element in test_run]
+  writer.writerows(rows)
 
-f.close()
+  f.close()
