@@ -19,6 +19,12 @@ roi1 = ee.Geometry.Polygon(
           [29.625197083044277, 3.092319151883147],
           [29.625197083044277, 3.1591674847348235]]])
 
+region = ee.Geometry.Polygon(
+        [[[ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[4])],
+          [ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[5])],
+          [ee.Number.parse(sys.argv[3]), ee.Number.parse(sys.argv[5])],
+          [ee.Number.parse(sys.argv[3]), ee.Number.parse(sys.argv[4])]]])
+
 drc = admin.filter(ee.Filter.eq('ADM0_NAME', 'Democratic Republic of the Congo'))
 
 # visualization parameters
@@ -369,7 +375,7 @@ def applyRoutine(geometry, zoom, square_size):
     return passed_vegetation_loss
 
 #print('start test run')
-test_run = applyRoutine(roi1, 12, 1).getInfo()['features']
+test_run = applyRoutine(region, 12, 1).getInfo()['features']
 # for element in test_run:
 #     print(element['geometry']['coordinates'])
 #     print()
@@ -399,4 +405,5 @@ f = open(complete_path, 'a')
 writer = csv.writer(f)
 rows = [[[c[0]] + [c[1]] for c in element['geometry']['coordinates'][0][1:]] for element in test_run]
 writer.writerows(rows)
+
 f.close()
