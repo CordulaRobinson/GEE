@@ -33,7 +33,7 @@ for i in range(34):
         f.write('source activate MyEnv'+'\n')
         f.write('conda activate MyEnv'+'\n')
         f.write('conda init bash'+'\n')
-        f.write('add_two_numbers.py '+ str(last_place_number_2) + ' ' + str(last_place_sum) + '\n')
+        f.write('python3 '+ 'add_two_numbers.py '+ str(last_place_number_2) + ' ' + str(last_place_sum) + '\n')
     with open('sum.txt', 'r') as f:
         f.readline()
         f.readline()
