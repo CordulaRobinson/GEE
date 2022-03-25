@@ -71,12 +71,12 @@ def create_segments(geometry, size):
                 f.write('#SBATCH --job-name=routine_job'+'\n')
                 f.write('#SBATCH --partition=short'+'\n')
                 f.write('#SBATCH --mem=16GB'+'\n')
-                f.write('module load anaconda3/3.7'+'\n')
-                f.write('source activate '+'\n')
-                f.write('source activate ee'+'\n')
-                f.write('conda activate ee'+'\n')
-                f.write('conda init bash'+'\n')
-                f.write('python3 mine_detection.py ' + sys.argv[1] + ' ' + sys.argv[2] + ' ' + sys.argv[3] + ' ' + sys.argv[4] + ' ' + str(count) + '\n')
+		f.write('module load anaconda3/3.7'+'\n')
+		f.write('source activate '+'\n')
+		f.write('source activate ee'+'\n')
+		f.write('conda activate ee'+'\n')
+		f.write('conda init bash'+'\n')
+                f.write('python3 mine_detection.py ' + str(left.getInfo()) + ' ' + str(new_lat.getInfo()) + ' ' + str(top.getInfo()) + ' ' + str(new_lon.getInfo()) + ' ' + str(count) + '\n')
 
             # now we will submit the job (the bash_filename) written abobe
             os.system("sbatch "+str(bash_filename))
