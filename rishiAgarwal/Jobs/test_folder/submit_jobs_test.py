@@ -35,7 +35,7 @@ for i in range(34):
         f.write('conda init bash'+'\n')
         f.write('python3 '+ 'add_two_numbers.py '+ str(last_place_number_2) + ' ' + str(last_place_sum) + '\n')
     os.system('sbatch ' + bash_filename)
-    with open('sum.txt', 'r') as f:
+    with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/sum.txt', 'r') as f:
         f.readline()
         f.readline()
         i = int(f.readline()[:1])
