@@ -2,7 +2,7 @@ import os
 import sys
 
 job_num = sys.argv[5]
-bash_filename = str(job_num) + '_routine_job.sh'
+bash_filename = 'batch/' + str(job_num) + '_routine_job.sh'
 with open(bash_filename,'w') as f:
     # one node, one hour
     # name of job is DCR_i_j
