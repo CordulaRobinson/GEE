@@ -25,7 +25,7 @@ while i <= 34:
         f.write('#!/bin/bash'+'\n')
         f.write('#SBATCH --nodes=1'+'\n')
         f.write('#SBATCH --time=01:00:00'+'\n')
-        f.write('#SBATCH --job-name=DCR_'+str(last_place_number_1)+'_'+str(last_place_number_2)+'\n')
+        f.write('#SBATCH --job-name=ADD_'+str(last_place_number_1)+'_'+str(last_place_number_2)+'\n')
         f.write('#SBATCH --partition=short'+'\n')
         f.write('#SBATCH --mem=12GB'+'\n')
         f.write('module load anaconda3/3.7'+'\n')
@@ -36,7 +36,7 @@ while i <= 34:
         f.write('python3 '+ 'add_two_numbers.py '+ str(last_place_number_2) + ' ' + str(last_place_sum) + '\n')
     os.system('sbatch ' + bash_filename)
     with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/sum.txt', 'r') as f:
-        r = f.readline()
-        d = f.readline()
-        i = int(f.readline()[:1])
+        i = int(f.read()[4:4])
 
+with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/done.txt', 'w') as f:
+    f.write('done')
