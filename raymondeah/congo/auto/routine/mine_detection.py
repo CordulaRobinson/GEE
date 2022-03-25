@@ -395,10 +395,10 @@ save_path = os.getcwd()
 file_name = 'square_coords'
 complete_path = save_path + '/output/' + file_name + '.csv'
 
-f = open(complete_path, 'w')
+f = open(complete_path, 'a')
 writer = csv.writer(f)
 for element in test_run:
   coords = element['geometry']['coordinates'][0][1:]
-  row = [str(c[0]) + ', ' + str(c[1]) for c in coords]
+  row = [c[0] + c[1] for c in coords]
   writer.writerow(row)
 f.close()
