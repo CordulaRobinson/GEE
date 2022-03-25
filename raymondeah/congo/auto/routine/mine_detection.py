@@ -368,7 +368,7 @@ def applyRoutine(geometry, zoom, square_size):
     return passed_vegetation_loss
 
 #print('start test run')
-test_run = applyRoutine(roi1, 12, 3).getInfo()['features']
+test_run = applyRoutine(roi1, 12, 1).getInfo()['features']
 # for element in test_run:
 #     print(element['geometry']['coordinates'])
 #     print()
@@ -386,6 +386,6 @@ for element in test_run:
     for coord in coords:
         text += str(coord[0]) + ',' + str(coord[1]) + '\n'
     text += '\n'
-print(text)
+#print(text)
 file.write(text)
 file.close()
