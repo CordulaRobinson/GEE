@@ -14,10 +14,10 @@ coordinates, job number
 """
 
 region = ee.Geometry.Polygon(
-        [[[ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[4])],
-          [ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[5])],
-          [ee.Number.parse(sys.argv[3]), ee.Number.parse(sys.argv[5])],
-          [ee.Number.parse(sys.argv[3]), ee.Number.parse(sys.argv[4])]]])
+        [[[ee.Number.parse(sys.argv[1]), ee.Number.parse(sys.argv[3])],
+          [ee.Number.parse(sys.argv[1]), ee.Number.parse(sys.argv[4])],
+          [ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[4])],
+          [ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[3])]]])
 
 # squares
 """
@@ -28,7 +28,7 @@ Segment the given geometry into squares of given size (in km)
 edit: remove some stuff from geometry produced
 """
 def create_segments(geometry, size):
-    segments = []
+    #segments = []
     r_earth, dy, dx, pi = ee.Number(6378), ee.Number(size), ee.Number(size), ee.Number(math.pi)
     
     coords = ee.List(geometry.coordinates().get(0)).slice(0, -1)
@@ -54,15 +54,16 @@ def create_segments(geometry, size):
             #new_lat = left  + (dy / r_earth) * (180 / pi)
             new_lat = left.add((dy.divide(r_earth)).multiply((ee.Number(180).divide(pi))))
             
+            # create and submit jobs here
             square = ee.Geometry.Polygon(
                 [[[left, new_lon],
                   [new_lat, new_lon],
                   [new_lat, top],
                   [left, top]]])
             
-            segments.append(square)
+            #segments.append(square)
             
             left = new_lat
         top = new_lon
         
-    return segments
+    #return segments

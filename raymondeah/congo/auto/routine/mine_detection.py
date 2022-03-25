@@ -25,6 +25,8 @@ region = ee.Geometry.Polygon(
           [ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[4])],
           [ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[3])]]])
 
+job_num = sys.argv[5]
+
 drc = admin.filter(ee.Filter.eq('ADM0_NAME', 'Democratic Republic of the Congo'))
 
 # visualization parameters
@@ -398,7 +400,7 @@ test_run = applyRoutine(region, 12, 1).getInfo()['features']
 
 # csv file
 save_path = os.getcwd()
-file_name = 'square_coords'
+file_name = str(job_num) + '_square_coords'
 complete_path = save_path + '/output/' + file_name + '.csv'
 
 f = open(complete_path, 'a')
