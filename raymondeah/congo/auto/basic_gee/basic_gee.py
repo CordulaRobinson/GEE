@@ -59,3 +59,5 @@ link = visualized.getDownloadUrl({
 os.system("wget -O boston_commons.zip "+link)
 #os.system("cd output")
 os.system("unzip boston_commons.zip")
+os.system("mv boston_commons.tif output")
+os.system("rm -rf boston_commons")
