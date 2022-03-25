@@ -1,3 +1,4 @@
+from wsgiref.simple_server import WSGIRequestHandler
 import numpy as np
 import os
 import itertools
@@ -7,7 +8,7 @@ def checkstatus(string):
     status = None
     with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/sum.txt', 'r') as f:
         status = f.read()
-    return status != string
+    return status == string
 
 # let's start from the bottom left 
 i = 0
