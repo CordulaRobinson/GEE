@@ -76,7 +76,7 @@ def create_segments(geometry, size):
                 f.write('source activate ee'+'\n')
                 f.write('conda activate ee'+'\n')
                 f.write('conda init bash'+'\n')
-                f.write('python3 mine_detection.py ' + sys.argv[1] + ' ' + sys.argv[2] + ' ' + sys.argv[3] + ' ' + sys.argv[4] + ' ' + count + '\n')
+                f.write('python3 mine_detection.py ' + sys.argv[1] + ' ' + sys.argv[2] + ' ' + sys.argv[3] + ' ' + sys.argv[4] + ' ' + str(count) + '\n')
 
             # now we will submit the job (the bash_filename) written abobe
             os.system("sbatch "+str(bash_filename))

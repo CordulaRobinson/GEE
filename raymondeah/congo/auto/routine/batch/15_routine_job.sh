@@ -9,4 +9,4 @@ source activate
 source activate ee
 conda activate ee
 conda init bash
-python3 mine_detection.py 29 29.5 3.5 3 7
+python3 mine_detection.py 29 29.5 3.5 3 15
