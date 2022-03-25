@@ -3,9 +3,11 @@ import os
 import itertools
 import sys
 
-
-
-
+def checkstatus(string):
+    status = None
+    with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/sum.txt', 'r'):
+        status = f.read()
+    return status != string
 
 # let's start from the bottom left 
 i = 0
@@ -40,8 +42,10 @@ while i < 34:
         f.write('conda init bash'+'\n')
         f.write('python3 '+ 'add_two_numbers.py '+ str(last_place_number_2) + ' ' + str(last_place_sum) + '\n')
     os.system('sbatch ' + bash_filename )
-    with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/sum.txt', 'r') as f:
-        i = int(f.readlines()[2:][0])
+    while checkstatus(str(last_place_number_1) + '\n' + str(last_place_number_2) + '\n' + last_place_sum):
+        with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/sum.txt', 'r') as f:
+            i = int(f.readlines()[2:][0])
+    
     with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/done.txt', 'w') as f:
         f.write(str(i))
 
