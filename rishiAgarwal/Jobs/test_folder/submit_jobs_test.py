@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import itertools
 
 last_place_number_1 = None
 last_place_number_2 = None
@@ -36,7 +37,7 @@ while i < 34:
         f.write('python3 '+ 'add_two_numbers.py '+ str(last_place_number_2) + ' ' + str(last_place_sum) + '\n')
     os.system('sbatch ' + bash_filename)
     with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/sum.txt', 'r') as f:
-        i = int(f.read()[3:4])
+        i = int(f.readlines()[2:])
     with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/done.txt', 'w') as f:
         f.write(str(i))
 
