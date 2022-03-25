@@ -1,6 +1,8 @@
 import numpy as np
 import os
 import itertools
+import sys
+
 
 last_place_number_1 = None
 last_place_number_2 = None
@@ -14,6 +16,7 @@ with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/sum.txt', 'r
 # let's start from the bottom left 
 i = 0
 while i < 34:
+    sys.stdout.write(str(i))
     bash_filename = 'test_sum_'+str(last_place_number_1)+'+'+str(last_place_number_2)+'.sh'
     with open(bash_filename, 'w') as f:
         # one node, one hour
