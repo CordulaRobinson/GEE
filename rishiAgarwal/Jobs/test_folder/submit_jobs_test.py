@@ -4,18 +4,19 @@ import itertools
 import sys
 
 
-last_place_number_1 = None
-last_place_number_2 = None
-last_place_sum = None
-with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/sum.txt', 'r') as f:
-    last_place_number_1 = int(f.readline()[:1])
-    last_place_number_2 = int(f.readline()[:1])
-    last_place_sum = int(f.readline()[:1])
+
 
 
 # let's start from the bottom left 
 i = 0
 while i < 34:
+    last_place_number_1 = None
+    last_place_number_2 = None
+    last_place_sum = None
+    with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/sum.txt', 'r') as f:
+        last_place_number_1 = int(f.readline()[:1])
+        last_place_number_2 = int(f.readline()[:1])
+        last_place_sum = int(f.readline()[:1])
     sys.stdout.write(str(i))
     bash_filename = 'test_sum_'+str(last_place_number_1)+'+'+str(last_place_number_2)+'.sh'
     with open(bash_filename, 'w') as f:
@@ -38,7 +39,7 @@ while i < 34:
         f.write('conda activate ee'+'\n')
         f.write('conda init bash'+'\n')
         f.write('python3 '+ 'add_two_numbers.py '+ str(last_place_number_2) + ' ' + str(last_place_sum) + '\n')
-    os.system('sbatch ' + bash_filename)
+    os.system('sbatch ' + bash_filename )
     with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/sum.txt', 'r') as f:
         i = int(f.readlines()[2:][0])
     with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/done.txt', 'w') as f:
