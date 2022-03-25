@@ -12,7 +12,7 @@ with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/sum.txt', 'r
 
 # let's start from the bottom left 
 i = 0
-while i <= 34:
+while i < 34:
     bash_filename = 'test_sum_'+str(last_place_number_1)+'+'+str(last_place_number_2)+'.sh'
     with open(bash_filename, 'w') as f:
         # one node, one hour
@@ -37,6 +37,7 @@ while i <= 34:
     os.system('sbatch ' + bash_filename)
     with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/sum.txt', 'r') as f:
         i = int(f.read()[4:4])
+    i = 35
 
 with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/done.txt', 'w') as f:
     f.write('done')
