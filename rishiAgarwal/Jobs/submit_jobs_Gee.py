@@ -47,8 +47,8 @@ for i in range(n_lon):
             f.write('#SBATCH --mem=12GB'+'\n')
             f.write('module load anaconda3/3.7'+'\n')
             f.write('source activate '+'\n')
-            f.write('source activate MyEnv'+'\n')
-            f.write('conda activate MyEnv'+'\n')
+            f.write('source activate ee'+'\n')
+            f.write('conda activate ee'+'\n')
             f.write('conda init bash'+'\n')
             f.write('python3 gee_dcr.py '+str(small_grid)+' '+str(lon_min)+' '+str(lat_min)+' '+str(lon_max)+' '+str(lat_max)+' \n')
         # now we will submit the job (the bash_filename) written abobe
