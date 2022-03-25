@@ -9,7 +9,7 @@ source activate
 source activate ee
 conda activate ee
 conda init bash
-python3 Routine_Square_Code.py 0.5 27.35, -7.57, 27.43, -7.518 
+python3 Routine_Square_Code.py 0.5 27, -8, 28, -7 
 
 
 
