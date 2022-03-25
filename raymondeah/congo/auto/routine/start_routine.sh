@@ -9,4 +9,4 @@ source activate
 source activate ee
 conda activate ee
 conda init bash
-python3 multiple_jobs.py 29.5 29.75 3.25 3
+python3 multiple_jobs.py 26 29 -3 0
