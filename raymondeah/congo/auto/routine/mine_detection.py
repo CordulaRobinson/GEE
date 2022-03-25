@@ -1,6 +1,7 @@
 # py imports
 import os
 import sys
+import csv
 import math
 import ee
 ee.Initialize()
@@ -375,17 +376,29 @@ test_run = applyRoutine(roi1, 12, 1).getInfo()['features']
 #print(element for element in test_run)
 #print('ran without issues')
 
-save_path = os.getcwd()
-file_name = 'final_squares'
-complete_path = save_path + '/output/' + file_name + '.txt'
+# # txt file
+# save_path = os.getcwd()
+# file_name = 'final_squares'
+# complete_path = save_path + '/output/' + file_name + '.txt'
+# file = open(complete_path, 'w')
+# text = ""
+# for element in test_run:
+#     coords = element['geometry']['coordinates'][0][1:]
+#     for coord in coords:
+#         text += str(coord[0]) + ',' + str(coord[1]) + '\n'
+#     text += '\n'
+# file.write(text)
+# file.close()
 
-file = open(complete_path, 'w')
-text = ""
+# csv file
+save_path = os.getcwd()
+file_name = 'square_coords'
+complete_path = save_path + '/output/' + file_name + '.csv'
+
+f = open(complete_path, 'w')
+writer = csv.writer(f)
 for element in test_run:
-    coords = element['geometry']['coordinates'][0][1:]
-    for coord in coords:
-        text += str(coord[0]) + ',' + str(coord[1]) + '\n'
-    text += '\n'
-#print(text)
-file.write(text)
-file.close()
+  coords = element['geometry']['coordinates'][0][1:]
+  row = [str(c[0]) + ', ' + str(c[1]) for c in coords]
+  writer.writerow(row)
+f.close()
