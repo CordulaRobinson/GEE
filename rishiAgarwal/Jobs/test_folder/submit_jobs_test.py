@@ -42,7 +42,7 @@ while i < 34:
         f.write('conda init bash'+'\n')
         f.write('python3 '+ 'add_two_numbers.py '+ str(last_place_number_2) + ' ' + str(last_place_sum) + '\n')
     os.system('sbatch ' + bash_filename )
-    while checkstatus(str(last_place_number_1) + '\n' + str(last_place_number_2) + '\n' + last_place_sum):
+    while checkstatus(str(last_place_number_1) + '\n' + str(last_place_number_2) + '\n' + str(last_place_sum)):
         with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/sum.txt', 'r') as f:
             i = int(f.readlines()[2:][0])
     
