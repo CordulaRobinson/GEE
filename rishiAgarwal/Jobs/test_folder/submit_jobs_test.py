@@ -37,8 +37,7 @@ while i < 34:
     os.system('sbatch ' + bash_filename)
     with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/sum.txt', 'r') as f:
         i = int(f.read()[3:4])
-    i = 35
     with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/done.txt', 'w') as f:
-        f.write('done')
+        f.write(str(i))
 
 
