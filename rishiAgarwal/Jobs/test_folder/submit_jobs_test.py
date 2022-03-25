@@ -5,9 +5,11 @@ last_place_number_1 = None
 last_place_number_2 = None
 last_place_sum = None
 with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/sum.txt', 'r') as f:
-    last_place_number1 = f.readline()
-    last_place_number2 = f.readline()
-    last_place_sum = f.readline()
+    last_place_number1 = f.read()
+    f.read()
+    last_place_number2 = f.read()
+    f.read()
+    last_place_sum = f.read()
 
 
 # let's start from the bottom left 
