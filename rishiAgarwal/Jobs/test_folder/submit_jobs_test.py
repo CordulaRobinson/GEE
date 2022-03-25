@@ -5,7 +5,7 @@ import sys
 
 def checkstatus(string):
     status = None
-    with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/sum.txt', 'r'):
+    with open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/test_folder/sum.txt', 'r') as f:
         status = f.read()
     return status != string
 
