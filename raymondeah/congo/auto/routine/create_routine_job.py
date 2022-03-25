@@ -20,7 +20,7 @@ with open(bash_filename,'w') as f:
     f.write('source activate ee'+'\n')
     f.write('conda activate ee'+'\n')
     f.write('conda init bash'+'\n')
-    f.write('python3 mine_detection.py'+'\n')
+    f.write('python3 mine_detection.py 29.554 29.625 3.159 3.092'+'\n')
 
 # now we will submit the job (the bash_filename) written abobe
 os.system("sbatch "+str(bash_filename))

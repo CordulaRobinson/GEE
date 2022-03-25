@@ -20,10 +20,10 @@ roi1 = ee.Geometry.Polygon(
           [29.625197083044277, 3.1591674847348235]]])
 
 region = ee.Geometry.Polygon(
-        [[[ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[4])],
-          [ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[5])],
-          [ee.Number.parse(sys.argv[3]), ee.Number.parse(sys.argv[5])],
-          [ee.Number.parse(sys.argv[3]), ee.Number.parse(sys.argv[4])]]])
+        [[[ee.Number.parse(sys.argv[1]), ee.Number.parse(sys.argv[3])],
+          [ee.Number.parse(sys.argv[1]), ee.Number.parse(sys.argv[4])],
+          [ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[4])],
+          [ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[3])]]])
 
 drc = admin.filter(ee.Filter.eq('ADM0_NAME', 'Democratic Republic of the Congo'))
 
