@@ -87,4 +87,5 @@ def create_segments(geometry, size):
         
     #return segments
 
-create_segments(region, 10)
+create_segments(region, 30)
+os.system("rm -rf slurm*")
