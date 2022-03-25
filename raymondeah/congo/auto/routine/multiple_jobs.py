@@ -86,3 +86,5 @@ def create_segments(geometry, size):
         top = new_lon
         
     #return segments
+
+create_segments(region, 10)
