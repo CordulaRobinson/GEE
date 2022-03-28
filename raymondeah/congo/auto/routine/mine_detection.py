@@ -379,7 +379,7 @@ def applyRoutine(geometry, zoom, square_size):
     return passed_vegetation_loss
 
 #print('start test run')
-test_run = applyRoutine(region, 12, 1).getInfo()['features']
+test_run = applyRoutine(region, 12, 0.5).getInfo()['features']
 # for element in test_run:
 #     print(element['geometry']['coordinates'])
 #     print()
@@ -403,7 +403,7 @@ test_run = applyRoutine(region, 12, 1).getInfo()['features']
 # csv file
 if test_run:
   save_path = os.getcwd()
-  file_name = str(job_num) + '_square_coords'
+  file_name = 'square_coords_' + str(job_num)
   complete_path = save_path + '/output/' + file_name + '.csv'
 
   f = open(complete_path, 'a')
