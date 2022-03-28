@@ -3,10 +3,10 @@ import os
 
 # create a large region of interest, of which we will create lots of jobs for
 # upper right and lower left corners, orientated NS
-upper_lon = 30
-upper_lat = 10
-lower_lon = 28
-lower_lat = 8
+upper_lon = 28
+upper_lat = -7
+lower_lon = 27
+lower_lat = -8
 
 # the above is a 5x5 degree box
 # let us say we want to create jobs that work on 1x1 degree tiles 
@@ -14,7 +14,7 @@ grid_space = 1.0 # degrees
 
 # the small grid we want to work with
 # 250m == 0.0025 degrees (about..)
-small_grid = 0.0025
+small_grid = 0.0050
 
 #  get the numnber of x,y tiles we will loop over
 n_lon = int(np.ceil((upper_lon - lower_lon)/grid_space ))
@@ -36,7 +36,7 @@ if(os.path.exists(iter_file) == False):
             lat_min = j*grid_space + lower_lat
             lat_max = (j+1)*grid_space + lower_lat
             # filename is the highest res we will work with, plus the large square bounds
-            bash_filename = 'gee_dcr_'+str(small_grid)+'_'+str(lon_min)+'_'+str(lat_min)+'_'+str(lon_max)+'_'+str(lat_max)+'.sh'
+            bash_filename = 'gee_drc_'+str(small_grid)+'_'+str(lon_min)+'_'+str(lat_min)+'_'+str(lon_max)+'_'+str(lat_max)+'.sh'
             with open(bash_filename,'w') as f:
                 # one node, one hour
                 # name of job is DCR_i_j
@@ -56,7 +56,7 @@ if(os.path.exists(iter_file) == False):
                 f.write('source activate MyEnv'+'\n')
                 f.write('conda activate MyEnv'+'\n')
                 f.write('conda init bash'+'\n')
-                f.write('python3 gee_dcr.py '+str(small_grid)+' '+str(lon_min)+' '+str(lat_min)+' '+str(lon_max)+' '+str(lat_max)+' \n')
+                f.write('python3 Routine_Square_Code.py '+str(small_grid)+' '+str(lon_min)+' '+str(lat_min)+' '+str(lon_max)+' '+str(lat_max)+' \n')
                 f.write('python3 write_counter.py '+str(int(i))+' '+str(int(j))+'\n')
                 #Now we want to re-run this code we are writing
                 f.write('python3 submit_jobs_Gee.py'+'\n')
@@ -78,8 +78,6 @@ else:
     if(i_index == n_lon-1 and j_index == n_lat-1):
         pass
     else:
-    
-
         for i in range(i_index_new,i_index_new+1):
             lon_min = i*grid_space + lower_lon
             lon_max = (i+1)*grid_space + lower_lon
@@ -87,7 +85,7 @@ else:
                 lat_min = j*grid_space + lower_lat
                 lat_max = (j+1)*grid_space + lower_lat
                 # filename is the highest res we will work with, plus the large square bounds
-                bash_filename = 'gee_dcr_'+str(small_grid)+'_'+str(lon_min)+'_'+str(lat_min)+'_'+str(lon_max)+'_'+str(lat_max)+'.sh'
+                bash_filename = 'gee_drc_'+str(small_grid)+'_'+str(lon_min)+'_'+str(lat_min)+'_'+str(lon_max)+'_'+str(lat_max)+'.sh'
                 with open(bash_filename,'w') as f:
                     # one node, one hour
                     # name of job is DCR_i_j
@@ -104,10 +102,10 @@ else:
                     f.write('#SBATCH --mem=12GB'+'\n')
                     f.write('module load anaconda3/3.7'+'\n')
                     f.write('source activate '+'\n')
-                    f.write('source activate MyEnv'+'\n')
-                    f.write('conda activate MyEnv'+'\n')
+                    f.write('source activate ee'+'\n')
+                    f.write('conda activate ee'+'\n')
                     f.write('conda init bash'+'\n')
-                    f.write('python3 gee_dcr.py '+str(small_grid)+' '+str(lon_min)+' '+str(lat_min)+' '+str(lon_max)+' '+str(lat_max)+' \n')
+                    f.write('python3 Routine_Square_Code.py '+str(small_grid)+' '+str(lon_min)+' '+str(lat_min)+' '+str(lon_max)+' '+str(lat_max)+' \n')
                     #Now we want to re-run this code we are writing
                     f.write('python3 write_counter.py '+str(int(i_index_new))+' '+str(int(j_index_new))+'\n')
                     f.write('python3 submit_jobs_Gee.py'+'\n')
