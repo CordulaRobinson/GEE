@@ -404,7 +404,7 @@ test_run = applyRoutine(region, 12, 0.5).getInfo()['features']
 if test_run:
   save_path = os.getcwd()
   file_name = 'square_coords_' + str(job_num)
-  complete_path = save_path + '/output/' + file_name + '.csv'
+  complete_path = save_path + '/results/' + file_name + '.csv'
 
   f = open(complete_path, 'a')
   writer = csv.writer(f)

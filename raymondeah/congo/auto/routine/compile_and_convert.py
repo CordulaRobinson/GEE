@@ -3,10 +3,11 @@ import csv
 #import ee
 import ast
 
-os.system("cat output/*csv > output/compiled.csv")
-os.system("rm -rf slurm*")
-os.system("rm -rf output/square*")
-os.system("rm batch/*")
+os.system("cat results/*csv > results/compiled.csv")
+os.system("grep -E exception output/slurm* > error_log.txt")
+os.system("rm -rf results/square*")
+os.system("rm -rf output/slurm*")
+os.system("rm -rf batch/routine*")
 
 # path = "c:/Users/r.eah/OneDrive - Northeastern University/gee/raymondeah/congo/auto/routine/output/compiled.csv"
 
