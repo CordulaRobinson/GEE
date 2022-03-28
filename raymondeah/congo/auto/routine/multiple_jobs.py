@@ -56,7 +56,7 @@ def create_segments(geometry, size):
             new_lat = left.add((dy.divide(r_earth)).multiply((ee.Number(180).divide(pi))))
             
             # create and submit jobs here
-            bash_filename = 'batch/routine_job_' + str(count) + '.sh'
+            bash_filename = 'batch/routine_job_' + str(1000000 + count) + '.sh'
             with open(bash_filename,'w') as f:
                 # one node, one hour
                 # name of job is DCR_i_j
