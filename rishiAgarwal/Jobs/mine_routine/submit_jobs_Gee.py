@@ -17,8 +17,8 @@ grid_space = 1.0 # degrees
 small_grid = 0.0050
 
 #  get the numnber of x,y tiles we will loop over
-n_lon = int(np.ceil((upper_lon - lower_lon)/grid_space ))
-n_lat = int(np.ceil((upper_lat - lower_lat)/grid_space ))
+n_lon = abs(int(np.ceil((upper_lon - lower_lon)/grid_space )))
+n_lat = abs(int(np.ceil((upper_lat - lower_lat)/grid_space )))
 
 # let's start from the bottom left 
 
@@ -39,7 +39,7 @@ if(os.path.exists(iter_file) == False):
             bash_filename = 'gee_drc_'+str(small_grid)+'_'+str(lon_min)+'_'+str(lat_min)+'_'+str(lon_max)+'_'+str(lat_max)+'.sh'
             with open(bash_filename,'w') as f:
                 # one node, one hour
-                # name of job is DCR_i_j
+                # name of job is DRC_i_j
                 # 12 GB memory
                 # load up conda
                 # execute 'gee_dcr.py' (your jupyter codes turned to .py)
@@ -48,7 +48,7 @@ if(os.path.exists(iter_file) == False):
                 f.write('#!/bin/bash'+'\n')
                 f.write('#SBATCH --nodes=1'+'\n')
                 f.write('#SBATCH --time=01:00:00'+'\n')
-                f.write('#SBATCH --job-name=DCR_'+str(i)+'_'+str(j)+'\n')
+                f.write('#SBATCH --job-name=DRC_'+str(i)+'_'+str(j)+'\n')
                 f.write('#SBATCH --partition=short'+'\n')
                 f.write('#SBATCH --mem=12GB'+'\n')
                 f.write('module load anaconda3/3.7'+'\n')
@@ -97,7 +97,7 @@ else:
                     f.write('#!/bin/bash'+'\n')
                     f.write('#SBATCH --nodes=1'+'\n')
                     f.write('#SBATCH --time=01:00:00'+'\n')
-                    f.write('#SBATCH --job-name=DCR_'+str(i)+'_'+str(j)+'\n')
+                    f.write('#SBATCH --job-name=DRC_'+str(i)+'_'+str(j)+'\n')
                     f.write('#SBATCH --partition=short'+'\n')
                     f.write('#SBATCH --mem=12GB'+'\n')
                     f.write('module load anaconda3/3.7'+'\n')
@@ -110,5 +110,5 @@ else:
                     f.write('python3 write_counter.py '+str(int(i_index_new))+' '+str(int(j_index_new))+'\n')
                     f.write('python3 submit_jobs_Gee.py'+'\n')
                 # now we will submit the job (the bash_filename) written abobe
-                #os.system("sbatch "+str(bash_filename))
+                os.system("sbatch "+str(bash_filename))
     
