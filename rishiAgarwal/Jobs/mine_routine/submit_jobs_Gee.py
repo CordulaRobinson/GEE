@@ -111,4 +111,6 @@ else:
                     f.write('python3 submit_jobs_Gee.py'+'\n')
                 # now we will submit the job (the bash_filename) written abobe
                 os.system("sbatch "+str(bash_filename))
+                os.system("rm " + str(bash_filename))
     
+os.system("rm slurm*")
