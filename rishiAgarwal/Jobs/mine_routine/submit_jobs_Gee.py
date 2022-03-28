@@ -17,8 +17,8 @@ grid_space = 1.0 # degrees
 small_grid = 0.0050
 
 #  get the numnber of x,y tiles we will loop over
-n_lon = abs(int(np.ceil((upper_lon - lower_lon)/grid_space )))
-n_lat = abs(int(np.ceil((upper_lat - lower_lat)/grid_space )))
+n_lon = int(np.ceil((upper_lon - lower_lon)/grid_space ))
+n_lat = int(np.ceil((upper_lat - lower_lat)/grid_space ))
 
 # let's start from the bottom left 
 
