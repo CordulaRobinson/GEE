@@ -10,7 +10,7 @@ lower_lat = -8
 
 # the above is a 5x5 degree box
 # let us say we want to create jobs that work on 1x1 degree tiles 
-grid_space = 1.0 # degrees
+grid_space = 0.1 # degrees
 
 # the small grid we want to work with
 # 250m == 0.0025 degrees (about..)
