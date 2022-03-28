@@ -318,6 +318,93 @@ def calculate_percentage_change(feature):
         
     return feature.set('percent loss',  percent_loss).set('percent bare', percent_bare)
 
+# sar
+def calculate_sar_vh(feature):
+    g = feature.geometry()
+    
+    # Images and Bands
+    filtered = s1 \
+        .filter(ee.Filter.eq('instrumentMode','IW')) \
+        .filter(ee.Filter.eq('orbitProperties_pass', 'DESCENDING')) \
+        .filter(ee.Filter.eq('resolution_meters',10)) \
+        .filter(ee.Filter.intersects('.geo', g)) \
+        .filter(ee.Filter.date('2021-01-01', '2021-12-31')) \
+        .select('VH')
+
+    composite = filtered.median().clip(g)
+    
+    #area of image
+    total_area = g.area()
+    total_SqKm = ee.Number(total_area).divide(1e6)
+    
+    #area of possible mines
+    area_mines = composite.lt(3-19).rename('mines')
+    connect = area_mines.connectedPixelCount(25);
+    area_mines = area_mines.updateMask(connect.gt(8));
+    area_mines = area_mines.multiply(ee.Image.pixelArea())
+
+    area = area_mines.reduceRegion(**{
+      'reducer': ee.Reducer.sum(),
+      'geometry': g,
+      'scale': 30,
+      'maxPixels': 1e10
+    })
+
+    mines_SqKm = ee.Number(area.get('mines')).divide(1e6)
+
+    percent_mine = ee.Number(mines_SqKm.divide(total_SqKm).multiply(100))
+    
+    return feature.set('vh_percent', percent_mine)
+
+# nir/g
+def calculate_nir_g(feature):
+    g = feature.geometry()
+    
+    # Images and Bands
+    composite_s2 = s2 \
+        .filter(ee.Filter.bounds(g)) \
+        .filter(ee.Filter.date('2021-01-01', '2021-12-31')) \
+        .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)) \
+        .map(maskS2clouds) \
+        .select('B.*') \
+        .median() \
+        .clip(g)
+
+    nir_g_s2 = composite_s2.normalizedDifference(['B8', 'B3']).rename('NIR/G')
+
+    # Average NIR/G   
+    stats_s2 = nir_g_s2.reduceRegion(**{
+        'reducer': ee.Reducer.mean(),
+        'geometry': nir_g_s2.geometry(),
+        'scale': 30
+    })
+    
+    avg_s2 = ee.Number(stats_s2.get('NIR/G'))
+    
+    return feature.set('nir/g',  avg_s2)
+
+# swir/b
+def calculate_swirb(feature):
+    g = feature.geometry()
+    composite_s2 = s2 \
+        .filter(ee.Filter.bounds(g)) \
+        .filter(ee.Filter.date('2021-01-01', '2021-12-31')) \
+        .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)) \
+        .map(maskS2clouds) \
+        .select('B.*') \
+        .median() \
+        .clip(g) 
+    swirb = composite_s2.normalizedDifference(['B11', 'B2']).rename('SWIR1/B')
+    stats = swirb.reduceRegion(**{
+        'reducer': ee.Reducer.mean(),
+        'geometry': g,
+        'scale': 30,
+        'maxPixels': 1e10
+    })
+    swirb_val = stats.get('SWIR1/B')
+    
+    return feature.set('swir/b', swirb_val)
+
 # squares
 """
 Segment the given geometry into squares of given size (in km)
@@ -372,11 +459,29 @@ def filter_by_vegetation_loss(squares, threshold1, threshold2):
     passed = with_percent_change.filter((ee.Filter.gt('percent loss', threshold1)).Or(ee.Filter.gt('percent bare', threshold2)))
     return passed
 
+def filter_by_vh_percent(squares, threshold):
+    with_change = squares.map(calculate_sar_vh)
+    passed = with_change.filter(ee.Filter.gt('vh_percent', threshold))
+    return passed
+
+def filter_by_nir_g(squares, threshold):
+    with_change = squares.map(calculate_nir_g)
+    passed = with_change.filter(ee.Filter.lte('nir/g', threshold))
+    return passed
+
+def filter_by_swir1_b(squares, threshold):
+    with_swir1_b = squares.map(calculate_swirb)
+    passed = with_swir1_b.filter(ee.Filter.lte('swir/b', threshold))
+    return passed
+
 def applyRoutine(geometry, zoom, square_size):
     segments = ee.FeatureCollection(create_segments(geometry, square_size)).filter(ee.Filter.bounds(drc))
     
     passed_vegetation_loss = filter_by_vegetation_loss(segments, 20, 20)
-    return passed_vegetation_loss
+    passed_sar_vh = filter_by_vh_percent(passed_vegetation_loss, 5)
+    passed_swir_b = filter_by_swir1_b(passed_sar_vh, 0.62)
+    passed_nir_g = filter_by_nir_g(passed_swir_b, 0.45)
+    return passed_nir_g
 
 #print('start test run')
 test_run = applyRoutine(region, 12, 0.5).getInfo()['features']
@@ -402,8 +507,9 @@ test_run = applyRoutine(region, 12, 0.5).getInfo()['features']
 
 # csv file
 if test_run:
+  print('x')
   save_path = os.getcwd()
-  file_name = 'square_coords_' + str(job_num)
+  file_name = 'square_coords_' + str(1000000 + int(job_num))
   complete_path = save_path + '/results/' + file_name + '.csv'
 
   f = open(complete_path, 'a')
