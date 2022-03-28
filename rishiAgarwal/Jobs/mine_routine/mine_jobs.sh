@@ -9,4 +9,4 @@ source activate
 source activate ee
 conda activate ee
 conda init bash
-python3 Routine_Square_Code.py 0.5 27.350233348102517 -7.57841301205225 27.436407359332986 -7.518171474050515
+python3 submit_jobs_Gee.py
