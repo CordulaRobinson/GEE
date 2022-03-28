@@ -61,7 +61,7 @@ if(os.path.exists(iter_file) == False):
                 #Now we want to re-run this code we are writing
                 f.write('python3 submit_jobs_Gee.py'+'\n')
             # now we will submit the job (the bash_filename) written abobe
-            #os.system("sbatch "+str(bash_filename))
+            os.system("sbatch "+str(bash_filename))
 else:
     with open(iter_file,'r') as f:
         data = f.readlines()
