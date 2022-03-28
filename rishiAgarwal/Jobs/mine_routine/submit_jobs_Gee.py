@@ -3,10 +3,10 @@ import os
 
 # create a large region of interest, of which we will create lots of jobs for
 # upper right and lower left corners, orientated NS
-upper_lon = 28
+upper_lon = 27.2
 upper_lat = -7
 lower_lon = 27
-lower_lat = -8
+lower_lat = -7.2
 
 # the above is a 5x5 degree box
 # let us say we want to create jobs that work on 1x1 degree tiles 
@@ -36,7 +36,7 @@ if(os.path.exists(iter_file) == False):
             lat_min = j*grid_space + lower_lat
             lat_max = (j+1)*grid_space + lower_lat
             # filename is the highest res we will work with, plus the large square bounds
-            bash_filename = 'gee_drc_'+str(small_grid)+'_'+str(lon_min)+'_'+str(lat_min)+'_'+str(lon_max)+'_'+str(lat_max)+'.sh'
+            bash_filename = 'gee_drc_bash'+str(small_grid)+'_'+str(lon_min)+'_'+str(lat_min)+'_'+str(lon_max)+'_'+str(lat_max)+'.sh'
             with open(bash_filename,'w') as f:
                 # one node, one hour
                 # name of job is DRC_i_j
@@ -85,7 +85,7 @@ else:
                 lat_min = j*grid_space + lower_lat
                 lat_max = (j+1)*grid_space + lower_lat
                 # filename is the highest res we will work with, plus the large square bounds
-                bash_filename = 'gee_drc_'+str(small_grid)+'_'+str(lon_min)+'_'+str(lat_min)+'_'+str(lon_max)+'_'+str(lat_max)+'.sh'
+                bash_filename = 'gee_drc_bash_'+str(small_grid)+'_'+str(lon_min)+'_'+str(lat_min)+'_'+str(lon_max)+'_'+str(lat_max)+'.sh'
                 with open(bash_filename,'w') as f:
                     # one node, one hour
                     # name of job is DCR_i_j
@@ -111,6 +111,6 @@ else:
                     f.write('python3 submit_jobs_Gee.py'+'\n')
                 # now we will submit the job (the bash_filename) written abobe
                 os.system("sbatch "+str(bash_filename))
-                os.system("rm " + str(bash_filename))
     
 os.system("rm slurm*")
+os.system("rm gee_drc_bash*")
