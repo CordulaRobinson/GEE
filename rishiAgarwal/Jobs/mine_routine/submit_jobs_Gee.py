@@ -3,10 +3,10 @@ import os
 
 # create a large region of interest, of which we will create lots of jobs for
 # upper right and lower left corners, orientated NS
-upper_lon = 27.2
+upper_lon = 27.3
 upper_lat = -7
 lower_lon = 27
-lower_lat = -7.2
+lower_lat = -7.3
 
 # the above is a 5x5 degree box
 # let us say we want to create jobs that work on 1x1 degree tiles 
