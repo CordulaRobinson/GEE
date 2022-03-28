@@ -408,7 +408,15 @@ if test_run:
 
   f = open(complete_path, 'a')
   writer = csv.writer(f)
-  rows = [[[c[0]] + [c[1]] for c in element['geometry']['coordinates'][0][1:]] for element in test_run]
+
+  rows = []
+  for element in test_run:
+    row = []
+    for c in element['geometry']['coordinates'][0][1:]:
+      row.append(c[0]).append(c[1])
+    rows.append(row)
+
+  #rows = [[[c[0]] + [c[1]] for c in element['geometry']['coordinates'][0][1:]] for element in test_run]
   writer.writerows(rows)
 
   f.close()
