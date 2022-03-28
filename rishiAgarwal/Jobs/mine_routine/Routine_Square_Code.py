@@ -482,7 +482,7 @@ header = ['min lon', 'min lat', 'max lon', 'max lat', 'status']
 
 # open the file in the write mode
 #gee_dcr_squareSize_lonMin_latMin_lonMax_latMax
-f = open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/'+'gee_dcr_'+sys.argv[1]+'_'+sys.argv[2]+'_'+sys.argv[3]+'_'+sys.argv[4]+'_'+sys.argv[5]+'.csv', 'a', newline='')
+f = open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/mine_routine/'+'gee_drc_'+sys.argv[1]+'_'+sys.argv[2]+'_'+sys.argv[3]+'_'+sys.argv[4]+'_'+sys.argv[5]+'.csv', 'a', newline='')
 
 # create the csv writer
 writer = csv.writer(f)

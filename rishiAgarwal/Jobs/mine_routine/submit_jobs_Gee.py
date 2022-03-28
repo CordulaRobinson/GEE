@@ -14,7 +14,7 @@ grid_space = 1.0 # degrees
 
 # the small grid we want to work with
 # 250m == 0.0025 degrees (about..)
-small_grid = 0.0050
+small_grid = 0.50
 
 #  get the numnber of x,y tiles we will loop over
 n_lon = int(np.ceil((upper_lon - lower_lon)/grid_space ))
