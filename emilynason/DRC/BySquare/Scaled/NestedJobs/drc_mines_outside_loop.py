@@ -74,15 +74,6 @@ for i in range(n_lon):
             
 ## final bounding box:
 ## lon_max = upper_lon, lat_max = upper_lat
-# if upper_lon >= 0:
-#     final_lon_min = (upper_lon - grid_space)
-# else:
-#     final_lon_min = (upper_lon + grid_space)
-# if upper_lat >= 0:
-#     final_lat_min = (upper_lat - grid_space)
-# else:
-#     final_lat_min = (upper_lat + grid_space)
-
 final_lon_min = (upper_lon - grid_space)
 final_lat_min = (upper_lat - grid_space)
     
