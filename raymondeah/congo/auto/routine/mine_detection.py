@@ -477,11 +477,12 @@ def filter_by_swir1_b(squares, threshold):
 def applyRoutine(geometry, zoom, square_size):
     segments = ee.FeatureCollection(create_segments(geometry, square_size)).filter(ee.Filter.bounds(drc))
     
-    passed_vegetation_loss = filter_by_vegetation_loss(segments, 20, 20)
+    passed_vegetation_loss = filter_by_vegetation_loss(segments, 0.1, 0.1)
     passed_sar_vh = filter_by_vh_percent(passed_vegetation_loss, 5)
     passed_swir_b = filter_by_swir1_b(passed_sar_vh, 0.62)
     passed_nir_g = filter_by_nir_g(passed_swir_b, 0.45)
     return passed_nir_g
+    # return passed_vegetation_loss
 
 #print('start test run')
 test_run = applyRoutine(region, 12, 0.5).getInfo()['features']

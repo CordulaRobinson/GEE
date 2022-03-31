@@ -8,6 +8,7 @@ os.system("grep -E exception output/slurm* > error_log.txt")
 os.system("rm -rf results/square*")
 os.system("rm -rf output/slurm*")
 os.system("rm -rf batch/routine*")
+os.system("rm test.txt")
 
 # path = "c:/Users/r.eah/OneDrive - Northeastern University/gee/raymondeah/congo/auto/routine/output/compiled.csv"
 

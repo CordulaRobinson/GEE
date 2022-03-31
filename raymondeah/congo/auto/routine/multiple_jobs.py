@@ -89,4 +89,15 @@ def create_segments(geometry, size):
     #return segments
 
 create_segments(region, 10)
-#os.system("rm -rf slurm*")
+
+os.system('squeue -u eah.r > test.txt')
+while not os.system('grep routine test.txt'):
+    #print(os.system('grep start test.txt'))
+    os.system('squeue -u eah.r > test.txt')
+
+# all jobs are finished after exiting the loop
+
+# rerun failed jobs
+
+# compile results and delete individual files
+os.system('python3 compile_and_convert.py')
