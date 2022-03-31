@@ -526,5 +526,5 @@ lines= len(list(reader))
 
 g.close()
          
-if lines == num_rows +1:
+if lines >= num_rows +1:
     os.rename(csv_name+'.csv', csv_name+'_done.csv')
