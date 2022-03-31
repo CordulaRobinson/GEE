@@ -526,33 +526,31 @@ g.close()
 if lines == num_rows +1:
     os.rename(csv_name+'.csv', csv_name+'_done.csv')
     
-# Function to help format coordinates in geotiff naming
-def format_num(num):
-    if num % 1 == 0:
-        num = num.quantize(Decimal('.1'))
-    else: num = num
-    return num
+# # Function to help format coordinates in geotiff naming
+# def format_num(num):
+#     if num % 1 == 0:
+#         num = num.quantize(Decimal('.1'))
+#     else: num = num
+#     return num
 
-# Download a Geotiff File for a composite image of each segment in 2021. Save each file to the region_geotiffs file
-# File name = region_LonMin_LatMin_LonMax_LatMax.tif
-num = 1
-for region in regions:
-    coords = ee.List(region.coordinates().get(0))
-    lon_min = format_num(Decimal(str(ee.List(coords.get(0)).get(0).getInfo())))
-    lon_max = format_num(Decimal(str(ee.List(coords.get(1)).get(0).getInfo())))
-    lat_min = format_num(Decimal(str(ee.List(coords.get(0)).get(1).getInfo())))
-    lat_max = format_num(Decimal(str(ee.List(coords.get(2)).get(1).getInfo())))
-    viz = create_vis(region)
-    link = viz.getDownloadUrl({
-      'name': 'region_geotiffs/region_'+str(lon_min)[:15]+'_'+str(lat_min)[:15]+'_'+str(lon_max)[:15]+'_'+str(lat_max)[:15],
-      'bands': ['vis-red', 'vis-green', 'vis-blue'],
-      'scale': 20,
-      'region': region,
-      'filePerBand': False
-    })
-    os.system("cd /region_geotiffs")
-    os.system("wget -O region_"+str(lon_min)[:15]+'_'+str(lat_min)[:15]+'_'+str(lon_max)[:15]+'_'+str(lat_max)[:15]+".zip "+link)
-    # os.system("unzip region_"+str(lon_min)[:15]+'_'+str(lat_min)[:15]+'_'+str(lon_max)[:15]+'_'+str(lat_max)[:15]+ \
-    #           ".zip && rm region_"+str(lon_min)[:15]+'_'+str(lat_min)[:15]+'_'+str(lon_max)[:15]+'_'+str(lat_max)[:15]+".zip")
-    os.system("unzip region_"+str(lon_min)[:15]+'_'+str(lat_min)[:15]+'_'+str(lon_max)[:15]+'_'+str(lat_max)[:15]+ ".zip")
-    num = num+1
+# # Download a Geotiff File for a composite image of each segment in 2021. Save each file to the region_geotiffs file
+# # File name = region_LonMin_LatMin_LonMax_LatMax.tif
+# num = 1
+# for region in regions:
+#     coords = ee.List(region.coordinates().get(0))
+#     lon_min = format_num(Decimal(str(ee.List(coords.get(0)).get(0).getInfo())))
+#     lon_max = format_num(Decimal(str(ee.List(coords.get(1)).get(0).getInfo())))
+#     lat_min = format_num(Decimal(str(ee.List(coords.get(0)).get(1).getInfo())))
+#     lat_max = format_num(Decimal(str(ee.List(coords.get(2)).get(1).getInfo())))
+#     viz = create_vis(region)
+#     link = viz.getDownloadUrl({
+#       'name': 'region_geotiffs/region_'+str(lon_min)[:15]+'_'+str(lat_min)[:15]+'_'+str(lon_max)[:15]+'_'+str(lat_max)[:15],
+#       'bands': ['vis-red', 'vis-green', 'vis-blue'],
+#       'scale': 20,
+#       'region': region,
+#       'filePerBand': False
+#     })
+#     os.system("cd /region_geotiffs")
+#     os.system("wget -O region_"+str(lon_min)[:15]+'_'+str(lat_min)[:15]+'_'+str(lon_max)[:15]+'_'+str(lat_max)[:15]+".zip "+link)
+#     os.system("unzip region_"+str(lon_min)[:15]+'_'+str(lat_min)[:15]+'_'+str(lon_max)[:15]+'_'+str(lat_max)[:15]+ ".zip")
+#     num = num+1
