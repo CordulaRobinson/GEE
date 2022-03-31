@@ -9,18 +9,18 @@ import csv
 from decimal import *
 
 ## entire east coast of drc
-## ROUGHlY 24 - 31 lon, -13 - 5.5 lat
+## 24, 31 lon, -13, 5.5 lat
 ## specifically around known coltan mines (IPIS)
-## 25 - 30, -10 - 1
+## 25, 30 lon, -10, 1 lat
 
 # create a large region of interest, of which we will create lots of jobs for
 # upper right and lower left corners, orientated NS
 
 # ray roi1 and surrounding
-# upper_lon = Decimal('29.6') #30
-# upper_lat = Decimal('3.2') #10
-# lower_lon = Decimal('29.5') #28
-# lower_lat = Decimal('3') #8
+# upper_lon = Decimal('29.6')
+# upper_lat = Decimal('3.2')
+# lower_lon = Decimal('29.5')
+# lower_lat = Decimal('3')
 
 # emily area
 upper_lon = Decimal('26').quantize(Decimal('.1'))
@@ -28,35 +28,14 @@ upper_lat = Decimal('-10.5').quantize(Decimal('.1'))
 lower_lon = Decimal('25').quantize(Decimal('.1'))
 lower_lat = Decimal('-11').quantize(Decimal('.1'))
 
-# testing big job!!!
-# upper_lon = Decimal('30').quantize(Decimal('.1'))
-# upper_lat = Decimal('-5').quantize(Decimal('.1'))
-# lower_lon = Decimal('25').quantize(Decimal('.1'))
-# lower_lat = Decimal('-10').quantize(Decimal('.1'))
-
-# create jobs that work on 0.1x0.1 degree tiles
+# create jobs that work on 0.5x0.5 degree tiles (2 jobs)
 grid_space = Decimal('0.5').quantize(Decimal('.1')) 
 
-# rejected inner jobs with 1 to .1 ratio ->>> no the part that failed was .1 degree to .5 km?
-# failed based on earth engine ->>> was it too many jobs running on my account, or too much on one job?
-# Too Many Requests: Request was rejected because the request rate or concurrency limit was exceeded
-# based on https://developers.google.com/earth-engine/guides/usage - "too many concurrent queries" - too many jobs at same time
-# 25 big jobs -> 100 small jobs each ((1/.1)^2) is too many - let's try .5 for 4 jobs each
-### unless it was an issue with mapping functions on too long a list??
-
-# 5 degrees x 5 degrees, 1 degree x 1 degree, .1 d x .1 d, 0.5km x 0.5km -> too many requests
-# 5 degrees x 5 degrees, 1 degree x 1 degree, .5 d x .5 d, 0.5km x 0.5km -> computation timed out
-## data_mines_base line 500 -> .getInfo()
-# 5d x 5d, .5d x .5d, .1d x .1d, .5km x .5km
-## 100 jobs, 25 jobs each, 400ish+ regions each? 
-
-# 5d x 5d, 1d x 1d, .25d x .25d, .5km x .5km
-## 25 jobs, 25 jobs each, 400ish regions each?
-
+# each job created will create jobs that work on 0.1x0.1 degree tiles (25 jobs each, 50 total)
 grid_space2 = Decimal('0.1')
 
 # the small grid we want to work with, in kilometers
-small_grid = 1 # 5 KM x 5 KM squares
+small_grid = 1 # 1 KM x 1 KM squares
 
 #  get the numnber of x,y tiles we will loop over
 n_lon = int(np.ceil((upper_lon - lower_lon)/grid_space ))
@@ -127,20 +106,3 @@ if os.path.isfile('/scratch/nason.e/gee/results_csv/gee_dcr_' \
     
 else:
     raise ValueError("%s isn't a file!" % file_path)
-    
-# Wait for above file to be created, then create a new file containing only the passing regions (status == 1)
-# Check if file exists yet
-# while not os.path.exists("/scratch/nason.e/gee/results_csv/all_regions.csv"):
-#     time.sleep(30)
-
-# # Once file exists, copy all passing regions and their data into new csv file named all_regions_passing.csv
-# if os.path.isfile("/scratch/nason.e/gee/results_csv/all_regions.csv"):
-#     with open('all_regions.csv','r') as fin, open ('all_regions_passing.csv','w') as fout:
-#         writer = csv.writer(fout, delimiter=',')
-#         header = ['min lon', 'min lat', 'max lon', 'max lat', 'status']
-#         writer.writerow(header)
-#         for row in csv.reader(fin, delimiter=','):
-#             if row[4] == '1':
-#                  writer.writerow(row)
-# else:
-#     raise ValueError("%s isn't a file!" % file_path)
