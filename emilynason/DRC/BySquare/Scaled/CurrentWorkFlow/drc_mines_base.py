@@ -5,8 +5,6 @@ import math
 import sys
 import csv
 import os
-import pandas as pd
-from decimal import *
 ee.Initialize()
 
 # Selected region
@@ -463,17 +461,12 @@ def create_segments(geometry, size):
 regions = create_segments(region, ee.Number.parse(sys.argv[1]).getInfo())
 segments = ee.FeatureCollection(regions)
 
-# Determine if a segment passes all thresholds
-## Status = 1 for pass, 0 for fail
+# Calculate Values for each criteria for a region
 def passing_mine(region):
     region_veg = calculate_percentage_change(region)
     region_vh = calculate_sar_vh(region)
     region_nir_g = calculate_nir_g(region)
     region_swir1_b = calculate_swir1_b(region)
-    # status = ((((ee.Number(region_veg.get('percent loss'))).gt(20)).Or((ee.Number(region_veg.get('percent bare'))).gt(10))) \
-    #     .And(ee.Number(region_vh.get('vh_percent')).gt(5)) \
-    #     .And(ee.Number(region_nir_g.get('nir/g')).lte(0.45)) \
-    #     .And(ee.Number(region_swir1_b.get('swir1/b')).lt(0.65)))
     return ee.Feature(region.set('veg loss', region_veg.get('percent loss')).set('bare initial', region_veg.get('percent bare')) \
                       .set('vh', region_vh.get('vh_percent')) \
                       .set('nir/g', region_nir_g.get('nir/g')).set('swir1/b', region_swir1_b.get('swir1/b')))
@@ -487,7 +480,6 @@ def create_results(feature):
     lon_max = ee.List(coords.get(1)).get(0)
     lat_min = ee.List(coords.get(0)).get(1)
     lat_max = ee.List(coords.get(2)).get(1)
-    #status = feature.get('status')
     veg_loss = feature.get('veg loss')
     bare_init = feature.get('bare initial')
     vh = feature.get('vh')
@@ -536,32 +528,3 @@ g.close()
          
 if lines == num_rows +1:
     os.rename(csv_name+'.csv', csv_name+'_done.csv')
-    
-# Function to help format coordinates in geotiff naming
-# def format_num(num):
-#     if num % 1 == 0:
-#         num = num.quantize(Decimal('.1'))
-#     else: num = num
-#     return num
-
-# Download a Geotiff File for a composite image of each segment in 2021. Save each file to the region_geotiffs file
-# File name = region_LonMin_LatMin_LonMax_LatMax.tif
-# num = 1
-# for region in regions:
-#     coords = ee.List(region.coordinates().get(0))
-#     lon_min = format_num(Decimal(str(ee.List(coords.get(0)).get(0).getInfo())))
-#     lon_max = format_num(Decimal(str(ee.List(coords.get(1)).get(0).getInfo())))
-#     lat_min = format_num(Decimal(str(ee.List(coords.get(0)).get(1).getInfo())))
-#     lat_max = format_num(Decimal(str(ee.List(coords.get(2)).get(1).getInfo())))
-#     viz = create_vis(region)
-#     link = viz.getDownloadUrl({
-#       'name': 'region_geotiffs/region_'+str(lon_min)[:15]+'_'+str(lat_min)[:15]+'_'+str(lon_max)[:15]+'_'+str(lat_max)[:15],
-#       'bands': ['vis-red', 'vis-green', 'vis-blue'],
-#       'scale': 20,
-#       'region': region,
-#       'filePerBand': False
-#     })
-#     os.system("cd /region_geotiffs")
-#     os.system("wget -O region_"+str(lon_min)[:15]+'_'+str(lat_min)[:15]+'_'+str(lon_max)[:15]+'_'+str(lat_max)[:15]+".zip "+link)
-#     os.system("unzip region_"+str(lon_min)[:15]+'_'+str(lat_min)[:15]+'_'+str(lon_max)[:15]+'_'+str(lat_max)[:15]+ ".zip")
-#     num = num+1
