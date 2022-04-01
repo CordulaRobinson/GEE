@@ -450,11 +450,11 @@ def passing_mine(region):
     region_vh = calculate_sar_vh(region)
     region_nir_g = calculate_nir_g(region)
     region_swir1_b = calculate_swir1_b(region)
-    status = ((((ee.Number(region_veg.get('percent loss'))).gt(20)).Or((ee.Number(region_veg.get('percent bare'))).gt(10))) \
-        .And(ee.Number(region_vh.get('vh_percent')).gt(5)) \
-        .And(ee.Number(region_nir_g.get('nir/g')).lte(0.45)) \
-        .And(ee.Number(region_swir1_b.get('swir1/b')).lt(0.65)))
-    return ee.Feature(region.set('status', status))
+    return ee.Feature(region.set('veg loss', region_veg.get('percent loss'))
+    .set('bare initial', region_veg.get('percent bare'))
+    .set('vh', region_vh.get('vh percent'))
+    .set('nir/g', region_nir_g.get('nir/g'))
+    .set('swir/b', region_swir1_b.get('swir/b')))
 
 results = segments.map(passing_mine)
 
@@ -464,12 +464,20 @@ def create_results(feature):
     lon_max = ee.List(coords.get(1)).get(0)
     lat_min = ee.List(coords.get(0)).get(1)
     lat_max = ee.List(coords.get(2)).get(1)
-    status = feature.get('status')
+    veg_loss = feature.get('veg loss')
+    bare_init = feature.get('bare inital')
+    vh = feature.get('vh')
+    nir_g = feature.get('nir/g')
+    swir_b = feature.get('swir/b')
     row = ee.Array([lon_min, 
            lat_min, 
            lon_max,
            lat_max,
-           status])
+           veg_loss,
+           bare_init,
+           vh,
+           nir_g,
+           swir_b])
     new_feature = ee.Feature(None, {'info': row})
     return new_feature
 
