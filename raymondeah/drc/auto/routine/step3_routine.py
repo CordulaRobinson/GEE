@@ -21,13 +21,15 @@ roi1 = ee.Geometry.Polygon(
           [29.625197083044277, 3.092319151883147],
           [29.625197083044277, 3.1591674847348235]]])
 
-region = ee.Geometry.Polygon(
-        [[[ee.Number.parse(sys.argv[1]), ee.Number.parse(sys.argv[3])],
-          [ee.Number.parse(sys.argv[1]), ee.Number.parse(sys.argv[4])],
-          [ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[4])],
-          [ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[3])]]])
-
+left, right, top, bot = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 job_num = sys.argv[5]
+print('JOB NUMBER: ' + job_num)
+
+region = ee.Geometry.Polygon(
+        [[[ee.Number.parse(left), ee.Number.parse(top)],
+          [ee.Number.parse(left), ee.Number.parse(bot)],
+          [ee.Number.parse(right), ee.Number.parse(bot)],
+          [ee.Number.parse(right), ee.Number.parse(top)]]])
 
 drc = admin.filter(ee.Filter.eq('ADM0_NAME', 'Democratic Republic of the Congo'))
 
@@ -528,3 +530,4 @@ if test_run:
   writer.writerows(rows)
 
   f.close()
+
