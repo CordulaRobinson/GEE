@@ -333,8 +333,8 @@ def calculate_sar_vh(feature):
     
     #area of possible mines
     area_mines = compFiltered.lt(-19).rename('mines')
-    connect = area_mines.connectedPixelCount(25);
-    area_mines = area_mines.updateMask(connect.gt(8));
+    connect = area_mines.connectedPixelCount(25)
+    area_mines = area_mines.updateMask(connect.gt(8))
     area_mines = area_mines.multiply(ee.Image.pixelArea())
 
     area = area_mines.reduceRegion(**{
@@ -454,7 +454,7 @@ def passing_mine(region):
     .set('bare initial', region_veg.get('percent bare'))
     .set('vh', region_vh.get('vh_percent'))
     .set('nir/g', region_nir_g.get('nir/g'))
-    .set('swir/b', region_swir1_b.get('swir/b')))
+    .set('swir1/b', region_swir1_b.get('swir1/b')))
 
 results = segments.map(passing_mine)
 
@@ -468,7 +468,7 @@ def create_results(feature):
     bare_init = feature.get('bare inital')
     vh = feature.get('vh')
     nir_g = feature.get('nir/g')
-    swir_b = feature.get('swir/b')
+    swir_b = feature.get('swir1/b')
     row = ee.Array([lon_min, 
            lat_min, 
            lon_max,
