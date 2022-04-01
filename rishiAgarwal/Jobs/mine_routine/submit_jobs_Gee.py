@@ -112,5 +112,5 @@ else:
                 # now we will submit the job (the bash_filename) written abobe
                 os.system("sbatch "+str(bash_filename))
     
-os.system("rm slurm*")
-os.system("rm gee_drc_bash*")
+# os.system("rm slurm*")
+# os.system("rm gee_drc_bash*")

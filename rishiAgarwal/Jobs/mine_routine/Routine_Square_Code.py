@@ -486,7 +486,7 @@ data_set2 = data_set.aggregate_array('info')
 data_set3 = data_set2.getInfo()
 
 #won't use header in actual files so we can concat easier at end
-header = ['min lon', 'min lat', 'max lon', 'max lat', 'status']
+header = ['min lon', 'min lat', 'max lon', 'max lat', 'veg loss', 'bare init', 'vh', 'nirg_g', 'swir_b']
 
 # open the file in the write mode
 #gee_dcr_squareSize_lonMin_latMin_lonMax_latMax
