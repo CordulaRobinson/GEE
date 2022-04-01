@@ -77,7 +77,7 @@ def create_segments(geometry, size):
                 f.write('source activate ee'+'\n')
                 f.write('conda activate ee'+'\n')
                 f.write('conda init bash'+'\n')
-                f.write('python3 mine_detection.py ' + str(left.getInfo()) + ' ' + str(new_lat.getInfo()) + ' ' + str(top.getInfo()) + ' ' + str(new_lon.getInfo()) + ' ' + str(count) + '\n')
+                f.write('python3 step3_routine.py ' + str(left.getInfo()) + ' ' + str(new_lat.getInfo()) + ' ' + str(top.getInfo()) + ' ' + str(new_lon.getInfo()) + ' ' + str(count) + '\n')
 
             # now we will submit the job (the bash_filename) written abobe
             os.system("sbatch "+str(bash_filename))
@@ -90,6 +90,7 @@ def create_segments(geometry, size):
 
 create_segments(region, 10)
 
+# #######################################################################################
 os.system('squeue -u eah.r > test.txt')
 while not os.system('grep routine test.txt'):
     #print(os.system('grep start test.txt'))
@@ -98,6 +99,12 @@ while not os.system('grep routine test.txt'):
 # all jobs are finished after exiting the loop
 
 # rerun failed jobs
+os.system('python3 step4_rerun.py')
+
+os.system('squeue -u eah.r > test.txt')
+while not os.system('grep routine test.txt'):
+    #print(os.system('grep start test.txt'))
+    os.system('squeue -u eah.r > test.txt')
 
 # compile results and delete individual files
-os.system('python3 compile_and_convert.py')
+os.system('python3 step5_compile_and_convert.py')
