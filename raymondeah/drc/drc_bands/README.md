@@ -53,23 +53,23 @@ Using the IPIS Research data, I identified a region in the northern DRC with act
 5. Added the locations of known active coltan mines as a layer to the map
 6. Chose region of active Coltan mining in the northern DRC
 7. Used the geometry tools in the Google Earth Engine Code Editor to map out 3 small sub-regions (2-3 mines) within that region to focus on
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/rois.PNG)
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/drc_bands/images/rois.PNG)
 
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/rois2.PNG)
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/drc_bands/images/rois2.PNG)
 
 8. Verified existence of mining activity using Google Earth
 	- Example for Region 1 (Kalimva):
 		- 2005: 
 		
-		![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/roi1_2_05.PNG)
+		![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/drc_bands/images/roi1_2_05.PNG)
 		
 		- 2012: 
 		
-		![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/roi1_4_12.PNG)
+		![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/drc_bands/images/roi1_4_12.PNG)
 		
 		- 2020: 
 		
-		![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/roi1_8_21.PNG)
+		![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/drc_bands/images/roi1_8_21.PNG)
 
 #### Results and Conclusions
 
@@ -89,11 +89,11 @@ I used MODIS data to create an NDVI time series of the mines in Region 1, starti
 2. Created NDVI layers from 2014-2020 and added them to the map (1 layer for each year). Layers were created by taking the median NDVI value across the whole year
 	-Example (2013)
 	
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/ndvi_2013.PNG)
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/drc_bands/images/ndvi_2013.PNG)
 
 3. Plotted a time series of median NDVI per year in the region using matplotlib
 
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/modis_ndvi.PNG)
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/drc_bands/images/modis_ndvi.PNG)
 
 #### Results and Conclusions
 
@@ -120,11 +120,11 @@ I added the 6 spectral indices/band ratios outlines in the project objectives an
 9. Added all indices and band ratios to the 2014-2020 median composite images as properties
 10. Used matplotlib to create multiple time series of the entire region, of a tailing pond, and of a mining area close-up
 
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/region1_timeseries.PNG)
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/drc_bands/images/region1_timeseries.PNG)
 
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/pond_timeseries.PNG)
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/drc_bands/images/pond_timeseries.PNG)
 
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/mine_timeseries.PNG)
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/drc_bands/images/mine_timeseries.PNG)
 
 #### Results and Conclusions
 
@@ -155,17 +155,17 @@ I created a cross section function that plots band values over a manually drawn 
 
 #### Tailing Pond:
 
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/tailing_cross.PNG)
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/drc_bands/images/tailing_cross.PNG)
 
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/tailing_cross_chart.png)
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/drc_bands/images/tailing_cross_chart.png)
 
 Band grouping along the tailing pond
 
 #### Mining Area (bright signature):
 
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/bright_cross.PNG)
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/drc_bands/images/bright_cross.PNG)
 
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/bright_chart.png)
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/drc_bands/images/bright_chart.png)
 
 <hr>
 
@@ -179,15 +179,15 @@ I took [Emily's SAR code](https://github.com/CordulaRobinson/GEE/blob/main/emily
 
 #### VV band:
 
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/vv.PNG)
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/drc_bands/images/vv.PNG)
 
 #### VH band:
 
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/vh.PNG)
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/drc_bands/images/vh.PNG)
 
 #### VV/VH ratio:
 
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/congo/drc_bands/images/vvvh.PNG)
+![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/drc_bands/images/vvvh.PNG)
 
 ## Further Questions
 
