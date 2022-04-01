@@ -443,7 +443,8 @@ def create_segments(geometry, size):
         
     return segments
 
-segments = ee.FeatureCollection(create_segments(region, ee.Number.parse(sys.argv[1]).getInfo()))
+regions = create_segments(region, ee.Number.parse(sys.argv[1]).getInfo())
+segments = ee.FeatureCollection(regions)
 
 def passing_mine(region):
     region_veg = calculate_percentage_change(region)
@@ -461,7 +462,7 @@ def create_results(feature):
     lat_min = ee.List(coords.get(0)).get(1)
     lat_max = ee.List(coords.get(2)).get(1)
     veg_loss = feature.get('percent loss')
-    bare_init = feature.get('percnt bare')
+    bare_init = feature.get('percent bare')
     vh = feature.get('vh_percent')
     nir_g = feature.get('nir/g')
     swir_b = feature.get('swir1/b')
