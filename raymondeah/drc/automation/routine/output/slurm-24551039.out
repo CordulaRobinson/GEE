@@ -1,0 +1,14 @@
+no change     /shared/centos7/anaconda3/3.7/condabin/conda
+no change     /shared/centos7/anaconda3/3.7/bin/conda
+no change     /shared/centos7/anaconda3/3.7/bin/conda-env
+no change     /shared/centos7/anaconda3/3.7/bin/activate
+no change     /shared/centos7/anaconda3/3.7/bin/deactivate
+no change     /shared/centos7/anaconda3/3.7/etc/profile.d/conda.sh
+no change     /shared/centos7/anaconda3/3.7/etc/fish/conf.d/conda.fish
+no change     /shared/centos7/anaconda3/3.7/shell/condabin/Conda.psm1
+no change     /shared/centos7/anaconda3/3.7/shell/condabin/conda-hook.ps1
+no change     /shared/centos7/anaconda3/3.7/lib/python3.7/site-packages/xontrib/conda.xsh
+no change     /shared/centos7/anaconda3/3.7/etc/profile.d/conda.csh
+no change     /home/eah.r/.bashrc
+No action taken.
+JOB NUMBER: 21
