@@ -487,7 +487,7 @@ data_set3 = data_set2.getInfo()
 
 # open the file in the write mode
 #gee_dcr_squareSize_lonMin_latMin_lonMax_latMax
-f = open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/mine_routine/results_csvs'+'gee_drc_'+sys.argv[1]+'_'+sys.argv[2]+'_'+sys.argv[3]+'_'+sys.argv[4]+'_'+sys.argv[5]+'.csv', 'a', newline='')
+f = open('/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/mine_routine/results_csvs/'+'gee_drc_'+sys.argv[1]+'_'+sys.argv[2]+'_'+sys.argv[3]+'_'+sys.argv[4]+'_'+sys.argv[5]+'.csv', 'a', newline='')
 
 # create the csv writer
 writer = csv.writer(f)
