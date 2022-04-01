@@ -8,7 +8,7 @@ os.system("rm -rf results/square*")
 os.system("rm -rf output/slurm*")
 os.system("rm -rf slurm*")
 os.system("rm -rf batch/routine*")
-os.system("rm test.txt")
+os.system("rm queue.txt")
 os.system("rm failed.txt")
 os.system("rm start_routine.sh")
 

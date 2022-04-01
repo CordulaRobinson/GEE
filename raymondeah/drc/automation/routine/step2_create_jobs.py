@@ -91,20 +91,20 @@ def create_segments(geometry, size):
 create_segments(region, 10)
 
 # #######################################################################################
-os.system('squeue -u eah.r > test.txt')
-while not os.system('grep routine test.txt'):
+os.system('squeue -u eah.r > queue.txt')
+while not os.system('grep routine queue.txt'):
     #print(os.system('grep start test.txt'))
-    os.system('squeue -u eah.r > test.txt')
+    os.system('squeue -u eah.r > queue.txt')
 
 # all jobs are finished after exiting the loop
 
 # rerun failed jobs
 os.system('python3 step4_rerun.py')
 
-os.system('squeue -u eah.r > test.txt')
-while not os.system('grep routine test.txt'):
+os.system('squeue -u eah.r > queue.txt')
+while not os.system('grep routine queue.txt'):
     #print(os.system('grep start test.txt'))
-    os.system('squeue -u eah.r > test.txt')
+    os.system('squeue -u eah.r > queue.txt')
 
 # compile results and delete individual files
 os.system('python3 step5_compile_and_convert.py')
