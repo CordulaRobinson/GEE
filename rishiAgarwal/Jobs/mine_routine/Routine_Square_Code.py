@@ -450,11 +450,7 @@ def passing_mine(region):
     region_vh = calculate_sar_vh(region)
     region_nir_g = calculate_nir_g(region)
     region_swir1_b = calculate_swir1_b(region)
-    return ee.Feature(region.set('veg loss', region_veg.get('percent loss'))
-    .set('bare initial', region_veg.get('percent bare'))
-    .set('vh', region_vh.get('vh_percent'))
-    .set('nir/g', region_nir_g.get('nir/g'))
-    .set('swir1/b', region_swir1_b.get('swir1/b')))
+    return ee.Feature(region.set('percent loss', region_veg.get('percent loss')).set('percent bare', region_veg.get('percent bare')).set('vh_percent', region_vh.get('vh_percent')).set('nir/g', region_nir_g.get('nir/g')).set('swir1/b', region_swir1_b.get('swir1/b')))
 
 results = segments.map(passing_mine)
 
@@ -464,9 +460,9 @@ def create_results(feature):
     lon_max = ee.List(coords.get(1)).get(0)
     lat_min = ee.List(coords.get(0)).get(1)
     lat_max = ee.List(coords.get(2)).get(1)
-    veg_loss = feature.get('veg loss')
-    bare_init = feature.get('bare inital')
-    vh = feature.get('vh')
+    veg_loss = feature.get('percent loss')
+    bare_init = feature.get('percnt bare')
+    vh = feature.get('vh_percent')
     nir_g = feature.get('nir/g')
     swir_b = feature.get('swir1/b')
     row = ee.Array([lon_min, 
@@ -486,7 +482,7 @@ data_set2 = data_set.aggregate_array('info')
 data_set3 = data_set2.getInfo()
 
 #won't use header in actual files so we can concat easier at end
-header = ['min lon', 'min lat', 'max lon', 'max lat', 'veg loss', 'bare init', 'vh', 'nirg_g', 'swir_b']
+header = ['min lon', 'min lat', 'max lon', 'max lat', 'percent loss', 'percent bare', 'vh_percent', 'nir/g', 'swir1/b']
 
 # open the file in the write mode
 #gee_dcr_squareSize_lonMin_latMin_lonMax_latMax
