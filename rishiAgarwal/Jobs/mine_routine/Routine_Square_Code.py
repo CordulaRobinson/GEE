@@ -452,7 +452,7 @@ def passing_mine(region):
     region_swir1_b = calculate_swir1_b(region)
     return ee.Feature(region.set('veg loss', region_veg.get('percent loss'))
     .set('bare initial', region_veg.get('percent bare'))
-    .set('vh', region_vh.get('vh percent'))
+    .set('vh', region_vh.get('vh_percent'))
     .set('nir/g', region_nir_g.get('nir/g'))
     .set('swir/b', region_swir1_b.get('swir/b')))
 
