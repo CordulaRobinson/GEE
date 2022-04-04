@@ -65,7 +65,7 @@ def create_segments(geometry, size):
                 f.write('#SBATCH --job-name=routine_job'+'\n')
                 f.write('#SBATCH --partition=short'+'\n')
                 f.write('#SBATCH --mem=16GB'+'\n')
-                f.write('#SBATCH --output=output/slurm-%j.out'+'\n') # 'output' folder must be created beforehand
+                f.write('#SBATCH --output=output/slurm-'+str(1000000 + count)+'.out'+'\n') # 'output' folder must be created beforehand
                 f.write('module load anaconda3/3.7'+'\n')
                 f.write('source activate '+'\n')
                 f.write('source activate newEnv'+'\n') # change to your own anaconda environment
