@@ -19,13 +19,10 @@ region = ee.Geometry.Polygon(
           [ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[4])],
           [ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[3])]]])
 
-# squares
 """
-Segment the given geometry into squares of given size (in km)
-:param geometry: rectangle form geometry object
-:return: list including all squares
-
-edit: remove some stuff from geometry produced
+slight modification of the 'create_segments' method in our routine:
+- original: divides the given geometry into squares of given size and returns a list of squares
+- new:      divides the given geometry into squares of given size and submits a job for each square
 """
 def create_segments(geometry, size):
     #segments = []
@@ -70,7 +67,7 @@ def create_segments(geometry, size):
                 f.write('#SBATCH --time=01:00:00'+'\n')
                 f.write('#SBATCH --job-name=routine_job'+'\n')
                 f.write('#SBATCH --partition=short'+'\n')
-                f.write('#SBATCH --mem=16GB'+'\n')
+                f.write('#SBATCH --mem=64GB'+'\n')
                 f.write('#SBATCH --output=output/slurm-%j.out'+'\n')
                 f.write('module load anaconda3/3.7'+'\n')
                 f.write('source activate '+'\n')
@@ -88,23 +85,23 @@ def create_segments(geometry, size):
         
     #return segments
 
+# submit jobs with 10x10km size
 create_segments(region, 10)
 
-# #######################################################################################
+# wait while jobs are still running
 os.system('squeue -u eah.r > queue.txt')
 while not os.system('grep routine queue.txt'):
     #print(os.system('grep start test.txt'))
     os.system('squeue -u eah.r > queue.txt')
 
-# all jobs are finished after exiting the loop
-
-# rerun failed jobs
+# after all jobs are finished, resubmit failed jobs
 os.system('python3 step4_rerun.py')
 
+# wait while jobs are still running
 os.system('squeue -u eah.r > queue.txt')
 while not os.system('grep routine queue.txt'):
     #print(os.system('grep start test.txt'))
     os.system('squeue -u eah.r > queue.txt')
 
-# compile results and delete individual files
+# after all jobs are finished, compile results
 os.system('python3 step5_compile_and_convert.py')

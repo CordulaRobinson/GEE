@@ -1,5 +1,3 @@
-#test
-
 # py imports
 import os
 import sys
@@ -386,7 +384,7 @@ def calculate_nir_g(feature):
     return feature.set('nir/g',  avg_s2)
 
 # swir/b
-def calculate_swirb(feature):
+def calculate_swir1_b(feature):
     g = feature.geometry()
     composite_s2 = s2 \
         .filter(ee.Filter.bounds(g)) \
@@ -486,48 +484,95 @@ def applyRoutine(geometry, zoom, square_size):
     return passed_nir_g
     # return passed_vegetation_loss
 
-#print('start test run')
-test_run = applyRoutine(region, 12, 0.5).getInfo()['features']
-# for element in test_run:
-#     print(element['geometry']['coordinates'])
-#     print()
-#print(element for element in test_run)
-#print('ran without issues')
+# xxx
+def passing_mine(feature):
+  veg = calculate_percentage_change(feature)
+  sar = calculate_sar_vh(feature)
+  nir_g = calculate_nir_g(feature)
+  swir1_b = calculate_swir1_b(feature)
+  return ee.Feature(feature \
+    .set('vegetation loss', veg.get('percent loss')) \
+    .set('percent bare', veg.get('percent bare')) \
+    .set('vh', sar.get('vh_percent')) \
+    .set('nir/g', nir_g.get('nir/g')) \
+    .set('swir1/b', swir1_b.get('swir/b')))
 
-# # txt file
-# save_path = os.getcwd()
-# file_name = 'final_squares'
-# complete_path = save_path + '/output/' + file_name + '.txt'
-# file = open(complete_path, 'w')
-# text = ""
-# for element in test_run:
-#     coords = element['geometry']['coordinates'][0][1:]
-#     for coord in coords:
-#         text += str(coord[0]) + ',' + str(coord[1]) + '\n'
-#     text += '\n'
-# file.write(text)
-# file.close()
+# xxx
+def create_results(feature):
+    coords = ee.List(feature.geometry().coordinates().get(0))
+    lon_min = ee.List(coords.get(0)).get(0)
+    lon_max = ee.List(coords.get(1)).get(0)
+    lat_min = ee.List(coords.get(0)).get(1)
+    lat_max = ee.List(coords.get(2)).get(1)
+    veg_loss = feature.get('vegetation loss')
+    bare_init = feature.get('percent bare')
+    vh = feature.get('vh')
+    nir_g = feature.get('nir/g')
+    swir1_b = feature.get('swir1/b')
+    row = ee.Array([lon_min, 
+                   lat_min, 
+                   lon_max,
+                   lat_max,
+                   veg_loss,
+                   bare_init, 
+                   vh,
+                   nir_g,
+                   swir1_b])
+    new_feature = ee.Feature(None, {'info': row})
+    return new_feature
 
-# csv file
-if test_run:
-  print('x')
-  save_path = os.getcwd()
-  file_name = 'square_coords_' + str(1000000 + int(job_num))
-  complete_path = save_path + '/results/' + file_name + '.csv'
+# test_run = applyRoutine(region, 12, 0.25).getInfo()['features']
 
-  f = open(complete_path, 'a')
-  writer = csv.writer(f)
+# # csv file
+# if test_run:
+#   print('x')
+#   save_path = os.getcwd()
+#   file_name = 'square_coords_' + str(1000000 + int(job_num))
+#   complete_path = save_path + '/results/' + file_name + '.csv'
 
-  rows = []
-  for element in test_run:
-    row = []
-    for c in element['geometry']['coordinates'][0][1:]:
-      row.append(c[0])
-      row.append(c[1])
-    rows.append(row)
+#   f = open(complete_path, 'a')
+#   writer = csv.writer(f)
 
-  #rows = [[[c[0]] + [c[1]] for c in element['geometry']['coordinates'][0][1:]] for element in test_run]
-  writer.writerows(rows)
+#   rows = []
+#   for element in test_run:
+#     row = []
+#     for c in element['geometry']['coordinates'][0][1:]:
+#       row.append(c[0])
+#       row.append(c[1])
+#     rows.append(row)
 
-  f.close()
+#   #rows = [[[c[0]] + [c[1]] for c in element['geometry']['coordinates'][0][1:]] for element in test_run]
+#   writer.writerows(rows)
+
+#   f.close()
+
+
+# Calculate values for 250m x 250m squares
+regions = create_segments(region, 0.25)
+segments = ee.FeatureCollection(regions)
+results = segments.map(passing_mine)
+
+# Create above array for each segment, and transform into format that can be written to a CSV file
+data_set = results.map(create_results)
+data_set2 = data_set.aggregate_array('info')
+data_set3 = data_set2.getInfo()
+
+# CSV name
+save_path = os.getcwd()
+file_name = 'job_' + str(1000000 + int(job_num))
+# 'results' folder must be created beforehand
+complete_path = save_path + '/results/' + file_name + '.csv'
+
+# CSV header
+header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
+      'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B']
+
+# Create CSV and add header & data
+f = open(complete_path, 'w')
+writer = csv.writer(f)
+
+writer.writerow(header_list)
+writer.writerows(data_set3)
+
+f.close()
 

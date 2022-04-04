@@ -1,16 +1,15 @@
 import os
 import csv
 #import ee
-import ast
 
-os.system("cat results/*csv > results/compiled.csv")
-os.system("rm -rf results/square*")
-os.system("rm -rf output/slurm*")
-os.system("rm -rf slurm*")
-os.system("rm -rf batch/routine*")
-os.system("rm queue.txt")
-os.system("rm failed.txt")
-os.system("rm start_routine.sh")
+os.system("cat results/*csv > results/compiled.csv") # compile all results into one csv file
+os.system("rm -rf results/job*") # remove individual results files
+os.system("rm -rf output/slurm*") # remove slurm files
+os.system("rm -rf slurm*") # remove slurm files
+os.system("rm -rf batch/routine*") # remove batch files
+os.system("rm queue.txt") # remove temp queue file
+os.system("rm failed.txt") # remove failed jobs txt file
+os.system("rm start_routine.sh") # remove step 1 bash file
 
 # path = "c:/Users/r.eah/OneDrive - Northeastern University/gee/raymondeah/congo/auto/routine/output/compiled.csv"
 
