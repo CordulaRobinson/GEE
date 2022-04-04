@@ -1,4 +1,4 @@
-# Imports and Connection to Google Earth Engine (GEE)
+# Imports and Connection to Google Earth Engine
 import ee
 import geemap
 import math
