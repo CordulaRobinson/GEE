@@ -53,8 +53,6 @@ with open('results/compiled_status.csv', 'r') as r, \
     csv_reader = reader(r)
     # Create a csv.writer object from the output file object
     csv_writer = writer(w)
-    # Add header to output file, with status column
-    csv_writer.writerow(header_list)
     # Skip Header in input file
     header = next(csv_reader)
     if header != None:
