@@ -28,24 +28,3 @@ os.system("rm queue.txt")
 os.system("rm failed.txt")
 os.system("rm -rf slurm*")
 os.system("rm start_routine.sh")
-
-# Convert to a Feature Collection
-with open('results/compiled_status.csv', 'r') as r, \
-        open('results/compiled_fc.csv', 'w', newline='') as w:
-    csv_reader = reader(r)
-    csv_writer = writer(w)
-    csv_writer.writerow(header_list)
-    # Skip Header 
-    header = next(csv_reader)
-    if header != None:
-        # Add passing rows to new file
-        new_header = ['Coordinates', 'Percent Vegetation Loss', 'Percent Bare Initial',\
-                       'Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B', 'Status']
-        csv_writer.writerow(new_header)
-        for row in csv_reader:
-            region = [[[float(row[0]), float(row[3])],
-                      [float(row[0]), float(row[1])],
-                      [float(row[2]), float(row[1])],
-                      [float(row[2]), float(row[3])]]]
-            new_row = [region, row[4], row[5], row[6], row[7], row[8], row[9]]
-            csv_writer.writerow(new_row)
