@@ -21,7 +21,7 @@ roi1 = ee.Geometry.Polygon(
 
 left, right, top, bot = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 job_num = sys.argv[5]
-print('JOB NUMBER: ' + job_num)
+print('JOB NUMBER: ' + job_num) # records job number in slurm file so we know which to rerun
 
 region = ee.Geometry.Polygon(
         [[[ee.Number.parse(left), ee.Number.parse(top)],
@@ -409,9 +409,7 @@ def calculate_swir1_b(feature):
 """
 Segment the given geometry into squares of given size (in km)
 :param geometry: rectangle form geometry object
-:return: list including all squares
-
-edit: remove some stuff from geometry produced
+:return:         list of all created squares
 """
 def create_segments(geometry, size):
     segments = []
@@ -470,9 +468,12 @@ def filter_by_nir_g(squares, threshold):
     return passed
 
 def filter_by_swir1_b(squares, threshold):
-    with_swir1_b = squares.map(calculate_swirb)
+    with_swir1_b = squares.map(calculate_swir1_b)
     passed = with_swir1_b.filter(ee.Filter.lte('swir/b', threshold))
     return passed
+
+####################################################################################################################
+# old routine (coordinates of passing squares only)
 
 def applyRoutine(geometry, zoom, square_size):
     segments = ee.FeatureCollection(create_segments(geometry, square_size)).filter(ee.Filter.bounds(drc))
@@ -484,95 +485,96 @@ def applyRoutine(geometry, zoom, square_size):
     return passed_nir_g
     # return passed_vegetation_loss
 
-# xxx
-def passing_mine(feature):
-  veg = calculate_percentage_change(feature)
-  sar = calculate_sar_vh(feature)
-  nir_g = calculate_nir_g(feature)
-  swir1_b = calculate_swir1_b(feature)
-  return ee.Feature(feature \
-    .set('vegetation loss', veg.get('percent loss')) \
-    .set('percent bare', veg.get('percent bare')) \
-    .set('vh', sar.get('vh_percent')) \
-    .set('nir/g', nir_g.get('nir/g')) \
-    .set('swir1/b', swir1_b.get('swir/b')))
+test_run = applyRoutine(region, 12, 0.25).getInfo()['features']
 
-# xxx
-def create_results(feature):
-    coords = ee.List(feature.geometry().coordinates().get(0))
-    lon_min = ee.List(coords.get(0)).get(0)
-    lon_max = ee.List(coords.get(1)).get(0)
-    lat_min = ee.List(coords.get(0)).get(1)
-    lat_max = ee.List(coords.get(2)).get(1)
-    veg_loss = feature.get('vegetation loss')
-    bare_init = feature.get('percent bare')
-    vh = feature.get('vh')
-    nir_g = feature.get('nir/g')
-    swir1_b = feature.get('swir1/b')
-    row = ee.Array([lon_min, 
-                   lat_min, 
-                   lon_max,
-                   lat_max,
-                   veg_loss,
-                   bare_init, 
-                   vh,
-                   nir_g,
-                   swir1_b])
-    new_feature = ee.Feature(None, {'info': row})
-    return new_feature
+# csv file
+if test_run:
+  print('x')
+  save_path = os.getcwd()
+  file_name = 'job_' + str(1000000 + int(job_num))
+  complete_path = save_path + '/results/' + file_name + '.csv'
 
-# test_run = applyRoutine(region, 12, 0.25).getInfo()['features']
+  f = open(complete_path, 'a')
+  writer = csv.writer(f)
 
-# # csv file
-# if test_run:
-#   print('x')
-#   save_path = os.getcwd()
-#   file_name = 'square_coords_' + str(1000000 + int(job_num))
-#   complete_path = save_path + '/results/' + file_name + '.csv'
+  rows = []
+  for element in test_run:
+    row = []
+    for c in element['geometry']['coordinates'][0][1:]:
+      row.append(c[0])
+      row.append(c[1])
+    rows.append(row)
 
-#   f = open(complete_path, 'a')
-#   writer = csv.writer(f)
+  #rows = [[[c[0]] + [c[1]] for c in element['geometry']['coordinates'][0][1:]] for element in test_run]
+  writer.writerows(rows)
 
-#   rows = []
-#   for element in test_run:
-#     row = []
-#     for c in element['geometry']['coordinates'][0][1:]:
-#       row.append(c[0])
-#       row.append(c[1])
-#     rows.append(row)
+  f.close()
 
-#   #rows = [[[c[0]] + [c[1]] for c in element['geometry']['coordinates'][0][1:]] for element in test_run]
-#   writer.writerows(rows)
+########################################################################################################################################
+# # new routine (storing all information)
 
-#   f.close()
+# def passing_mine(feature):
+#   veg = calculate_percentage_change(feature)
+#   sar = calculate_sar_vh(feature)
+#   nir_g = calculate_nir_g(feature)
+#   swir1_b = calculate_swir1_b(feature)
+#   return ee.Feature(feature \
+#     .set('vegetation loss', veg.get('percent loss')) \
+#     .set('percent bare', veg.get('percent bare')) \
+#     .set('vh', sar.get('vh_percent')) \
+#     .set('nir/g', nir_g.get('nir/g')) \
+#     .set('swir1/b', swir1_b.get('swir/b')))
 
+# # xxx
+# def create_results(feature):
+#     coords = ee.List(feature.geometry().coordinates().get(0))
+#     lon_min = ee.List(coords.get(0)).get(0)
+#     lon_max = ee.List(coords.get(1)).get(0)
+#     lat_min = ee.List(coords.get(0)).get(1)
+#     lat_max = ee.List(coords.get(2)).get(1)
+#     veg_loss = feature.get('vegetation loss')
+#     bare_init = feature.get('percent bare')
+#     vh = feature.get('vh')
+#     nir_g = feature.get('nir/g')
+#     swir1_b = feature.get('swir1/b')
+#     row = ee.Array([lon_min, 
+#                    lat_min, 
+#                    lon_max,
+#                    lat_max,
+#                    veg_loss,
+#                    bare_init, 
+#                    vh,
+#                    nir_g,
+#                    swir1_b])
+#     new_feature = ee.Feature(None, {'info': row})
+#     return new_feature
 
-# Calculate values for 250m x 250m squares
-regions = create_segments(region, 0.25)
-segments = ee.FeatureCollection(regions)
-results = segments.map(passing_mine)
+# # Calculate values for 250m x 250m squares
+# regions = create_segments(region, 0.25)
+# segments = ee.FeatureCollection(regions)
+# results = segments.map(passing_mine)
 
-# Create above array for each segment, and transform into format that can be written to a CSV file
-data_set = results.map(create_results)
-data_set2 = data_set.aggregate_array('info')
-data_set3 = data_set2.getInfo()
+# # Create above array for each segment, and transform into format that can be written to a CSV file
+# data_set = results.map(create_results)
+# data_set2 = data_set.aggregate_array('info')
+# data_set3 = data_set2.getInfo() # <- slow
 
-# CSV name
-save_path = os.getcwd()
-file_name = 'job_' + str(1000000 + int(job_num))
-# 'results' folder must be created beforehand
-complete_path = save_path + '/results/' + file_name + '.csv'
+# # CSV name
+# save_path = os.getcwd()
+# file_name = 'job_' + str(1000000 + int(job_num))
+# # 'results' folder must be created beforehand
+# complete_path = save_path + '/results/' + file_name + '.csv'
 
-# CSV header
-header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
-      'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B']
+# # CSV header
+# #header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
+#  #     'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B']
 
-# Create CSV and add header & data
-f = open(complete_path, 'w')
-writer = csv.writer(f)
+# # Create CSV and add header & data
+# f = open(complete_path, 'w')
+# writer = csv.writer(f)
 
-writer.writerow(header_list)
-writer.writerows(data_set3)
+# #writer.writerow(header_list)
+# writer.writerows(data_set3)
 
-f.close()
+# f.close()
 
