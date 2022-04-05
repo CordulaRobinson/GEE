@@ -8,6 +8,14 @@ upper_lat = 35.379488360140314
 lower_lon = -115.84385025950016
 lower_lat = 34.88081647081126
 
+"""
+coords for mojave 
+upper_lon = -115.06931412668766
+upper_lat = 35.379488360140314
+lower_lon = -115.84385025950016
+lower_lat = 34.88081647081126
+"""
+
 # the above is a 5x5 degree box
 # let us say we want to create jobs that work on 1x1 degree tiles 
 grid_space = 0.1 # degrees
