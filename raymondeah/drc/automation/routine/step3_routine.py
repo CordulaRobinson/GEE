@@ -338,7 +338,7 @@ def calculate_sar_vh(feature):
     total_SqKm = ee.Number(total_area).divide(1e6)
     
     #area of possible mines
-    area_mines = composite.lt(3-19).rename('mines')
+    area_mines = composite.lt(-19).rename('mines')
     connect = area_mines.connectedPixelCount(25);
     area_mines = area_mines.updateMask(connect.gt(8));
     area_mines = area_mines.multiply(ee.Image.pixelArea())
