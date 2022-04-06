@@ -15,11 +15,11 @@ lower_lat = Decimal(sys.argv[3]).quantize(Decimal('.1'))
 # Coordinate String
 coords = str(lower_lon)+'_'+str(lower_lat)+'_'+str(upper_lon)+'_'+str(upper_lat)
 
-# the above is a 0.1x0.1 degree box
-# create jobs that work on 0.05x0.05 degree tiles
+# the above is a 0.5x0.5 degree box
+# create jobs that work on 0.1x0.1 degree tiles
 grid_space = Decimal(sys.argv[1]).quantize(Decimal('.1'))
 
-# the small grid we want to work with, in kilometers
+# the small grid we want to work with, in kilometers (1km x 1km)
 small_grid = Decimal(sys.argv[6])
 
 #  get the numnber of x,y tiles we will loop over
