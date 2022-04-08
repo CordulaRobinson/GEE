@@ -520,70 +520,70 @@ def passing_mine(feature):
     .set('nir/g', nir_g.get('nir/g')) \
     .set('swir1/b', swir1_b.get('swir/b')))
 
-# def create_results(feature):
-#     coords = ee.List(feature.geometry().coordinates().get(0))
-#     lon_min = ee.List(coords.get(0)).get(0)
-#     lon_max = ee.List(coords.get(1)).get(0)
-#     lat_min = ee.List(coords.get(0)).get(1)
-#     lat_max = ee.List(coords.get(2)).get(1)
-#     veg_loss = feature.get('vegetation loss')
-#     bare_init = feature.get('percent bare')
-#     vh = feature.get('vh')
-#     nir_g = feature.get('nir/g')
-#     swir1_b = feature.get('swir1/b')
-#     row = ee.Array([lon_min, 
-#                    lat_min, 
-#                    lon_max,
-#                    lat_max,
-#                    veg_loss,
-#                    bare_init, 
-#                    vh,
-#                    nir_g,
-#                    swir1_b])
-#     new_feature = ee.Feature(None, {'info': row})
-#     return new_feature
+def create_results(feature):
+    coords = ee.List(feature.geometry().coordinates().get(0))
+    lon_min = ee.List(coords.get(0)).get(0)
+    lon_max = ee.List(coords.get(1)).get(0)
+    lat_min = ee.List(coords.get(0)).get(1)
+    lat_max = ee.List(coords.get(2)).get(1)
+    veg_loss = feature.get('vegetation loss')
+    bare_init = feature.get('percent bare')
+    vh = feature.get('vh')
+    nir_g = feature.get('nir/g')
+    swir1_b = feature.get('swir1/b')
+    row = ee.Array([lon_min, 
+                   lat_min, 
+                   lon_max,
+                   lat_max,
+                   veg_loss,
+                   bare_init, 
+                   vh,
+                   nir_g,
+                   swir1_b])
+    new_feature = ee.Feature(None, {'info': row})
+    return new_feature
 
 ## ------------------- ##
 
-regions = create_segments(region, 0.25)
-segments = ee.FeatureCollection(regions)
-v = filter_by_vegetation_loss(segments, 0.1, 0.1)
-results = v.map(passing_mine)
-
-file_name = 'job_' + str(1000000 + int(job_num)) + '.csv'
-link = results.getDownloadURL('csv', filename=file_name)
-os.chdir('results')
-os.system("wget -O " + file_name + " " +link)
-# os.system('curl -o ' + file_name + ' ' + link)
-
-## ------------------- ##
-
-# # Calculate values for 250m x 250m squares
 # regions = create_segments(region, 0.25)
 # segments = ee.FeatureCollection(regions)
-# results = segments.map(passing_mine)
+# v = filter_by_vegetation_loss(segments, 0.1, 0.1)
+# results = v.map(passing_mine)
 
-# # Create above array for each segment, and transform into format that can be written to a CSV file
-# data_set = results.map(create_results)
-# data_set2 = data_set.aggregate_array('info')
-# data_set3 = data_set2.getInfo() # <- slow
+# file_name = 'job_' + str(1000000 + int(job_num)) + '.csv'
+# link = results.getDownloadURL('csv', filename=file_name)
+# os.chdir('results')
+# os.system("wget -O " + file_name + " " +link)
+# # os.system('curl -o ' + file_name + ' ' + link)
 
-# # CSV name
-# save_path = os.getcwd()
-# file_name = 'job_' + str(1000000 + int(job_num))
-# # 'results' folder must be created beforehand
-# complete_path = save_path + '/results/' + file_name + '.csv'
+## ------------------- ##
 
-# # CSV header
-# #header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
-#  #     'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B']
+# Calculate values for 250m x 250m squares
+regions = create_segments(region, 0.25)
+segments = ee.FeatureCollection(regions)
+results = segments.map(passing_mine)
 
-# # Create CSV and add header & data
-# f = open(complete_path, 'w')
-# writer = csv.writer(f)
+# Create above array for each segment, and transform into format that can be written to a CSV file
+data_set = results.map(create_results)
+data_set2 = data_set.aggregate_array('info')
+data_set3 = data_set2.getInfo() # <- slow
 
-# #writer.writerow(header_list)
-# writer.writerows(data_set3)
+# CSV name
+save_path = os.getcwd()
+file_name = 'job_' + str(1000000 + int(job_num))
+# 'results' folder must be created beforehand
+complete_path = save_path + '/results/' + file_name + '.csv'
 
-# f.close()
+# CSV header
+#header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
+ #     'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B']
+
+# Create CSV and add header & data
+f = open(complete_path, 'w')
+writer = csv.writer(f)
+
+#writer.writerow(header_list)
+writer.writerows(data_set3)
+
+f.close()
 
