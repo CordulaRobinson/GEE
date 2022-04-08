@@ -104,4 +104,4 @@ while not os.system('grep routine queue.txt'):
     os.system('squeue -u eah.r > queue.txt')
 
 # after all jobs are finished, compile results
-os.system('python3 step5_compile_and_convert.py')
+os.system('python3 step5_compile.py')
