@@ -19,8 +19,8 @@ with open(bash_filename,'w') as f:
     f.write('#SBATCH --mem=1GB'+'\n')
     f.write('module load anaconda3/3.7'+'\n')
     f.write('source activate '+'\n')
-    f.write('source activate newEnv'+'\n') # change to your own anaconda environment
-    f.write('conda activate newEnv'+'\n') # change to your own anaconda environment
+    f.write('source activate ee'+'\n') # change to your own anaconda environment
+    f.write('conda activate ee'+'\n') # change to your own anaconda environment
     f.write('conda init bash'+'\n')
     f.write('python3 step2_multiple_jobs.py ' + sys.argv[1] + ' ' + sys.argv[2] + ' ' + sys.argv[3] + ' ' + sys.argv[4] + '\n')
 

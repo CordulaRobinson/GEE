@@ -68,8 +68,8 @@ def create_segments(geometry, size):
                 f.write('#SBATCH --output=output/slurm-'+str(1000000 + count)+'.out'+'\n') # 'output' folder must be created beforehand
                 f.write('module load anaconda3/3.7'+'\n')
                 f.write('source activate '+'\n')
-                f.write('source activate newEnv'+'\n') # change to your own anaconda environment
-                f.write('conda activate newEnv'+'\n') # change to your own anaconda environment
+                f.write('source activate ee'+'\n') # change to your own anaconda environment
+                f.write('conda activate ee'+'\n') # change to your own anaconda environment
                 f.write('conda init bash'+'\n')
                 f.write('python3 step3_mine_detection.py ' + str(left.getInfo()) + ' ' + str(new_lat.getInfo()) + ' ' \
                         + str(top.getInfo()) + ' ' + str(new_lon.getInfo()) + ' ' + str(count) + '\n')
@@ -84,18 +84,18 @@ def create_segments(geometry, size):
 # Create jobs on 10km by 10km squares
 create_segments(region, 10)
 
-os.system('squeue -u nason.e > queue.txt') # change to your own username
+os.system('squeue -u agarwal.rishi > queue.txt') # change to your own username
 while not os.system('grep routine queue.txt'):
-    os.system('squeue -u nason.e > queue.txt') # change to your own username
+    os.system('squeue -u agarwal.rishi > queue.txt') # change to your own username
 
 # All jobs are finished after exiting the loop
 
 # Rerun failed jobs
 os.system('python3 step4_rerun_failed_jobs.py')
 
-os.system('squeue -u nason.e > queue.txt') # change to your own username
+os.system('squeue -u agarwal.rishi > queue.txt') # change to your own username
 while not os.system('grep routine queue.txt'):
-    os.system('squeue -u nason.e > queue.txt') # change to your own username
+    os.system('squeue -u agarwal.rishi > queue.txt') # change to your own username
 
 # Compile results and delete individual files
 os.system('python3 step5_compile.py')

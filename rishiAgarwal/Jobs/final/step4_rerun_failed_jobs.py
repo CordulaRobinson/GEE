@@ -15,11 +15,11 @@ os.system("find | grep -l -L -E exception output/slurm* | xargs rm -f")
 #         # resubmit the failed job
 #         os.system('find batch -name routine_job_' + str(job_number) + '.sh | xargs sbatch')
 
-os.chdir("/scratch/nason.e/gee/output") # change to your own path to the 'output' folder
+os.chdir("/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/final/output") # change to your own path to the 'output' folder
 extension = 'out'
 filenames = [i for i in glob.glob('*.{}'.format(extension))]
 
-os.chdir("/scratch/nason.e/gee") # change to your own path
+os.chdir("/scratch/agarwal.rishi/gee") # change to your own path
 for file in filenames:
     # get job number by indexing into the file name
     job_number = int(file[6:-4])

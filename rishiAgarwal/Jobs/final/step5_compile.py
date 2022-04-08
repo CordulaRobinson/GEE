@@ -6,7 +6,7 @@ import pandas as pd
 import glob
 
 # Put all relevant CSV files into a list
-os.chdir("/scratch/nason.e/gee/results") # change to your own path to the 'results' folder
+os.chdir("/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/final/results") # change to your own path to the 'results' folder
 extension = 'csv'
 all_filenames = [i for i in glob.glob('*.{}'.format(extension))]
 
@@ -20,7 +20,7 @@ combined_csv = pd.concat([pd.read_csv(f) for f in all_filenames ])
 combined_csv.to_csv( "compiled.csv", header=header_list, index=False, encoding='utf-8-sig')
 
 # Remove extraneous files
-os.chdir("/scratch/nason.e/gee") # change to your own path
+os.chdir("/scratch/agarwal.rishi/gee") # change to your own path
 os.system("rm -rf results/job*")
 os.system("rm -rf output/slurm*")
 os.system("rm -rf batch/routine*")
