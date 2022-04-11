@@ -20,8 +20,8 @@ training_region = ee.Geometry.Polygon(
 
 # system arguments
 left, right, top, bot = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4] 
-#job_num = sys.argv[5]
-#print('JOB NUMBER: ' + job_num) # records job number in slurm file so we know which to rerun
+job_num = sys.argv[5]
+print('JOB NUMBER: ' + job_num) # records job number in slurm file so we know which to rerun
 region = ee.Geometry.Polygon(
         [[[ee.Number.parse(left), ee.Number.parse(top)],
           [ee.Number.parse(left), ee.Number.parse(bot)],
