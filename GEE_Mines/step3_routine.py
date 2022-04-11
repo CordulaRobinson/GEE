@@ -401,6 +401,67 @@ def calculate_swir1_b(feature):
     
     return feature.set('swir/b', swirb_val)
 
+
+def get_NASADEM(feature):
+    """
+    Here we use the more modern NASA DEM that merges SRTM with IceSAT, ASTER and PRISM data 
+    We will call it: NASADEM in the output .csv file.
+    """
+    g = feature.geometry()
+    srtm = ee.Image('NASA/NASADEM_HGT/001').select('elevation')
+    red_srtm = srtm.reduceRegion(**{
+        'reducer': ee.Reducer.mean(),
+        'geometry': g,
+        'scale': 30
+    })
+    mean = ee.Number(red_srtm.get('elevation'))
+    return feature.set('elevation',mean)
+
+
+def calc_gedi_loss(feature):
+    """
+    Here we will get the GEDI highest elevation score and 
+    subtract the NASA SRTM DEM (not the updated one from NASA).
+    Hence, elevation loss with time will be negative (new - old < 0) == potential mine
+    I commented out a few extra bands from the GEDI collection that may be useful
+    such as landsat water, time of collection, non-veg from modis etc. 
+    """
+    g = feature.geometry()
+    """
+    gedi_coll = ee.ImageCollection("LARSE/GEDI/GEDI02_A_002_MONTHLY")\
+                  .filter(ee.Filter.bounds(g))\
+                  .select('elev_highestreturn','digital_elevation_model','elev_lowestmode','digital_elevation_model_srtm','quality_flag'
+                         ,'landsat_water_persistence','delta_time','modis_nonvegetated','modis_treecover','urban_proportion').median().clip(g)
+    """
+    gedi_coll = ee.ImageCollection("LARSE/GEDI/GEDI02_A_002_MONTHLY")\
+                  .filter(ee.Filter.bounds(g))\
+.select('elev_highestreturn','digital_elevation_model','digital_elevation_model_srtm','quality_flag').median().clip(g)
+                  
+    
+    x = gedi_coll
+    srtm = x.select('digital_elevation_model_srtm')
+    gedi = x.select('elev_highestreturn')
+
+    loss = gedi.subtract(srtm).rename('loss')
+    
+    # Averaging Loss
+    avg_loss = loss.reduceRegion(**{
+        'reducer': ee.Reducer.mean(),
+        'geometry': g,
+        'scale': 30
+    })
+    loss = ee.Number(avg_loss.get('loss'))
+    
+    # Avergaing GEDI
+    avg_gedi = gedi.reduceRegion(**{
+        'reducer': ee.Reducer.mean(),
+        'geometry': g,
+        'scale': 30
+    })
+    gedi_mean = ee.Number(avg_gedi.get('elev_highestreturn'))
+
+    return feature.set('loss',loss).set('GEDI',gedi_mean)
+
 """
 Segment the given geometry into squares of given size (in km)
 :param geometry: rectangle form geometry object
@@ -513,12 +574,17 @@ def passing_mine(feature):
   sar = calculate_sar_vh(feature)
   nir_g = calculate_nir_g(feature)
   swir1_b = calculate_swir1_b(feature)
+  NASADEM = get_NASADEM(feature)
+  GEDI = calc_gedi_loss(feature)
   return ee.Feature(feature \
     .set('vegetation loss', veg.get('percent loss')) \
     .set('percent bare', veg.get('percent bare')) \
     .set('vh', sar.get('vh_percent')) \
     .set('nir/g', nir_g.get('nir/g')) \
-    .set('swir1/b', swir1_b.get('swir/b')))
+    .set('swir1/b', swir1_b.get('swir/b'))\
+    .set('NASADEM Elevation',NASADEM.get('elevation')) \
+    .set('GEDI Elevation',GEDI.get('GEDI'))\
+    .set('GEDI-SRTM Elevation',GEDI.get('loss')))
 
 def create_results(feature):
     coords = ee.List(feature.geometry().coordinates().get(0))
@@ -531,6 +597,9 @@ def create_results(feature):
     vh = feature.get('vh')
     nir_g = feature.get('nir/g')
     swir1_b = feature.get('swir1/b')
+    nasadem = feature.get('NASADEM Elevation')
+    gedi_elev = feature.get('GEDI Elevation')
+    gedi_loss = feature.get('GEDI-SRTM Elevation')
     row = ee.Array([lon_min, 
                    lat_min, 
                    lon_max,
@@ -539,7 +608,10 @@ def create_results(feature):
                    bare_init, 
                    vh,
                    nir_g,
-                   swir1_b])
+                   swir1_b,
+                   nasadem,
+                   gedi_elev, 
+                   gedi_loss])
     new_feature = ee.Feature(None, {'info': row})
     return new_feature
 
@@ -576,14 +648,13 @@ complete_path = save_path + '/results/' + file_name + '.csv'
 
 # CSV header
 #header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
- #     'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B']
+ #     'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B', 'NASADEM Elevation', GEDI Elevation,'GEDI-SRTM Elevation']
 
 # Create CSV and add header & data
-f = open(complete_path, 'w')
-writer = csv.writer(f)
-
-#writer.writerow(header_list)
-writer.writerows(data_set3)
+with open(complete_path, 'w') as f:
+    writer = csv.writer(f)
+    #writer.writerow(header_list)
+    writer.writerows(data_set3)
 
 f.close()
 
