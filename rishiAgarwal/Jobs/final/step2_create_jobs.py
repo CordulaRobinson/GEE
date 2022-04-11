@@ -4,26 +4,16 @@ import math
 import ee
 ee.Initialize()
 
-"""
-sys:
-2 3 4 5
-l r u d
-job:
-coordinates, job number
-"""
-
-# Selected Region
 region = ee.Geometry.Polygon(
         [[[ee.Number.parse(sys.argv[1]), ee.Number.parse(sys.argv[3])],
           [ee.Number.parse(sys.argv[1]), ee.Number.parse(sys.argv[4])],
           [ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[4])],
           [ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[3])]]])
 
-# Function to divide region into smaller squares
 """
-Segment the given geometry into squares of given size (in km)
-:param geometry: rectangle form geometry object
-:return: run bash file on each square
+slight modification of the 'create_segments' method in our routine:
+- original: divides the given geometry into squares of given size and returns a list of squares
+- new:      divides the given geometry into squares of given size and submits a job for each square
 """
 def create_segments(geometry, size):
     r_earth, dy, dx, pi = ee.Number(6378), ee.Number(size), ee.Number(size), ee.Number(math.pi)
@@ -49,53 +39,44 @@ def create_segments(geometry, size):
             new_lon = first.subtract(second.multiply(third).divide(fourth))
             new_lat = left.add((dy.divide(r_earth)).multiply((ee.Number(180).divide(pi))))
             
-            # Create and submit jobs here
-            # 'batch' folder must be created beforehand
+            # create and submit jobs here
             bash_filename = 'batch/routine_job_' + str(1000000 + count) + '.sh'
             with open(bash_filename,'w') as f:
-                # one node, one hour
-                # name of job is routine_job
-                # 16 GB memory
-                # load up conda
-                # execute 'step3_mine_detection.py'
-                # the arguments passed are the smaller bounding box (lon min, lat min, lat max, lon max) and the job count (start at 0)
                 f.write('#!/bin/bash'+'\n')
                 f.write('#SBATCH --nodes=1'+'\n')
                 f.write('#SBATCH --time=01:00:00'+'\n')
                 f.write('#SBATCH --job-name=routine_job'+'\n')
                 f.write('#SBATCH --partition=short'+'\n')
-                f.write('#SBATCH --mem=16GB'+'\n')
-                f.write('#SBATCH --output=output/slurm-'+str(1000000 + count)+'.out'+'\n') # 'output' folder must be created beforehand
+                f.write('#SBATCH --mem=64GB'+'\n')
+                f.write('#SBATCH --output=output/slurm-%j.out'+'\n')
                 f.write('module load anaconda3/3.7'+'\n')
                 f.write('source activate '+'\n')
-                f.write('source activate ee'+'\n') # change to your own anaconda environment
-                f.write('conda activate ee'+'\n') # change to your own anaconda environment
+                f.write('source activate ee'+'\n')
+                f.write('conda activate ee'+'\n')
                 f.write('conda init bash'+'\n')
-                f.write('python3 step3_mine_detection.py ' + str(left.getInfo()) + ' ' + str(new_lat.getInfo()) + ' ' \
-                        + str(top.getInfo()) + ' ' + str(new_lon.getInfo()) + ' ' + str(count) + '\n')
+                f.write('python3 step3_routine.py ' + str(left.getInfo()) + ' ' + str(new_lat.getInfo()) + ' ' + str(top.getInfo()) + ' ' + str(new_lon.getInfo()) + ' ' + str(count) + '\n')
 
-            # Now we will submit the job (the bash_filename) written abobe
             os.system("sbatch "+str(bash_filename))
 
             count += 1
             left = new_lat
         top = new_lon
 
-# Create jobs on 10km by 10km squares
+# submit jobs with 10x10km size
 create_segments(region, 10)
 
-os.system('squeue -u agarwal.rishi > queue.txt') # change to your own username
+# wait while jobs are still running
+os.system('squeue -u eah.r > queue.txt')
 while not os.system('grep routine queue.txt'):
-    os.system('squeue -u agarwal.rishi > queue.txt') # change to your own username
+    os.system('squeue -u eah.r > queue.txt')
 
-# All jobs are finished after exiting the loop
+# after all jobs are finished, resubmit failed jobs
+os.system('python3 step4_rerun.py')
 
-# Rerun failed jobs
-os.system('python3 step4_rerun_failed_jobs.py')
-
-os.system('squeue -u agarwal.rishi > queue.txt') # change to your own username
+# wait while jobs are still running
+os.system('squeue -u eah.r > queue.txt')
 while not os.system('grep routine queue.txt'):
-    os.system('squeue -u agarwal.rishi > queue.txt') # change to your own username
+    os.system('squeue -u eah.r > queue.txt')
 
-# Compile results and delete individual files
+# after all jobs are finished, compile results
 os.system('python3 step5_compile.py')

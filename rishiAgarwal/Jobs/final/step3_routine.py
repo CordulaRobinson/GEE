@@ -1,3 +1,4 @@
+# IMPORTS
 import os
 import sys
 import csv
@@ -5,31 +6,30 @@ import math
 import ee
 ee.Initialize()
 
-# Job Number
-job_num = sys.argv[5]
-
-# Datasets
+# DATASETS
 ls5 = ee.ImageCollection('LANDSAT/LT05/C02/T1_L2')
 s1 = ee.ImageCollection('COPERNICUS/S1_GRD')
 s2 = ee.ImageCollection("COPERNICUS/S2_SR")
 admin = ee.FeatureCollection("FAO/GAUL/2015/level0")
 
-# Regions
-roi1 = ee.Geometry.Polygon(
+training_region = ee.Geometry.Polygon(
         [[[29.554129272985683, 3.1591674847348235],
           [29.554129272985683, 3.092319151883147],
           [29.625197083044277, 3.092319151883147],
           [29.625197083044277, 3.1591674847348235]]])
 
+# system arguments
+left, right, top, bot = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4] 
+job_num = sys.argv[5]
+print('JOB NUMBER: ' + job_num) # records job number in slurm file so we know which to rerun
 region = ee.Geometry.Polygon(
-        [[[ee.Number.parse(sys.argv[1]), ee.Number.parse(sys.argv[3])],
-          [ee.Number.parse(sys.argv[1]), ee.Number.parse(sys.argv[4])],
-          [ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[4])],
-          [ee.Number.parse(sys.argv[2]), ee.Number.parse(sys.argv[3])]]])
+        [[[ee.Number.parse(left), ee.Number.parse(top)],
+          [ee.Number.parse(left), ee.Number.parse(bot)],
+          [ee.Number.parse(right), ee.Number.parse(bot)],
+          [ee.Number.parse(right), ee.Number.parse(top)]]])
 
-drc = admin.filter(ee.Filter.eq('ADM0_NAME', 'Democratic Republic of the Congo'))
-
-# Training data - Landsat5
+# TRAINING DATA
+# landsat
 bare = ee.FeatureCollection(
         [ee.Feature(
             ee.Geometry.Point([29.566649352977876, 3.131936594576548]),
@@ -94,7 +94,7 @@ vegetation = ee.FeatureCollection(
               "system:index": "4"
             })])
 
-# Training data - Sentinel-2
+# sentinel
 bare_s = ee.FeatureCollection(
         [ee.Feature(
             ee.Geometry.Point([29.588761955782978, 3.110552597531067]),
@@ -159,10 +159,9 @@ vegetation_s = ee.FeatureCollection(
               "system:index": "4"
             })])
 
-# Cloud masking functions
-
-# cloud mask Landsat5
-def maskL457sr(image):
+# CLOUD MASKING FUNCTIONS
+# landsat
+def mask_ls5_clouds(image):
     qaMask = image.select('QA_PIXEL').bitwiseAnd(int('11111', 2)).eq(0)
     saturationMask = image.select('QA_RADSAT').eq(0)
 
@@ -172,8 +171,8 @@ def maskL457sr(image):
         .updateMask(qaMask) \
         .updateMask(saturationMask)
 
-# Cloud mask Sentinel-2
-def maskS2clouds(image):
+# sentinel
+def mask_s2_clouds(image):
     qa = image.select('QA60')
 
     cloudBitMask = 1 << 10
@@ -184,60 +183,60 @@ def maskS2clouds(image):
     return image.updateMask(mask).divide(10000).select("B.*") \
         .copyProperties(image, ["system:time_start"])
 
-# Training classifiers
-
-# landsat5
+# TRAINING CLASSIFIERS
+# landsat
 training = bare.merge(vegetation)
 composite1985 = ls5 \
-        .filter(ee.Filter.bounds(roi1)) \
+        .filter(ee.Filter.bounds(training_region)) \
         .filter(ee.Filter.date('1985-01-01', '1986-01-01')) \
         .filter(ee.Filter.lt('CLOUD_COVER', 20)) \
-        .map(maskL457sr) \
+        .map(mask_ls5_clouds) \
         .select('SR_B.*') \
         .median() \
-        .clip(roi1)
+        .clip(training_region)
 
-# Overlay the point on the image to get training data.
+# overlay the point on the image to get training data
 training = composite1985.sampleRegions(**{
   'collection': training,
   'properties': ['landcover'],
   'scale': 1
 })
 
-# Train a classifier.
+# train a classifier
 classifier_ls = ee.Classifier.smileRandomForest(50).train(**{
   'features': training,
   'classProperty': 'landcover',
   'inputProperties': composite1985.bandNames()
 })
 
-# Sentinel-2
+# sentinel
 training = bare_s.merge(vegetation_s)
 
 composite2021 = s2 \
-        .filter(ee.Filter.bounds(roi1)) \
+        .filter(ee.Filter.bounds(training_region)) \
         .filter(ee.Filter.date('2021-01-01', '2021-12-31')) \
         .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)) \
-        .map(maskS2clouds) \
+        .map(mask_s2_clouds) \
         .select('B.*') \
         .median() \
-        .clip(roi1) \
+        .clip(training_region) \
 
-# Overlay the point on the image to get training data.
+# overlay the point on the image to get training data
 training = composite2021.sampleRegions(**{
   'collection': training,
   'properties': ['landcover'],
   'scale': 1
 })
 
-# Train a classifier.
+# train a classifier
 classifier_s2 = ee.Classifier.smileRandomForest(50).train(**{
   'features': training,
   'classProperty': 'landcover',
   'inputProperties': composite2021.bandNames()
 })
 
-# Vegetation percentage change
+# VERTICAL FILTER CALCULATIONS
+# vegetation percentage change
 def calculate_percentage_change(feature):
     g = feature.geometry()
     
@@ -245,7 +244,7 @@ def calculate_percentage_change(feature):
         .filter(ee.Filter.bounds(g)) \
         .filter(ee.Filter.date('1985-01-01', '1990-12-31')) \
         .filter(ee.Filter.lt('CLOUD_COVER', 20)) \
-        .map(maskL457sr) \
+        .map(mask_ls5_clouds) \
         .select('SR_B.*') \
         .median() \
         .clip(g)
@@ -254,7 +253,7 @@ def calculate_percentage_change(feature):
         .filter(ee.Filter.bounds(g)) \
         .filter(ee.Filter.date('2021-01-01', '2021-12-31')) \
         .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)) \
-        .map(maskS2clouds) \
+        .map(mask_s2_clouds) \
         .select('B.*') \
         .median() \
         .clip(g)
@@ -294,13 +293,12 @@ def calculate_percentage_change(feature):
     
     percent_loss = area_vegetation_to_bare.divide(area_initial_vegetation).multiply(100)
     
-    # Account for loss of vegetation from before 1985
+    ## account for loss of vegetation from before 1985
     
-    # Area of image
+    #area of image
     total_area = g.area()
     total_SqKm = ee.Number(total_area).divide(1e6)
-    
-    # Area of bare earth in 2021
+    #area of bare earth 2021
     bare_image = bare.multiply(ee.Image.pixelArea())
 
     area3 = bare_image.reduceRegion(**{
@@ -316,7 +314,7 @@ def calculate_percentage_change(feature):
         
     return feature.set('percent loss',  percent_loss).set('percent bare', percent_bare)
 
-# SAR VH band
+# sar
 def calculate_sar_vh(feature):
     g = feature.geometry()
     
@@ -331,11 +329,11 @@ def calculate_sar_vh(feature):
 
     composite = filtered.median().clip(g)
     
-    # Area of image
+    #area of image
     total_area = g.area()
     total_SqKm = ee.Number(total_area).divide(1e6)
     
-    # Area of possible mines
+    #area of possible mines
     area_mines = composite.lt(-19).rename('mines')
     connect = area_mines.connectedPixelCount(25);
     area_mines = area_mines.updateMask(connect.gt(8));
@@ -354,7 +352,7 @@ def calculate_sar_vh(feature):
     
     return feature.set('vh_percent', percent_mine)
 
-# NIR/G
+# nir/g
 def calculate_nir_g(feature):
     g = feature.geometry()
     
@@ -363,7 +361,7 @@ def calculate_nir_g(feature):
         .filter(ee.Filter.bounds(g)) \
         .filter(ee.Filter.date('2021-01-01', '2021-12-31')) \
         .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)) \
-        .map(maskS2clouds) \
+        .map(mask_s2_clouds) \
         .select('B.*') \
         .median() \
         .clip(g)
@@ -381,33 +379,32 @@ def calculate_nir_g(feature):
     
     return feature.set('nir/g',  avg_s2)
 
-# SWIR1/B
+# swir1/b
 def calculate_swir1_b(feature):
     g = feature.geometry()
     composite_s2 = s2 \
         .filter(ee.Filter.bounds(g)) \
         .filter(ee.Filter.date('2021-01-01', '2021-12-31')) \
         .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)) \
-        .map(maskS2clouds) \
+        .map(mask_s2_clouds) \
         .select('B.*') \
         .median() \
         .clip(g) 
-    swir1_b = composite_s2.normalizedDifference(['B11', 'B2']).rename('SWIR1/B')
-    stats = swir1_b.reduceRegion(**{
+    swirb = composite_s2.normalizedDifference(['B11', 'B2']).rename('SWIR1/B')
+    stats = swirb.reduceRegion(**{
         'reducer': ee.Reducer.mean(),
         'geometry': g,
         'scale': 30,
         'maxPixels': 1e10
     })
-    swir1_b_val = stats.get('SWIR1/B')
+    swirb_val = stats.get('SWIR1/B')
     
-    return feature.set('swir1/b', swir1_b_val)
+    return feature.set('swir/b', swirb_val)
 
-# Function to divide region into squares
 """
 Segment the given geometry into squares of given size (in km)
 :param geometry: rectangle form geometry object
-:return: list including all squares
+:return:         list of all created squares
 """
 def create_segments(geometry, size):
     segments = []
@@ -424,6 +421,7 @@ def create_segments(geometry, size):
     for y in range(height + 1):
         left = ee.Number(ee.List(coords.get(0)).get(0))
         for x in range(width + 1):
+            #
             first = top
             second = dx.divide(r_earth)
             third = ee.Number(180).divide(pi)
@@ -431,6 +429,8 @@ def create_segments(geometry, size):
             fourth = left.multiply(con).multiply(con).cos()
             
             new_lon = first.subtract(second.multiply(third).divide(fourth))
+            #new_lon = top - (dx / r_earth) * (180 / pi) / math.cos(math.radians(left * pi/180))
+            #new_lat = left  + (dy / r_earth) * (180 / pi)
             new_lat = left.add((dy.divide(r_earth)).multiply((ee.Number(180).divide(pi))))
             
             square = ee.Geometry.Polygon(
@@ -446,25 +446,88 @@ def create_segments(geometry, size):
         
     return segments
 
-# Calculate Values for each criteria for a region
-def passing_mine(region):
-    region_veg = calculate_percentage_change(region)
-    region_vh = calculate_sar_vh(region)
-    region_nir_g = calculate_nir_g(region)
-    region_swir1_b = calculate_swir1_b(region)
-    return ee.Feature(region.set('veg loss', region_veg.get('percent loss')).set('bare initial', region_veg.get('percent bare')) \
-                      .set('vh', region_vh.get('vh_percent')) \
-                      .set('nir/g', region_nir_g.get('nir/g')).set('swir1/b', region_swir1_b.get('swir1/b')))
+# routine
+def filter_by_vegetation_loss(squares, threshold1, threshold2):
+    with_percent_change = squares.map(calculate_percentage_change)
+    passed = with_percent_change.filter((ee.Filter.gt('percent loss', threshold1)).Or(ee.Filter.gt('percent bare', threshold2)))
+    return passed
 
-# Create a property that is an array of the coordinates and values
+def filter_by_vh_percent(squares, threshold):
+    with_change = squares.map(calculate_sar_vh)
+    passed = with_change.filter(ee.Filter.gt('vh_percent', threshold))
+    return passed
+
+def filter_by_nir_g(squares, threshold):
+    with_change = squares.map(calculate_nir_g)
+    passed = with_change.filter(ee.Filter.lte('nir/g', threshold))
+    return passed
+
+def filter_by_swir1_b(squares, threshold):
+    with_swir1_b = squares.map(calculate_swir1_b)
+    passed = with_swir1_b.filter(ee.Filter.lte('swir/b', threshold))
+    return passed
+
+####################################################################################################################
+# old routine (coordinates of passing squares only)
+
+# def apply_routine(geometry, zoom, square_size):
+#     drc = admin.filter(ee.Filter.eq('ADM0_NAME', 'Democratic Republic of the Congo'))
+#     segments = ee.FeatureCollection(create_segments(geometry, square_size)).filter(ee.Filter.bounds(drc))
+    
+#     passed_vegetation_loss = filter_by_vegetation_loss(segments, 0.1, 0.1)
+#     passed_sar_vh = filter_by_vh_percent(passed_vegetation_loss, 5)
+#     passed_swir_b = filter_by_swir1_b(passed_sar_vh, 0.62)
+#     passed_nir_g = filter_by_nir_g(passed_swir_b, 0.45)
+#     return passed_nir_g
+#     # return passed_vegetation_loss
+
+# test_run = apply_routine(region, 12, 0.25).getInfo()['features']
+
+# # csv file
+# if test_run:
+#   save_path = os.getcwd()
+#   file_name = 'job_' + str(1000000 + int(job_num))
+#   complete_path = save_path + '/results/' + file_name + '.csv'
+
+#   f = open(complete_path, 'a')
+#   writer = csv.writer(f)
+
+#   rows = []
+#   for element in test_run:
+#     row = []
+#     for c in element['geometry']['coordinates'][0][1:]:
+#       row.append(c[0])
+#       row.append(c[1])
+#     rows.append(row)
+
+#   #rows = [[[c[0]] + [c[1]] for c in element['geometry']['coordinates'][0][1:]] for element in test_run]
+#   writer.writerows(rows)
+
+#   f.close()
+
+########################################################################################################################################
+# # new routine (storing all information)
+
+def passing_mine(feature):
+  veg = calculate_percentage_change(feature)
+  sar = calculate_sar_vh(feature)
+  nir_g = calculate_nir_g(feature)
+  swir1_b = calculate_swir1_b(feature)
+  return ee.Feature(feature \
+    .set('vegetation loss', veg.get('percent loss')) \
+    .set('percent bare', veg.get('percent bare')) \
+    .set('vh', sar.get('vh_percent')) \
+    .set('nir/g', nir_g.get('nir/g')) \
+    .set('swir1/b', swir1_b.get('swir/b')))
+
 def create_results(feature):
     coords = ee.List(feature.geometry().coordinates().get(0))
     lon_min = ee.List(coords.get(0)).get(0)
     lon_max = ee.List(coords.get(1)).get(0)
     lat_min = ee.List(coords.get(0)).get(1)
     lat_max = ee.List(coords.get(2)).get(1)
-    veg_loss = feature.get('veg loss')
-    bare_init = feature.get('bare initial')
+    veg_loss = feature.get('vegetation loss')
+    bare_init = feature.get('percent bare')
     vh = feature.get('vh')
     nir_g = feature.get('nir/g')
     swir1_b = feature.get('swir1/b')
@@ -480,6 +543,21 @@ def create_results(feature):
     new_feature = ee.Feature(None, {'info': row})
     return new_feature
 
+## ------------------- ##
+
+# regions = create_segments(region, 0.25)
+# segments = ee.FeatureCollection(regions)
+# v = filter_by_vegetation_loss(segments, 0.1, 0.1)
+# results = v.map(passing_mine)
+
+# file_name = 'job_' + str(1000000 + int(job_num)) + '.csv'
+# link = results.getDownloadURL('csv', filename=file_name)
+# os.chdir('results')
+# os.system("wget -O " + file_name + " " +link)
+# # os.system('curl -o ' + file_name + ' ' + link)
+
+## ------------------- ##
+
 # Calculate values for 250m x 250m squares
 regions = create_segments(region, 0.25)
 segments = ee.FeatureCollection(regions)
@@ -488,7 +566,7 @@ results = segments.map(passing_mine)
 # Create above array for each segment, and transform into format that can be written to a CSV file
 data_set = results.map(create_results)
 data_set2 = data_set.aggregate_array('info')
-data_set3 = data_set2.getInfo()
+data_set3 = data_set2.getInfo() # <- slow
 
 # CSV name
 save_path = os.getcwd()
@@ -497,14 +575,15 @@ file_name = 'job_' + str(1000000 + int(job_num))
 complete_path = save_path + '/results/' + file_name + '.csv'
 
 # CSV header
-header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
-      'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B']
+#header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
+ #     'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B']
 
 # Create CSV and add header & data
 f = open(complete_path, 'w')
 writer = csv.writer(f)
 
-writer.writerow(header_list)
+#writer.writerow(header_list)
 writer.writerows(data_set3)
 
 f.close()
+

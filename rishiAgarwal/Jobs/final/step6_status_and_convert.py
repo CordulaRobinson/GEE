@@ -17,19 +17,16 @@ with open('results/compiled.csv', 'r') as read_obj, \
     header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
           'Percent Vegetation Loss', 'Percent Bare Initial', 'Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B', 'Status']
     csv_writer.writerow(header_list)
-    # Skip Header in input file
-    header = next(csv_reader)
-    if header != None:
     # Read each row of the input csv file as list
-        for row in csv_reader:
-            # Calculate Status and append to the end of the row/list
-            status = (((float(row[4]) > 20) or (float(row[5]) > 10))and (float(row[6]) > 5) and (float(row[7]) <= 0.45) and (float(row[8]) < 0.65))
-            if status:
-                row.append("Pass")
-            else: 
-                row.append("Fail")
-            # Add the updated row / list to the output file
-            csv_writer.writerow(row)
+    for row in csv_reader:
+        # Calculate Status and append to the end of the row/list
+        status = (((float(row[4]) > 20) or (float(row[5]) > 10))and (float(row[6]) > 5) and (float(row[7]) <= 0.45) and (float(row[8]) < 0.65))
+        if status:
+            row.append("Pass")
+        else: 
+            row.append("Fail")
+        # Add the updated row / list to the output file
+        csv_writer.writerow(row)
 
 # Create a file of only passing statuses
 with open('results/compiled_status.csv', 'r') as r, \
