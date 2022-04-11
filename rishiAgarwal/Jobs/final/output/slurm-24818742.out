@@ -1,0 +1,38 @@
+no change     /home/agarwal.rishi/.conda/envs/ee/condabin/conda
+no change     /home/agarwal.rishi/.conda/envs/ee/bin/conda
+no change     /home/agarwal.rishi/.conda/envs/ee/bin/conda-env
+no change     /home/agarwal.rishi/.conda/envs/ee/bin/activate
+no change     /home/agarwal.rishi/.conda/envs/ee/bin/deactivate
+no change     /home/agarwal.rishi/.conda/envs/ee/etc/profile.d/conda.sh
+no change     /home/agarwal.rishi/.conda/envs/ee/etc/fish/conf.d/conda.fish
+no change     /home/agarwal.rishi/.conda/envs/ee/shell/condabin/Conda.psm1
+no change     /home/agarwal.rishi/.conda/envs/ee/shell/condabin/conda-hook.ps1
+no change     /home/agarwal.rishi/.conda/envs/ee/lib/python3.7/site-packages/xontrib/conda.xsh
+no change     /home/agarwal.rishi/.conda/envs/ee/etc/profile.d/conda.csh
+no change     /home/agarwal.rishi/.bashrc
+No action taken.
+JOB NUMBER: 869
+Traceback (most recent call last):
+  File "/home/agarwal.rishi/.conda/envs/ee/lib/python3.7/site-packages/ee/data.py", line 330, in _execute_cloud_call
+    return call.execute(num_retries=num_retries)
+  File "/home/agarwal.rishi/.conda/envs/ee/lib/python3.7/site-packages/googleapiclient/_helpers.py", line 134, in positional_wrapper
+    return wrapped(*args, **kwargs)
+  File "/home/agarwal.rishi/.conda/envs/ee/lib/python3.7/site-packages/googleapiclient/http.py", line 915, in execute
+    raise HttpError(resp, content, uri=self.uri)
+googleapiclient.errors.HttpError: <HttpError 400 when requesting https://earthengine.googleapis.com/v1alpha/projects/earthengine-legacy/value:compute?prettyPrint=false&alt=json returned "Collection.reduceColumns: Error in map(ID=4):
+Image.lt: If one image has no bands, the other must also have no bands. Got 0 and 1.". Details: "Collection.reduceColumns: Error in map(ID=4):
+Image.lt: If one image has no bands, the other must also have no bands. Got 0 and 1.">
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "step3_routine.py", line 569, in <module>
+    data_set3 = data_set2.getInfo() # <- slow
+  File "/home/agarwal.rishi/.conda/envs/ee/lib/python3.7/site-packages/ee/computedobject.py", line 98, in getInfo
+    return data.computeValue(self)
+  File "/home/agarwal.rishi/.conda/envs/ee/lib/python3.7/site-packages/ee/data.py", line 734, in computeValue
+    prettyPrint=False))['result']
+  File "/home/agarwal.rishi/.conda/envs/ee/lib/python3.7/site-packages/ee/data.py", line 332, in _execute_cloud_call
+    raise _translate_cloud_exception(e)
+ee.ee_exception.EEException: Collection.reduceColumns: Error in map(ID=4):
+Image.lt: If one image has no bands, the other must also have no bands. Got 0 and 1.

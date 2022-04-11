@@ -3,11 +3,11 @@
 #SBATCH --time=01:00:00
 #SBATCH --job-name=routine_job
 #SBATCH --partition=short
-#SBATCH --mem=16GB
-#SBATCH --output=output/slurm-1000069.out
+#SBATCH --mem=64GB
+#SBATCH --output=output/slurm-%j.out
 module load anaconda3/3.7
 source activate 
 source activate ee
 conda activate ee
 conda init bash
-python3 step3_mine_detection.py -108.87080552461404 -108.78097206661297 34.88081647081126 34.790933588623425 69
+python3 step3_routine.py -108.87080552461404 -108.78097206661297 35.379488360140314 35.28960547795248 69

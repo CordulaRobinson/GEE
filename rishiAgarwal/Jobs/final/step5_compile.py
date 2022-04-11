@@ -1,30 +1,42 @@
 import os
 import csv
 #import ee
-import ast
-import pandas as pd
-import glob
 
-# Put all relevant CSV files into a list
-os.chdir("/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/final/results") # change to your own path to the 'results' folder
-extension = 'csv'
-all_filenames = [i for i in glob.glob('*.{}'.format(extension))]
+os.system("cat results/*csv > results/compiled.csv") # compile all results into one csv file
+#os.system("awk 'FNR > 1' results/*.csv > results/compiled.csv")
+os.system("rm -rf results/job*") # remove individual results files
+os.system("rm -rf output/slurm*") # remove slurm files
+os.system("rm -rf slurm*") # remove slurm files
+os.system("rm -rf batch/routine*") # remove batch files
+os.system("rm queue.txt") # remove temp queue file
+os.system("rm failed.txt") # remove failed jobs txt file
+os.system("rm start_routine.sh") # remove step 1 bash file
 
-# Header
-header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
-      'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B']
+# path = "c:/Users/r.eah/OneDrive - Northeastern University/gee/raymondeah/congo/auto/routine/output/compiled.csv"
 
-# Combine all files in the list
-combined_csv = pd.concat([pd.read_csv(f) for f in all_filenames ])
-# Export to csv, file name = compiled.csv, with header
-combined_csv.to_csv( "compiled.csv", header=header_list, index=False, encoding='utf-8-sig')
+# restore = []
+# with open(path, newline='') as csvfile:
+#     spamreader = csv.reader(csvfile, delimiter=' ')
+#     for row in spamreader:
+#         coords = row[0].split(',')
+#         restore.append(coords)
 
-# Remove extraneous files
-os.chdir("/scratch/agarwal.rishi/gee") # change to your own path
-os.system("rm -rf results/job*")
-os.system("rm -rf output/slurm*")
-os.system("rm -rf batch/routine*")
-os.system("rm queue.txt")
-os.system("rm failed.txt")
-os.system("rm -rf slurm*")
-os.system("rm start_routine.sh")
+# for row in restore[:5]:
+#     print(row)
+
+# fc = []
+# for row in restore:
+#     g = ee.Geometry.Polygon(
+#         [[[float(row[0]), float(row[1])],
+#           [float(row[2]), float(row[3])],
+#           [float(row[4]), float(row[5])],
+#           [float(row[6]), float(row[7])]]])
+#     fc.append(g)
+
+# final = ee.FeatureCollection(fc)
+
+# roi1 = ee.Geometry.Polygon(
+#         [[[29.554129272985683, 3.1591674847348235],
+#           [29.554129272985683, 3.092319151883147],
+#           [29.625197083044277, 3.092319151883147],
+#           [29.625197083044277, 3.1591674847348235]]])
