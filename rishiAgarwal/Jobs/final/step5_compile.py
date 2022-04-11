@@ -20,7 +20,7 @@ combined_csv = pd.concat([pd.read_csv(f) for f in all_filenames ])
 combined_csv.to_csv( "compiled.csv", header=header_list, index=False, encoding='utf-8-sig')
 
 # Remove extraneous files
-os.chdir("/scratch/agarwal.rishi/gee") # change to your own path
+os.chdir("/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/final/") # change to your own path
 os.system("rm -rf results/job*")
 os.system("rm -rf output/slurm*")
 os.system("rm -rf batch/routine*")

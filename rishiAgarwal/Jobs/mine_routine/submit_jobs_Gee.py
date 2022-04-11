@@ -4,9 +4,9 @@ import os
 # create a large region of interest, of which we will create lots of jobs for
 # upper right and lower left corners, orientated NS
 upper_lon = -115.06931412668766
-upper_lat = 35.379488360140314
+upper_lat = 34.88081647081126
 lower_lon = -115.84385025950016
-lower_lat = 34.88081647081126
+lower_lat = 35.379488360140314
 
 """
 coords for mojave 
