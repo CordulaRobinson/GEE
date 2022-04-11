@@ -79,4 +79,4 @@ while not os.system('grep routine queue.txt'):
     os.system('squeue -u agarwal.rishi > queue.txt')
 
 # after all jobs are finished, compile results
-#os.system('python3 step5_compile.py')
+os.system('python3 step5_compile.py')

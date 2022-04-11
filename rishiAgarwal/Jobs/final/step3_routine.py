@@ -1,5 +1,6 @@
 # IMPORTS
 import os
+from pickle import NONE
 import sys
 import csv
 import math
@@ -415,7 +416,8 @@ def get_NASADEM(feature):
         'scale': 30
     })
     mean = ee.Number(red_srtm.get('elevation'))
-    return feature.set('elevation',mean)
+    condition = mean.equals(None)
+    return ee.Algorithms.If(condition, feature.set('elevation',-999), feature.set('elevation',mean)) 
 
 
 def calc_gedi_loss(feature):
@@ -459,8 +461,9 @@ def calc_gedi_loss(feature):
         'scale': 30
     })
     gedi_mean = ee.Number(avg_gedi.get('elev_highestreturn'))
+    condition = gedi_mean.equals(None) or loss.equals(None)
 
-    return feature.set('loss',loss).set('GEDI',gedi_mean)
+    return ee.Algorithms.If(condition, feature.set('loss', -999).set('GEDI', -999), feature.set('loss',loss).set('GEDI',gedi_mean))
 
 """
 Segment the given geometry into squares of given size (in km)
@@ -528,6 +531,8 @@ def filter_by_swir1_b(squares, threshold):
     passed = with_swir1_b.filter(ee.Filter.lte('swir/b', threshold))
     return passed
 
+"""
+
 ####################################################################################################################
 # old routine (coordinates of passing squares only)
 
@@ -567,6 +572,7 @@ def filter_by_swir1_b(squares, threshold):
 #   f.close()
 
 ########################################################################################################################################
+"""
 # # new routine (storing all information)
 
 def passing_mine(feature):
@@ -597,20 +603,9 @@ def create_results(feature):
     vh = feature.get('vh')
     nir_g = feature.get('nir/g')
     swir1_b = feature.get('swir1/b')
-    if(feature.get('NASADEM Elevation') == None):
-      nasadem = 0
-    else:
-      nasadem = feature.get('NASADEM Elevation')
-    
-    if(feature.get('GEDI Elevation') == None):
-      gedi_elev = 0
-    else:
-      gedi_elev = feature.get('GEDI Elevation')
-    
-    if(feature.get('GEDI-SRTM Elevation') == None):
-      gedi_loss = 0
-    else:
-      gedi_loss = feature.get('GEDI-SRTM Elevation')
+    nasadem = feature.get('NASADEM Elevation')
+    gedi_elev = feature.get('GEDI Elevation')
+    gedi_loss = feature.get('GEDI-SRTM Elevation')
     row = ee.Array([lon_min, 
                    lat_min, 
                    lon_max,
