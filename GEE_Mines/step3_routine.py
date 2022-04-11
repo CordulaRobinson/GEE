@@ -558,6 +558,8 @@ def create_results(feature):
 
 ## ------------------- ##
 
+print('test')
+
 # Calculate values for 250m x 250m squares
 regions = create_segments(region, 0.25)
 segments = ee.FeatureCollection(regions)
