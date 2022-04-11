@@ -597,9 +597,20 @@ def create_results(feature):
     vh = feature.get('vh')
     nir_g = feature.get('nir/g')
     swir1_b = feature.get('swir1/b')
-    nasadem = feature.get('NASADEM Elevation')
-    gedi_elev = feature.get('GEDI Elevation')
-    gedi_loss = feature.get('GEDI-SRTM Elevation')
+    if(feature.get('NASADEM Elevation') == None):
+      nasadem = 0
+    else:
+      nasadem = feature.get('NASADEM Elevation')
+    
+    if(feature.get('GEDI Elevation') == None):
+      gedi_elev = 0
+    else:
+      gedi_elev = feature.get('GEDI Elevation')
+    
+    if(feature.get('GEDI-SRTM Elevation') == None):
+      gedi_loss = 0
+    else:
+      gedi_loss = feature.get('GEDI-SRTM Elevation')
     row = ee.Array([lon_min, 
                    lat_min, 
                    lon_max,
