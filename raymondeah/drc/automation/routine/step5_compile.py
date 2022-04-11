@@ -2,8 +2,9 @@ import os
 import csv
 #import ee
 
-# os.system("cat results/*csv > results/compiled.csv") # compile all results into one csv file
+#os.system("cat results/*csv > results/compiled.csv") # compile all results into one csv file
 os.system("awk 'FNR > 1' results/*.csv > results/compiled.csv")
+#add header
 os.system("rm -rf results/job*") # remove individual results files
 os.system("rm -rf output/slurm*") # remove slurm files
 os.system("rm -rf slurm*") # remove slurm files
