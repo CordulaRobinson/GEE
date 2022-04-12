@@ -15,7 +15,8 @@ with open('results/compiled.csv', 'r') as read_obj, \
     csv_writer = writer(write_obj)
     # Add header to output file, with status column
     header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
-          'Percent Vegetation Loss', 'Percent Bare Initial', 'Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B', 'Status']
+          'Percent Vegetation Loss', 'Percent Bare Initial', 'Percent Significant VH Values', \
+              'Average NIR/G', 'Average SWIR1/B', 'NASA Elev', 'GEDI Elev', 'Elev Loss', 'Status']
     csv_writer.writerow(header_list)
     # Read each row of the input csv file as list
     for row in csv_reader:
@@ -42,7 +43,7 @@ with open('results/compiled_status.csv', 'r') as r, \
     if header != None:
         # Add passing rows to new file
         for row in csv_reader:
-            if row[9] == "Pass":
+            if row[12] == "Pass":
                 csv_writer.writerow(row)
                 
 # Convert to a Feature Collection
@@ -69,6 +70,6 @@ task = ee.batch.Export.table.toAsset(**{
   'collection': fc,
   'description':'compiled_results',
   'assetId': 'users/EmilyNason/compiledResults', # change to your GEE Asset path and a unique name (will not overwrite already existing assets, so old names cannot be reused)
-});
+})
 
 task.start()

@@ -416,8 +416,8 @@ def get_NASADEM(feature):
         'scale': 30
     })
     mean = ee.Number(red_srtm.get('elevation'))
-    condition = mean.equals(None)
-    return ee.Algorithms.If(condition, feature.set('elevation',-999), feature.set('elevation',mean)) 
+    mean = ee.Algorithms.If(mean, mean, -999)
+    return feature.set('elevation',mean)
 
 
 def calc_gedi_loss(feature):
@@ -453,7 +453,8 @@ def calc_gedi_loss(feature):
         'scale': 30
     })
     loss = ee.Number(avg_loss.get('loss'))
-    
+    loss = ee.Algorithms.If(loss, loss, -999)
+
     # Avergaing GEDI
     avg_gedi = gedi.reduceRegion(**{
         'reducer': ee.Reducer.mean(),
@@ -461,9 +462,9 @@ def calc_gedi_loss(feature):
         'scale': 30
     })
     gedi_mean = ee.Number(avg_gedi.get('elev_highestreturn'))
-    condition = gedi_mean.equals(None) or loss.equals(None)
+    gedi_mean = ee.Algorithms.If(gedi_mean, gedi_mean, -999)
 
-    return ee.Algorithms.If(condition, feature.set('loss', -999).set('GEDI', -999), feature.set('loss',loss).set('GEDI',gedi_mean))
+    return feature.set('loss',loss).set('GEDI',gedi_mean)
 
 """
 Segment the given geometry into squares of given size (in km)
