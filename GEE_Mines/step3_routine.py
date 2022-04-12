@@ -415,6 +415,7 @@ def get_NASADEM(feature):
         'scale': 30
     })
     mean = ee.Number(red_srtm.get('elevation'))
+    mean = ee.Algorithms.If(mean, mean, -999) # null values replaced with -999
     return feature.set('elevation',mean)
 
 
@@ -451,6 +452,7 @@ def calc_gedi_loss(feature):
         'scale': 30
     })
     loss = ee.Number(avg_loss.get('loss'))
+    loss = ee.Algorithms.If(loss, loss, -999) # null values replaced with -999
     
     # Avergaing GEDI
     avg_gedi = gedi.reduceRegion(**{
@@ -459,6 +461,7 @@ def calc_gedi_loss(feature):
         'scale': 30
     })
     gedi_mean = ee.Number(avg_gedi.get('elev_highestreturn'))
+    gedi_mean = ee.Algorithms.If(gedi_mean, gedi_mean, -999) # null values replaced with -999
 
     return feature.set('loss',loss).set('GEDI',gedi_mean)
 
