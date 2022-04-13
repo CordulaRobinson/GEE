@@ -21,7 +21,8 @@ with open('results/compiled.csv', 'r') as read_obj, \
     # Read each row of the input csv file as list
     for row in csv_reader:
         # Calculate Status and append to the end of the row/list
-        status = (((float(row[4]) > 20) or (float(row[5]) > 10))and (float(row[6]) > 5) and (float(row[7]) <= 0.45) and (float(row[8]) < 0.65))
+        status = (((float(row[4]) > 20) or (float(row[5]) > 10))and (float(row[6]) > 5) and (float(row[7]) <= 0.45) and (float(row[8]) < 0.65) \
+                 and (float(row[11]) < 0))
         if status:
             row.append("Pass")
         else: 
