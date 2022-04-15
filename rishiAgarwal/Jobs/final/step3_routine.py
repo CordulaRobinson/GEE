@@ -507,6 +507,7 @@ def get_B6(feature):
   b6_val = stats.get('b6')
     
   return feature.set('b6', b6_val)
+
 """
 Segment the given geometry into squares of given size (in km)
 :param geometry: rectangle form geometry object

@@ -465,6 +465,48 @@ def calc_gedi_loss(feature):
 
     return feature.set('loss',loss).set('GEDI',gedi_mean)
 
+def get_B5(feature):
+  g = feature.geometry()
+  composite_s2 = s2 \
+      .filter(ee.Filter.bounds(g)) \
+      .filter(ee.Filter.date('2021-01-01', '2021-12-31')) \
+      .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)) \
+      .map(mask_s2_clouds) \
+      .select('B.*') \
+      .median() \
+      .clip(g) 
+  s2_b5 = composite_s2.select('B5').rename('b5')
+  stats = s2_b5.reduceRegion(**{
+      'reducer': ee.Reducer.mean(),
+      'geometry': g,
+      'scale': 30,
+      'maxPixels': 1e10
+  })
+  b5_val = stats.get('b5')
+    
+  return feature.set('b5', b5_val)
+
+def get_B6(feature):
+  g = feature.geometry()
+  composite_s2 = s2 \
+      .filter(ee.Filter.bounds(g)) \
+      .filter(ee.Filter.date('2021-01-01', '2021-12-31')) \
+      .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)) \
+      .map(mask_s2_clouds) \
+      .select('B.*') \
+      .median() \
+      .clip(g) 
+  s2_b6 = composite_s2.select('B6').rename('b6')
+  stats = s2_b6.reduceRegion(**{
+      'reducer': ee.Reducer.mean(),
+      'geometry': g,
+      'scale': 30,
+      'maxPixels': 1e10
+  })
+  b6_val = stats.get('b6')
+    
+  return feature.set('b6', b6_val)
+
 """
 Segment the given geometry into squares of given size (in km)
 :param geometry: rectangle form geometry object
@@ -579,6 +621,8 @@ def passing_mine(feature):
   swir1_b = calculate_swir1_b(feature)
   NASADEM = get_NASADEM(feature)
   GEDI = calc_gedi_loss(feature)
+  b5 = get_B5(feature)
+  b6 = get_B6(feature)
   return ee.Feature(feature \
     .set('vegetation loss', veg.get('percent loss')) \
     .set('percent bare', veg.get('percent bare')) \
@@ -587,7 +631,9 @@ def passing_mine(feature):
     .set('swir1/b', swir1_b.get('swir/b'))\
     .set('NASADEM Elevation',NASADEM.get('elevation')) \
     .set('GEDI Elevation',GEDI.get('GEDI'))\
-    .set('GEDI-SRTM Elevation',GEDI.get('loss')))
+    .set('GEDI-SRTM Elevation',GEDI.get('loss'))
+    .set('B8 value', b5.get('b5'))\
+    .set('B9 value', b6.get('b6')))
 
 def create_results(feature):
     coords = ee.List(feature.geometry().coordinates().get(0))
@@ -603,6 +649,8 @@ def create_results(feature):
     nasadem = feature.get('NASADEM Elevation')
     gedi_elev = feature.get('GEDI Elevation')
     gedi_loss = feature.get('GEDI-SRTM Elevation')
+    b5_val = feature.get('B5 value')
+    b6_val = feature.get('B6 value')
     row = ee.Array([lon_min, 
                    lat_min, 
                    lon_max,
@@ -614,7 +662,9 @@ def create_results(feature):
                    swir1_b,
                    nasadem,
                    gedi_elev, 
-                   gedi_loss])
+                   gedi_loss,
+                   b5_val,
+                   b6_val])
     new_feature = ee.Feature(None, {'info': row})
     return new_feature
 
