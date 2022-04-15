@@ -33,10 +33,16 @@ var mines = ee.FeatureCollection("users/rishiAgarwal/Congo_Active_Mines"),
           [30.246670960050185, 1.7103797163160706],
           [30.356362579923232, 1.7103797163160706],
           [30.356362579923232, 1.7911944738716732]]]),
-    rayline = /* color: #98ff00 */ee.Geometry.LineString(
+    rayline = 
+    /* color: #98ff00 */
+    /* shown: false */
+    ee.Geometry.LineString(
         [[29.584357669394308, 3.099094656316075],
          [29.57959406618386, 3.1264342491817576]]),
-    emilyline = /* color: #37d66c */ee.Geometry.LineString(
+    emilyline = 
+    /* color: #37d66c */
+    /* shown: false */
+    ee.Geometry.LineString(
         [[25.7876962904855, -10.783991079147425],
          [25.83610479878628, -10.78820679367607]]),
     emily_area1 = 
@@ -75,10 +81,51 @@ var mines = ee.FeatureCollection("users/rishiAgarwal/Congo_Active_Mines"),
           [25.95, -10.7],
           [26.05, -10.7],
           [26.05, -10.6]]]),
-    rishiline = /* color: #ff0000 */ee.Geometry.LineString(
+    rishiline = 
+    /* color: #ff0000 */
+    /* shown: false */
+    ee.Geometry.LineString(
         [[27.395013010807165, -7.542752969325824],
-         [27.40788761407865, -7.5362862321228965]]);
-
+         [27.40788761407865, -7.5362862321228965]]),
+    mojave = 
+    /* color: #d63000 */
+    /* shown: false */
+    /* displayProperties: [
+      {
+        "type": "rectangle"
+      }
+    ] */
+    ee.Geometry.Polygon(
+        [[[-115.84659684153141, 35.379488360140314],
+          [-115.84659684153141, 34.88081647081126],
+          [-115.07206070871891, 34.88081647081126],
+          [-115.07206070871891, 35.379488360140314]]], null, false),
+    mojaveline = 
+    /* color: #d619c3 */
+    /* shown: false */
+    ee.Geometry.LineString(
+        [[-115.80489660476239, 34.89453802554642],
+         [-115.38054968093427, 35.03184163656472]]),
+    canyon = 
+    /* color: #98ff00 */
+    /* shown: false */
+    /* locked: true */
+    /* displayProperties: [
+      {
+        "type": "rectangle"
+      }
+    ] */
+    ee.Geometry.Polygon(
+        [[[-112.49388586386947, 36.34993501837557],
+          [-112.49388586386947, 35.91070317884866],
+          [-111.79900060996322, 35.91070317884866],
+          [-111.79900060996322, 36.34993501837557]]], null, false),
+    canyonline = 
+    /* color: #0b4a8b */
+    /* shown: false */
+    ee.Geometry.LineString(
+        [[-112.23367900878893, 36.0481853223429],
+         [-112.12510369226801, 36.193781847393]]);
 
 function maskS2clouds(image) {
   var qa = image.select('QA60');
@@ -93,13 +140,13 @@ function maskS2clouds(image) {
 
   return image.updateMask(mask).divide(10000);
 }
+var s1 = ee.ImageCollection('COPERNICUS/S1_GRD')
 
-var area = focus
-var line =  rishiline
+var area = mojave
+var line =  mojaveline
 
-Map.centerObject(area, 13);
+Map.centerObject(area, 10);
 
-//Map.centerObject(rayroi1, 13);
 var filtered = s2
   .filter(ee.Filter.bounds(area))
   .filter(ee.Filter.date('2020-01-01', '2020-12-31'))
@@ -110,16 +157,14 @@ var filtered = s2
 var composite = filtered.median().clip(area);
 
 Map.addLayer(composite, visualization, '2020 Median Composite 1');
-//Map.addLayer(composite.select('B11'), {min: 0, max: 1, palette: ['white', 'red']}, "SWIR1")
-// Map.addLayer(composite.select('B2'), {min: 0, max: 1, palette: ['white', 'blue']}, "Blue")
-// Map.addLayer(composite.select('B9'), {min: 0, max: 1, palette: ['white', 'blue']}, "Water Vapor")
-
 
 
 var addIndices = function(image) {
   var nirg = image.normalizedDifference(['B8', 'B3']).rename(['nirg'])
-  var swirb = image.normalizedDifference(['B11', 'B2']).rename(['swirb']) // SWIR, Blue
-  return image.addBands(nirg).addBands(swirb)
+  var swirb = image.normalizedDifference(['B11', 'B2']).rename(['swirb'])
+  var b5_b6 = image.select('B5').divide(image.select('B6')).rename(['5over6'])
+  var b5ndb6 = image.normalizedDifference(['B5','B6']).rename('NDB5B6')
+  return image.addBands(nirg).addBands(swirb).addBands(b5_b6).addBands(b5ndb6)
 }
 
 var withIndicies = addIndices(composite)
@@ -144,25 +189,22 @@ Map.addLayer(points, {min:1, max:1, palette:['red']}, 'Cross Section');
 // Select band values at every point
 
 var ratios = withIndicies.select(withIndicies.bandNames()
-.filter(ee.Filter.or(ee.Filter.eq('item', 'swirb'))))
-
-// var specificBand = withIndicies.select(
-//   composite.bandNames().filter(ee.Filter.or(ee.Filter.eq('item', 'B11'), ee.Filter.eq('item', 'B2'))))
-
+.filter(ee.Filter.or(ee.Filter.eq('item', 'B5'), ee.Filter.eq('item', 'B6'), ee.Filter.eq('item', 'B7'), ee.Filter.eq('item', 'B8'))))
 
 print(composite.bandNames())
-
+print(withIndicies.bandNames())
 print(ratios.bandNames())
-// print(specificBand.bandNames())
-var image = ratios.rename(['SWIRB'])
-// var imageSP = specificBand.rename(['Blue', 'SWIR1'])
-//var imageBand = 
-//var index = withIndicies.rename([''])
-var bands = image.reduceRegions(points, ee.Reducer.first(), 10);
+
+var image = ratios.rename(['B5', 'B6', 'B7', 'B8'])
+var bands = composite.reduceRegions(points, ee.Reducer.first(), 10);
 
 // Display a chart of band values along the cross section
 var chartStyle = {
-  colors: ['blue', 'green', 'orange', 'red', 'yellow', 'brown', 'black', 'grey', 'pink', 'cyan', 'violet']
+  colors: ['green', 'blue', 'orange', 'red', 'yellow', 'brown', 'black', 'grey', 'pink', 'cyan', 'violet']
 }
 
 print(ui.Chart.feature.byFeature(bands).setOptions(chartStyle));
+
+Map.addLayer(withIndicies.select('5over6'), {min: 0, max: 2, palette: ['white', 'red']}, "area B5 / B6")
+
+Map.addLayer(withIndicies.select('NDB5B6'), {min: -1, max: 1, palette: ['white', 'magenta']}, "area B5 nd B6")
