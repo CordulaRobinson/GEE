@@ -48,7 +48,7 @@ with open('results/compiled_status.csv', 'r') as r, \
     if header != None:
         # Add passing rows to new file
         for row in csv_reader:
-            if row[12] == "Pass":
+            if row[14] == "Pass":
                 csv_writer.writerow(row)
                 
 # Convert to a Feature Collection
