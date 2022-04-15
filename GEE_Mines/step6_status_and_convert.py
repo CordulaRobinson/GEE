@@ -17,7 +17,8 @@ with open('results/compiled.csv', 'r') as read_obj, \
     # Add header to output file, with status column
     header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
                     'Percent Vegetation Loss', 'Percent Bare Initial', 'Percent Significant VH Values', \
-                    'Average NIR/G', 'Average SWIR1/B', 'NASA Elev', 'GEDI Elev', 'Elev Loss','Status']
+                    'Average NIR/G', 'Average SWIR1/B', 'NASA Elev', 'GEDI Elev', 'Elev Loss',\
+                        'B5 Value', 'B6 Value', 'Status']
     csv_writer.writerow(header_list)
     # Read each row of the input csv file as list
     for row in csv_reader:
