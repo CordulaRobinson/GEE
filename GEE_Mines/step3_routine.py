@@ -641,8 +641,8 @@ def passing_mine(feature):
     .set('swir1/b', swir1_b.get('swir/b'))\
     .set('NASADEM Elevation',NASADEM.get('elevation')) \
     .set('GEDI Elevation',GEDI.get('GEDI'))\
-    .set('GEDI Quality Flag',GEDI.get('quality flag'))\
     .set('GEDI-SRTM Elevation',GEDI.get('loss'))\
+    .set('GEDI Quality Flag',GEDI.get('quality flag'))\
     .set('B8 value', b5.get('b5'))\
     .set('B9 value', b6.get('b6')))
 
