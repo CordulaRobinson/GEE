@@ -442,7 +442,7 @@ def calc_gedi_loss(feature):
     x = gedi_coll
     srtm = x.select('digital_elevation_model_srtm')
     gedi = x.select('elev_highestreturn')
-
+    quality = x.select('quality_flag')
     loss = gedi.subtract(srtm).rename('loss')
     
     # Averaging Loss
@@ -463,7 +463,17 @@ def calc_gedi_loss(feature):
     gedi_mean = ee.Number(avg_gedi.get('elev_highestreturn'))
     gedi_mean = ee.Algorithms.If(gedi_mean, gedi_mean, -999) # null values replaced with -999
 
-    return feature.set('loss',loss).set('GEDI',gedi_mean)
+    # Avergaing GEDI Quality Flag
+    avg_qual = quality.reduceRegion(**{
+        'reducer': ee.Reducer.mean(),
+        'geometry': g,
+        'scale': 30
+    })
+
+
+    qual = ee.Number(avg_qual.get('quality_flag'))
+
+    return feature.set('loss',loss).set('GEDI',gedi_mean).set('quality flag',qual)
 
 def get_B5(feature):
   g = feature.geometry()
@@ -631,7 +641,8 @@ def passing_mine(feature):
     .set('swir1/b', swir1_b.get('swir/b'))\
     .set('NASADEM Elevation',NASADEM.get('elevation')) \
     .set('GEDI Elevation',GEDI.get('GEDI'))\
-    .set('GEDI-SRTM Elevation',GEDI.get('loss'))
+    .set('GEDI Quality Flag',GEDI.get('quality flag'))\
+    .set('GEDI-SRTM Elevation',GEDI.get('loss'))\
     .set('B8 value', b5.get('b5'))\
     .set('B9 value', b6.get('b6')))
 
@@ -649,6 +660,7 @@ def create_results(feature):
     nasadem = feature.get('NASADEM Elevation')
     gedi_elev = feature.get('GEDI Elevation')
     gedi_loss = feature.get('GEDI-SRTM Elevation')
+    gedi_qual = feature.get('GEDI Quality Flag')
     b5_val = feature.get('B5 value')
     b6_val = feature.get('B6 value')
     row = ee.Array([lon_min, 
@@ -663,6 +675,7 @@ def create_results(feature):
                    nasadem,
                    gedi_elev, 
                    gedi_loss,
+                   gedi_qual,
                    b5_val,
                    b6_val])
     new_feature = ee.Feature(None, {'info': row})
@@ -701,7 +714,7 @@ complete_path = save_path + '/results/' + file_name + '.csv'
 
 # CSV header
 #header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
- #     'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B', 'NASADEM Elevation', GEDI Elevation,'GEDI-SRTM Elevation']
+ #     'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B', 'NASADEM Elevation', GEDI Elevation,'GEDI-SRTM Elevation','GEDI Quality Flag', 'B5', 'B6']
 
 # Create CSV and add header & data
 with open(complete_path, 'w') as f:
