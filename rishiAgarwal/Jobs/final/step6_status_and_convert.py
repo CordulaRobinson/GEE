@@ -74,7 +74,7 @@ fc = ee.FeatureCollection(region_list)
 task = ee.batch.Export.table.toAsset(**{
   'collection': fc,
   'description':'compiled_results',
-  'assetId': 'users/rishiAgrwal/compiledResults', # change to your GEE Asset path and a unique name (will not overwrite already existing assets, so old names cannot be reused)
+  'assetId': 'users/rishiAgarwal/compiledResults', # change to your GEE Asset path and a unique name (will not overwrite already existing assets, so old names cannot be reused)
 })
 
 task.start()
