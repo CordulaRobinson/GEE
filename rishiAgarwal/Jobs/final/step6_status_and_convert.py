@@ -14,14 +14,17 @@ with open('results/compiled.csv', 'r') as read_obj, \
     # Create a csv.writer object from the output file object
     csv_writer = writer(write_obj)
     # Add header to output file, with status column
+    # Add header to output file, with status column
     header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
-          'Percent Vegetation Loss', 'Percent Bare Initial', 'Percent Significant VH Values', \
-              'Average NIR/G', 'Average SWIR1/B', 'NASA Elev', 'GEDI Elev', 'Elev Loss', \
-                  'B5 Value', 'B6 Value', 'Status']
+                    'Percent Vegetation Loss', 'Percent Bare Initial', 'Percent Significant VH Values', \
+                    'Average NIR/G', 'Average SWIR1/B', 'NASA Elev', 'GEDI Elev', 'Elev Loss','GEDI Qual. Flag',\
+                        'B5 Value', 'B6 Value', 'Status']
     csv_writer.writerow(header_list)
     # Read each row of the input csv file as list
     for row in csv_reader:
         # Calculate Status and append to the end of the row/list
+        # Passing: (Veg loss > 20% or Initial Bare Earth > 10%) and SAR VH > 5% and NIR/G <= 0.45 and SWIR1/B < 0.65 
+        # and Elevation Loss < 0 (this also accounts for missing data = -999)
         status = (((float(row[4]) > 20) or (float(row[5]) > 10))and (float(row[6]) > 5) and (float(row[7]) <= 0.45) and (float(row[8]) < 0.65) \
                  and (float(row[11]) < 0))
         if status:
@@ -45,7 +48,7 @@ with open('results/compiled_status.csv', 'r') as r, \
     if header != None:
         # Add passing rows to new file
         for row in csv_reader:
-            if row[14] == "Pass":
+            if row[15] == "Pass":
                 csv_writer.writerow(row)
                 
 # Convert to a Feature Collection
@@ -72,6 +75,6 @@ task = ee.batch.Export.table.toAsset(**{
   'collection': fc,
   'description':'compiled_results',
   'assetId': 'users/EmilyNason/compiledResults', # change to your GEE Asset path and a unique name (will not overwrite already existing assets, so old names cannot be reused)
-})
+});
 
 task.start()
