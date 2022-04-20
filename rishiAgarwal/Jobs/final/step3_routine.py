@@ -472,6 +472,7 @@ def calc_gedi_loss(feature):
 
 
     qual = ee.Number(avg_qual.get('quality_flag'))
+    qual = ee.Algorithms.If(qual, qual, -999) # null values replaced with -999
 
     return feature.set('loss',loss).set('GEDI',gedi_mean).set('quality flag',qual)
 
