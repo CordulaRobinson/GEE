@@ -643,8 +643,8 @@ def passing_mine(feature):
     .set('GEDI Elevation',GEDI.get('GEDI'))\
     .set('GEDI-SRTM Elevation',GEDI.get('loss'))\
     .set('GEDI Quality Flag',GEDI.get('quality flag'))\
-    .set('B8 value', b5.get('b5'))\
-    .set('B9 value', b6.get('b6')))
+    .set('B5 value', b5.get('b5'))\
+    .set('B6 value', b6.get('b6')))
 
 def create_results(feature):
     coords = ee.List(feature.geometry().coordinates().get(0))
