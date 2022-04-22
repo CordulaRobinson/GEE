@@ -74,17 +74,17 @@ def create_segments(geometry, size):
 create_segments(region, 10)
 
 # wait while jobs are still running
-os.system('squeue -u eah.r > queue.txt')
+os.system('squeue -u agarwal.rishi > queue.txt')
 while not os.system('grep routine queue.txt'):
-    os.system('squeue -u eah.r > queue.txt')
+    os.system('squeue -u eagarwal.rishi > queue.txt')
 
 # after all jobs are finished, resubmit failed jobs
 os.system('python3 step4_rerun.py')
 
 # wait while jobs are still running
-os.system('squeue -u eah.r > queue.txt')
+os.system('squeue -u eagarwal.rishi > queue.txt')
 while not os.system('grep routine queue.txt'):
-    os.system('squeue -u eah.r > queue.txt')
+    os.system('squeue -u agarwal.rishi > queue.txt')
 
 # after all jobs are finished, compile results
 os.system('python3 step5_compile.py')
