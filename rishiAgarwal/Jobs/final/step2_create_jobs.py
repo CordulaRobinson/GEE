@@ -76,13 +76,13 @@ create_segments(region, 1)
 # wait while jobs are still running
 os.system('squeue -u agarwal.rishi > queue.txt')
 while not os.system('grep routine queue.txt'):
-    os.system('squeue -u eagarwal.rishi > queue.txt')
+    os.system('squeue -u agarwal.rishi > queue.txt')
 
 # after all jobs are finished, resubmit failed jobs
 os.system('python3 step4_rerun.py')
 
 # wait while jobs are still running
-os.system('squeue -u eagarwal.rishi > queue.txt')
+os.system('squeue -u agarwal.rishi > queue.txt')
 while not os.system('grep routine queue.txt'):
     os.system('squeue -u agarwal.rishi > queue.txt')
 
