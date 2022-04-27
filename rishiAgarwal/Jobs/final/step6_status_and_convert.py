@@ -27,8 +27,18 @@ with open('results/' + file_name + '_scores.csv', 'r') as read_obj, \
     # Read each row of the input csv file as list
     for row in csv_reader:
         # Calculate Status and append to the end of the row/list
-        # Passing: (Veg loss > 20% or Initial Bare Earth > 10%) and SAR VH > 5% and NIR/G <= 0.45 and SWIR1/B < 0.65 
-        status = (((float(row[4]) > 20) or (float(row[5]) > 10))and (float(row[6]) > 5) and (float(row[7]) <= 0.45) and (float(row[8]) < 0.65))
+        # Passing: (Veg loss > 20% or Initial Bare Earth > 10%) and  and  and  
+        status = (((float(row[4]) > 20) or (float(row[5]) > 10)) \
+            #SAR VH > 5%
+            and (float(row[6]) > 5) \
+                #NIR/G <= 0.45
+                and (float(row[7]) <= 0.45) \
+                    #SWIR1/B < 0.65
+                    and (float(row[8]) < 0.65) \
+                        #Elevation Score > 4
+                        and (float(row[17]) > 3) \
+                            #Band Variation Score > 4
+                            and (float(row[18]) > 4)) 
         if status:
             row.append("Pass")
         else: 
@@ -78,6 +88,6 @@ task = ee.batch.Export.table.toAsset(**{
   'collection': fc,
   'description':'compiled_results',
   'assetId': 'users/EmilyNason/FinalResults', # change to your GEE Asset path and a unique name (will not overwrite already existing assets, so old names cannot be reused)
-});
+})
 
 task.start()
