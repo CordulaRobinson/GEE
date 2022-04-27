@@ -4,7 +4,6 @@ import sys
 import csv
 import math
 import ee
-
 ee.Initialize()
 
 # DATASETS
@@ -336,8 +335,8 @@ def calculate_sar_vh(feature):
     
     #area of possible mines
     area_mines = composite.lt(-19).rename('mines')
-    #connect = area_mines.connectedPixelCount(25);
-    #area_mines = area_mines.updateMask(connect.gt(8));
+    connect = area_mines.connectedPixelCount(25);
+    area_mines = area_mines.updateMask(connect.gt(8));
     area_mines = area_mines.multiply(ee.Image.pixelArea())
 
     area = area_mines.reduceRegion(**{
@@ -704,7 +703,7 @@ def create_results(feature):
 ## ------------------- ##
 
 # Calculate values for 250m x 250m squares
-regions = create_segments(region, 0.03)
+regions = create_segments(region, 0.25)
 segments = ee.FeatureCollection(regions)
 results = segments.map(passing_mine)
 

@@ -71,7 +71,7 @@ def create_segments(geometry, size):
         top = new_lon
 
 # submit jobs with 10x10km size
-create_segments(region, 1)
+create_segments(region, 10)
 
 # wait while jobs are still running
 os.system('squeue -u agarwal.rishi > queue.txt')
