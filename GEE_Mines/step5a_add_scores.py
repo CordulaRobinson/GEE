@@ -75,7 +75,7 @@ for row in new_array:
         x_nd = ((x_b5 - x_b6)/(x_b5 + x_b6))
         if (nasa < x_nasa):
             score_elev = score_elev+1
-        if (abs(nd - x_nd) > 0.05):
+        if (abs(nd - x_nd) > 0.02):
             score_bands = score_bands+1
 
     new_row = np.append(row, [score_elev, score_bands], axis=None)
