@@ -8,7 +8,7 @@ ee.Initialize()
 
 file_name = sys.argv[1]
 
-ex = np.genfromtxt("results/" + file_name + ".csv", delimiter=',', skip_header=1)
+ex = np.genfromtxt("results/" + file_name + ".csv", delimiter=',', skip_header=0)
 #ex = np.delete(data, -1, axis=1)
 
 new_array = np.empty((0,17), float)
@@ -76,7 +76,7 @@ for row in new_array:
         x_nd = ((x_b5 - x_b6)/(x_b5 + x_b6))
         if (nasa < x_nasa):
             score_elev = score_elev+1
-        if (abs(nd - x_nd) > 0.05):
+        if (abs(nd - x_nd) > 0.02):
             score_bands = score_bands+1
 
     new_row = np.append(row, [score_elev, score_bands], axis=None)
@@ -89,4 +89,4 @@ for row in new_array:
 # final = np.savetxt("results/compiled_scores.csv", new_array2, delimiter=",", header=header_list)
 final = np.savetxt("results/" + file_name + "_scores.csv", new_array2, delimiter=",")
 
-os.system("python3 step6_with_scores.py " + file_name)
+os.system("python3 step6_status_and_convert.py " + file_name)
