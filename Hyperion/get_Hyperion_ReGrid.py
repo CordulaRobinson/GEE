@@ -111,11 +111,13 @@ if(hyper.size().getInfo() != 0):
             bands_nc = f.createVariable('BandLabels','i2','Bands',zlib=True)
             
             data_nc[:,:,:] = data_array
+            data_nc.units = 'Digital Numbers [DN]'
             lon_nc[:,:] = lon
             lat_nc[:,:] = lat
             time[:] = second
             time.description = 'Seconds since 1970-1-1'
             scale_nc[:] = scale
+            scale_nc.description = 'Converts DN to radiance: W/m^2 SRµm'
             bands_nc[:] = bnd_indices
 
 else:
