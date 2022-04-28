@@ -48,11 +48,11 @@ ee.Initialize()
 Define Region Bounds: Lower Left, Top Right of a bounding box
 """
 # Mine 1.
-lon_ll = 26.59 ; lon_tr = 26.63 ; lat_ll = -10.89 ; lat_tr= -10.88
+lon_ll = 26.595 ; lon_tr = 26.62 ; lat_ll = -10.885 ; lat_tr= -10.875
 
 # meter resolution per pixel, native = 30m
 # caution, there are almost 200 bands. Arrays can be extremely large.
-Resolution = 100
+Resolution = 30
 
 geom = ee.Geometry.Rectangle([lon_ll,lat_ll,lon_tr,lat_tr])
 
