@@ -68,10 +68,10 @@ class GEE_Mine(object):
         
         #region of interest
         self.region = ee.Geometry.Polygon(
-                [[[ee.Number.parse(self.lon_min), ee.Number.parse(self.lon_max)],
-                  [ee.Number.parse(self.lon_min), ee.Number.parse(self.lon_max)],
-                  [ee.Number.parse(self.lat_min), ee.Number.parse(self.lat_max)],
-                  [ee.Number.parse(self.lat_min), ee.Number.parse(self.lat_max)]]])
+                [[[ee.Number.parse(self.lon_min), ee.Number.parse(self.lat_max)],
+                  [ee.Number.parse(self.lon_min), ee.Number.parse(self.lat_min)],
+                  [ee.Number.parse(self.lon_max), ee.Number.parse(self.lat_max)],
+                  [ee.Number.parse(self.lon_max), ee.Number.parse(self.lat_max)]]])
 
         # setting up for running lots of jobs
         if self.multiple == True:
@@ -356,7 +356,7 @@ class GEE_Mine(object):
 
         # build the list of squares
         segments = []
-    
+        print(height+1,width+1)
         for y in range(height + 1): # +1 to guarantee we will cover the whole region (squares may extend slightly past the bounding box)
             left = ee.Number(ee.List(coords.get(0)).get(0))
             for x in range(width + 1):
@@ -944,7 +944,7 @@ class GEE_Mine(object):
         # create a txt file containing job numbers of all failed jobs
         # and while there exist failed cases, re-submit the job
         keep_running=False
-        while os.system("grep JOB "+str(self.output)+"/slurm* > failed.txt"):
+        while os.system("grep JOB "+str(self.outputdir)+"/slurm* > failed.txt"):
             keep_running = True
             with open('failed.txt') as file:
                 for line in file:

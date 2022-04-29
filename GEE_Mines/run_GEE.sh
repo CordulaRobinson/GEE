@@ -12,7 +12,7 @@ lat_max='3.01'
 # count means nothing 
 count='0'
 # desired pixel resolution in km
-pixres='1'
+pixres='0.5'
 # system will be 'Cluster' or 'cloud'. Right now, cluster is the only option
 system='Cluster'
 # username for job tracking
@@ -37,8 +37,8 @@ assetid='users/econway/FinalResults'
 featgeedescription='compiled_results'
 # Multiple = True will run mutliple jobs in your region,
 # Else False will just run one job in your region, possibly at high res
-multiple='False'
+multiple='True'
 # max target area (kmxkm)per job. Not used if multiple = False as it is used in the creation of multiple jobs
-targetarea='2'
+targetarea='0.5'
 
 python3 GEE_Module.py $lon_min $lat_min $lon_max $lat_max $count $pixres $system $username $jobname $wd $outputdir $resultsdir $jobdir $compiledfilename $makefeaturecollection $assetid $featgeedescription $multiple $targetarea
