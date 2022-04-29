@@ -5,6 +5,7 @@ import ee
 import time
 import csv
 from scipy.interpolate import LinearNDInterpolator
+import numpy as np
 
 class GEE_Mine(object):
 
@@ -14,17 +15,19 @@ class GEE_Mine(object):
         self.username = username
         self.jobname = jobname
         
-        self.outputdir = outputdir
+        self.wd = wd
+        
+        self.outputdir = os.path.join(self.wd,outputdir)
         if os.path.exists(self.outputdir)==False:
-            os.mkdirs(self.outputdir)
+            os.mkdir(self.outputdir)
             
-        self.resultsdir = resultsdir
+        self.resultsdir = os.path.join(self.wd,resultsdir)
         if os.path.exists(self.resultsdir) == False:
-            os.mkdirs(self.resultsdir)
+            os.mkdir(self.resultsdir)
 
-        self.batchdir = batchdir
-        if os.path.exists(self.batchdir) == False:
-            os.mkdirs(self.batchdir)
+        self.jobdir = os.path.join(self.wd,jobdir)
+        if os.path.exists(self.jobdir) == False:
+            os.mkdir(self.jobdir)
         
         self.compiledfilename = compiledfilename
         self.assetid = assetid
@@ -37,7 +40,7 @@ class GEE_Mine(object):
         elif(self.makefeaturecollection=='True'):
             self.makefeaturecollection = True
 
-    def start_process(self,lon_min,lat_min,lon_max,lat_max,size=10,multiple='True',count=0,pixres=0.25):
+    def start_process(self,lon_min,lat_min,lon_max,lat_max,size,multiple,count,pixres):
         """
         args:
         bounding region, that is approx size*size in area (km**2)
@@ -71,7 +74,7 @@ class GEE_Mine(object):
                   [ee.Number.parse(self.lat_min), ee.Number.parse(self.lat_max)]]])
 
         # setting up for running lots of jobs
-        if self.multiple == True
+        if self.multiple == True:
             # execute the GEE Mine Routine i.e. submit lots of jobs
             self.create_large_squares()
             complete=False
@@ -95,9 +98,9 @@ class GEE_Mine(object):
     def main_routine(self):
 
         # DATASETS
-        ls5 = ee.ImageCollection('LANDSAT/LT05/C02/T1_L2')
-        s1 = ee.ImageCollection('COPERNICUS/S1_GRD')
-        s2 = ee.ImageCollection("COPERNICUS/S2_SR")
+        self.ls5 = ee.ImageCollection('LANDSAT/LT05/C02/T1_L2')
+        self.s1 = ee.ImageCollection('COPERNICUS/S1_GRD')
+        self.s2 = ee.ImageCollection("COPERNICUS/S2_SR")
         admin = ee.FeatureCollection("FAO/GAUL/2015/level0")
 
         training_region = ee.Geometry.Polygon(
@@ -109,7 +112,7 @@ class GEE_Mine(object):
         # system arguments
         left, right, top, bot = self.lon_min, self.lon_max, self.lat_max, self.lat_min 
         job_num = self.count
-        print('JOB NUMBER: ' + job_num) # records job number in slurm file so we know which to rerun
+        print('JOB NUMBER: ' , job_num) # records job number in slurm file so we know which to rerun
 
         # TRAINING DATA
         # landsat
@@ -247,11 +250,11 @@ class GEE_Mine(object):
         # TRAINING CLASSIFIERS
         # landsat
         training = bare.merge(vegetation)
-        composite1985 = ls5 \
+        composite1985 = self.ls5 \
                 .filter(ee.Filter.bounds(training_region)) \
                 .filter(ee.Filter.date('1985-01-01', '1986-01-01')) \
                 .filter(ee.Filter.lt('CLOUD_COVER', 20)) \
-                .map(mask_ls5_clouds) \
+                .map(self.mask_ls5_clouds) \
                 .select('SR_B.*') \
                 .median() \
                 .clip(training_region)
@@ -264,7 +267,7 @@ class GEE_Mine(object):
         })
 
         # train a classifier
-        classifier_ls = ee.Classifier.smileRandomForest(50).train(**{
+        self.classifier_ls = ee.Classifier.smileRandomForest(50).train(**{
           'features': training,
           'classProperty': 'landcover',
           'inputProperties': composite1985.bandNames()
@@ -273,11 +276,11 @@ class GEE_Mine(object):
         # sentinel
         training = bare_s.merge(vegetation_s)
 
-        composite2021 = s2 \
+        composite2021 = self.s2 \
                 .filter(ee.Filter.bounds(training_region)) \
                 .filter(ee.Filter.date('2021-01-01', '2021-12-31')) \
                 .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)) \
-                .map(mask_s2_clouds) \
+                .map(self.mask_s2_clouds) \
                 .select('B.*') \
                 .median() \
                 .clip(training_region) \
@@ -290,7 +293,7 @@ class GEE_Mine(object):
         })
 
         # train a classifier
-        classifier_s2 = ee.Classifier.smileRandomForest(50).train(**{
+        self.classifier_s2 = ee.Classifier.smileRandomForest(50).train(**{
           'features': training,
           'classProperty': 'landcover',
           'inputProperties': composite2021.bandNames()
@@ -302,10 +305,10 @@ class GEE_Mine(object):
         # Calculate values for pixresxpixres squares
         regions = self.create_segments()
         segments = ee.FeatureCollection(regions)
-        results = segments.map(passing_mine)
+        results = segments.map(self.passing_mine)
 
         # Create above array for each segment, and transform into format that can be written to a CSV file
-        data_set = results.map(create_results)
+        data_set = results.map(self.create_results)
         data_set2 = data_set.aggregate_array('info')
         data_set3 = data_set2.getInfo() # <- slow
 
@@ -328,7 +331,7 @@ class GEE_Mine(object):
         f.close()
         return 
     
-    def create_segments(self,):
+    def create_segments(self):
         # grab the top left coordinate of the bounding box
         coords = ee.List(self.region.coordinates().get(0)).slice(0, -1)
         top = ee.Number(ee.List(coords.get(2)).get(1))
@@ -375,22 +378,22 @@ class GEE_Mine(object):
     
         # routine
     def filter_by_vegetation_loss(self,squares, threshold1, threshold2):
-        with_percent_change = squares.map(calculate_percentage_change)
+        with_percent_change = squares.map(self.calculate_percentage_change)
         passed = with_percent_change.filter((ee.Filter.gt('percent loss', threshold1)).Or(ee.Filter.gt('percent bare', threshold2)))
         return passed
 
     def filter_by_vh_percent(self,squares, threshold):
-        with_change = squares.map(calculate_sar_vh)
+        with_change = squares.map(self.calculate_sar_vh)
         passed = with_change.filter(ee.Filter.gt('vh_percent', threshold))
         return passed
 
     def filter_by_nir_g(self,squares, threshold):
-        with_change = squares.map(calculate_nir_g)
+        with_change = squares.map(self.calculate_nir_g)
         passed = with_change.filter(ee.Filter.lte('nir/g', threshold))
         return passed
 
     def filter_by_swir1_b(self,squares, threshold):
-        with_swir1_b = squares.map(calculate_swir1_b)
+        with_swir1_b = squares.map(self.calculate_swir1_b)
         passed = with_swir1_b.filter(ee.Filter.lte('swir/b', threshold))
         return passed
     
@@ -418,14 +421,14 @@ class GEE_Mine(object):
         return image.updateMask(mask).divide(10000).select("B.*").copyProperties(image, ["system:time_start"])
     
     def passing_mine(self,feature):
-        veg = calculate_percentage_change(feature)
-        sar = calculate_sar_vh(feature)
-        nir_g = calculate_nir_g(feature)
-        swir1_b = calculate_swir1_b(feature)
-        NASADEM = get_NASADEM(feature)
-        GEDI = calc_gedi_loss(feature)
-        b5 = get_B5(feature)
-        b6 = get_B6(feature)
+        veg = self.calculate_percentage_change(feature)
+        sar = self.calculate_sar_vh(feature)
+        nir_g = self.calculate_nir_g(feature)
+        swir1_b = self.calculate_swir1_b(feature)
+        NASADEM = self.get_NASADEM(feature)
+        GEDI = self.calc_gedi_loss(feature)
+        b5 = self.get_B5(feature)
+        b6 = self.get_B6(feature)
         return ee.Feature(feature \
             .set('vegetation loss', veg.get('percent loss')) \
             .set('percent bare', veg.get('percent bare')) \
@@ -650,26 +653,26 @@ class GEE_Mine(object):
     def calculate_percentage_change(self,feature):
         g = feature.geometry()
 
-        composite_ls = ls5 \
+        composite_ls = self.ls5 \
                 .filter(ee.Filter.bounds(g)) \
                 .filter(ee.Filter.date('1985-01-01', '1990-12-31')) \
                 .filter(ee.Filter.lt('CLOUD_COVER', 20)) \
-                .map(mask_ls5_clouds) \
+                .map(self.mask_ls5_clouds) \
                 .select('SR_B.*') \
                 .median() \
                 .clip(g)
 
-        composite_s2 = s2 \
+        composite_s2 = self.s2 \
                 .filter(ee.Filter.bounds(g)) \
                 .filter(ee.Filter.date('2021-01-01', '2021-12-31')) \
                 .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)) \
-                .map(mask_s2_clouds) \
+                .map(self.mask_s2_clouds) \
                 .select('B.*') \
                 .median() \
                 .clip(g)
 
-        left_classified = composite_ls.classify(classifier_ls)
-        right_classified = composite_s2.classify(classifier_s2)
+        left_classified = composite_ls.classify(self.classifier_ls)
+        right_classified = composite_s2.classify(self.classifier_s2)
 
         # Reclassify from 0-1 to 1-2
         left_classes = left_classified.remap([0, 1], [1, 2])
@@ -729,7 +732,7 @@ class GEE_Mine(object):
         g = feature.geometry()
 
         # Images and Bands
-        filtered = s1 \
+        filtered = self.s1 \
                 .filter(ee.Filter.eq('instrumentMode','IW')) \
                 .filter(ee.Filter.eq('orbitProperties_pass', 'DESCENDING')) \
                 .filter(ee.Filter.eq('resolution_meters',10)) \
@@ -767,11 +770,11 @@ class GEE_Mine(object):
         g = feature.geometry()
 
         # Images and Bands
-        composite_s2 = s2 \
+        composite_s2 = self.s2 \
                 .filter(ee.Filter.bounds(g)) \
                 .filter(ee.Filter.date('2021-01-01', '2021-12-31')) \
                 .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)) \
-                .map(mask_s2_clouds) \
+                .map(self.mask_s2_clouds) \
                 .select('B.*') \
                 .median() \
                 .clip(g)
@@ -792,11 +795,11 @@ class GEE_Mine(object):
     # swir1/b
     def calculate_swir1_b(self,feature):
         g = feature.geometry()
-        composite_s2 = s2 \
+        composite_s2 = self.s2 \
                 .filter(ee.Filter.bounds(g)) \
                 .filter(ee.Filter.date('2021-01-01', '2021-12-31')) \
                 .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)) \
-                .map(mask_s2_clouds) \
+                .map(self.mask_s2_clouds) \
                 .select('B.*') \
                 .median() \
                 .clip(g) 
@@ -883,11 +886,11 @@ class GEE_Mine(object):
 
     def get_B5(self,feature):
         g = feature.geometry()
-        composite_s2 = s2 \
+        composite_s2 = self.s2 \
               .filter(ee.Filter.bounds(g)) \
               .filter(ee.Filter.date('2021-01-01', '2021-12-31')) \
               .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)) \
-              .map(mask_s2_clouds) \
+              .map(self.mask_s2_clouds) \
               .select('B.*') \
               .median() \
               .clip(g) 
@@ -904,11 +907,11 @@ class GEE_Mine(object):
 
     def get_B6(self,feature):
         g = feature.geometry()
-        composite_s2 = s2 \
+        composite_s2 = self.s2 \
               .filter(ee.Filter.bounds(g)) \
               .filter(ee.Filter.date('2021-01-01', '2021-12-31')) \
               .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)) \
-              .map(mask_s2_clouds) \
+              .map(self.mask_s2_clouds) \
               .select('B.*') \
               .median() \
               .clip(g) 
@@ -996,6 +999,7 @@ class GEE_Mine(object):
             diff_lat = new_lat.subtract(left)
 
             count = 0
+            multiple=False
             for y in range(height + 1): 
                 left = ee.Number(ee.List(coords.get(0)).get(0))
                 for x in range(width + 1):
@@ -1016,14 +1020,23 @@ class GEE_Mine(object):
                         f.write('source activate ee'+'\n')
                         f.write('conda activate ee'+'\n')
                         f.write('conda init bash'+'\n')
-                        f.write('python3 GEE_Module.py ' + str(left.getInfo()) + ' ' + str(new_lat.getInfo()) + ' ' + str(top.getInfo()) + ' ' + str(new_lon.getInfo()) + ' ' + str(count) +' '+str(self.pixres) '\n')
+                        f.write('python3 GEE_Module.py ' + str(left.getInfo()) + ' ' +\
+                                str(new_lat.getInfo()) + ' ' + \
+                                str(top.getInfo()) + ' ' + str(new_lon.getInfo()) + ' ' +\
+                                str(count) +' '+str(self.pixres)+' '+\
+                                str(self.system)+' '+str(self.username)+' '+str(self.jobname)+' '+\
+                                str(self.wd)+' '+\
+                                str(self.outputdir)+' '+str(self.resultsdir)+' '+str(self.jobdir)+' '+\
+                                str(self.compiledfilename)+' '+str(self.makefeaturecollection)+' '+\
+                                str(self.assetid)+' '+str(self.featgeedescription)+' '+\
+                                str(multiple)+' '+str(self.size)+'\n')
 
                     os.system("sbatch "+str(bash_filename))
 
                     count += 1
                     left = new_lat
                 top = new_lon
-        return
+            return
 
  
 # here we will run the individual jobs that HPC will execute
@@ -1035,8 +1048,8 @@ if __name__ == '__main__':
     lon_max = sys.argv[3]
     lat_max = sys.argv[4]
     
-    count = sys.argv[5]
-    pixres = sys.argv[6]
+    count = int(sys.argv[5])
+    pixres = np.float64(sys.argv[6])
     
     system = sys.argv[7]
     username = sys.argv[8]
@@ -1050,9 +1063,13 @@ if __name__ == '__main__':
     assetid = sys.argv[16]
     featgeedescription= sys.argv[17]
     multiple = sys.argv[18]
-        
+    target_area = np.float64(sys.argv[19])
         
     x = GEE_Mine(system,username,jobname,wd,outputdir,resultsdir,jobdir,\
                  compiledfilename,assetid,featgeedescription,makefeaturecollection)
-    x.start_process(lon_min,lat_min,lon_max,lat_max,target_res=None,multiple=multiple,count=count,pixres=pixres)
     
+    x.start_process(lon_min,lat_min,lon_max,lat_max,target_area,multiple,count=count,pixres=pixres)
+
+    
+        
+        
