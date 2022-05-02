@@ -5,10 +5,10 @@ source activate gee
 conda activate gee
 conda init bash
 
-lon_min='25.5'
+lon_min='25.505'
 lat_min='3.0'
 lon_max='25.51'
-lat_max='3.01'
+lat_max='3.005'
 # count means nothing 
 count='0'
 # desired pixel resolution in km

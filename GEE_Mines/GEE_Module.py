@@ -1102,7 +1102,7 @@ class GEE_Mine(object):
                         f.write('conda init bash'+'\n')
                         f.write('python3 GEE_Module.py ' + str(left.getInfo()) + ' ' +\
                                 str(new_lat.getInfo()) + ' ' + \
-                                str(top.getInfo()) + ' ' + str(new_lon.getInfo()) + ' ' +\
+                                str(new_lon.getInfo()) + ' ' + str(top.getInfo()) + ' ' +\
                                 str(count) +' '+str(self.pixres)+' '+\
                                 str(self.system)+' '+str(self.username)+' '+str(self.jobname)+' '+\
                                 str(self.wd)+' '+\
@@ -1127,6 +1127,8 @@ if __name__ == '__main__':
     lat_min = sys.argv[2]
     lon_max = sys.argv[3]
     lat_max = sys.argv[4]
+    
+    print(lon_min,lon_max,lat_min,lat_max)
     
     count = int(sys.argv[5])
     pixres = np.float64(sys.argv[6])
