@@ -80,4 +80,4 @@ task = ee.batch.Export.table.toAsset(**{
   'assetId': 'users/EmilyNason/FinalResults', # change to your GEE Asset path and a unique name (will not overwrite already existing assets, so old names cannot be reused)
 });
 
-# task.start()
+task.start()
