@@ -6,14 +6,16 @@ import time
 import csv
 from scipy.interpolate import LinearNDInterpolator
 import numpy as np
+from filelock import FileLock
 
 class GEE_Mine(object):
 
     def __init__(self,system = 'Cluster',username='e.conway',jobname='routine',wd='/scratch/e.conway/',outputdir='outputs',\
-                resultsdir='results',jobdir='batch',compiledfilename='compiled',assetid = 'users/EmilyNason/FinalResults',featgeedescription='compiled_results',makefeaturecollection='False'):
+                resultsdir='results',jobdir='batch',compiledfilename='compiled',assetid = 'users/EmilyNason/FinalResults',featgeedescription='compiled_results',makefeaturecollection='False',conda_env_name='gee'):
         self.system = system
         self.username = username
         self.jobname = jobname
+        self.conda_env_name = conda_env_name
         
         self.wd = wd
         
@@ -29,7 +31,7 @@ class GEE_Mine(object):
         if os.path.exists(self.jobdir) == False:
             os.mkdir(self.jobdir)
         
-        self.compiledfilename = compiledfilename
+        self.compiledfilename = os.path.join(self.resultsdir,compiledfilename)
         self.assetid = assetid
         self.featgeedescription = featgeedescription
         
@@ -76,23 +78,43 @@ class GEE_Mine(object):
         # setting up for running lots of jobs
         if self.multiple == True:
             # execute the GEE Mine Routine i.e. submit lots of jobs
+            # the code will keep appending to one single file, unless an issue happens
+            # when it will write a unique file rather than starting again
             self.create_large_squares()
-            complete=False
-            while complete == False:
-                # now we wait until everything is completed
-                self.check_status()
-                # check failed cases, if there are none, move on, else, resubmit
-                complete = self.check_failures()
-                
-            self.compile_results()
-            self.check_false_positive()
-            self.convert()
-            if self.makefeaturecollection == True:
-                self.geefeature()
-                
         else:
             # we just want to run one job, on one area
             self.main_routine()
+            # check if there are any others running
+            complete=self.check_status()
+            if(complete == True):
+                # check for failures after no more jobs detected in queue
+                keep_running = self.check_failures()
+                if(keep_running == False):
+                    # if keep running is False, then we can run analysis
+                    # but first ensure only one csv in folder of results
+                    # else there were filelock errors, and the smaller one needs to be appended to larger one
+                    try:
+                        glob = glob.glob(self.resultsdir+'/*.csv')
+                        if(len(glob) > 1):
+                            for file in glob:
+                                if (file != os.path.join(self.compiledfilename+'.csv')):
+                                    with open(file,'r') as f:
+                                        csv_reader = reader(f)
+                                    with open(os.path.join(self.compiledfilename+'.csv'),'a') as g:
+                                        csv_writer = writer(g)
+                                        for row in csv_reader:
+                                            csv_writer.writerow(row)
+                                os.system("rm "+str(file))
+                    except:
+                        print('Error on merging .csv files, exitting')
+                        exit()
+                    
+                    #No running jobs, no failures, now we analyze
+                    self.check_false_positive()
+                    self.convert()
+                    if self.makefeaturecollection == True:
+                        self.geefeature()
+   
         return
     
     def main_routine(self):
@@ -112,7 +134,6 @@ class GEE_Mine(object):
         # system arguments
         left, right, top, bot = self.lon_min, self.lon_max, self.lat_max, self.lat_min 
         job_num = self.count
-        print('JOB NUMBER: ' , job_num) # records job number in slurm file so we know which to rerun
 
         # TRAINING DATA
         # landsat
@@ -312,23 +333,52 @@ class GEE_Mine(object):
         data_set2 = data_set.aggregate_array('info')
         data_set3 = data_set2.getInfo() # <- slow
 
-        # CSV name
-        save_path = os.getcwd()
-        file_name = 'job_' + str(1000000 + int(job_num))
-        # 'results' folder must be created beforehand
-        complete_path = os.path.join(self.resultsdir, file_name + '.csv')
+        complete_path = os.path.join(self.resultsdir,  + '.csv')
 
         # CSV header
-        #header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
-         #     'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B', 'NASADEM Elevation', GEDI Elevation,'GEDI-SRTM Elevation','GEDI Quality Flag', 'B5', 'B6']
-
+        header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
+              'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B', 'NASADEM Elevation', 'GEDI Elevation','GEDI-SRTM Elevation','GEDI Quality Flag', 'B5', 'B6']
+            
         # Create CSV and add header & data
-        with open(complete_path, 'w') as f:
-            writer = csv.writer(f)
-            #writer.writerow(header_list)
-            writer.writerows(data_set3)
+        # new file if not already existing
+        if(os.path.exists(self.compiledfilename) == False ):
+            lockname=self.compiledfilename+'.lock'
+            lock = filelock.FileLock(lockname)
+            try:
+                with lock.acquire(timeout=60):
+                    with open(self.compiledfilename, 'w') as f:
+                        writer = csv.writer(f)
+                        writer.writerow(header_list)
+                        writer.writerows(data_set3)
 
-        f.close()
+            except Exception as e:
+                print('Could not get file lock on target, writing to specific file instead, append to main later')
+                newfilename = str(self.username)+'_'+str(self.jobname)+'_'+str(self.lon_min)\
+                +'_'+str(self.lon_max)+'_'+str(self.lat_min)+'_'+str(self.lat_max)+\
+                +'_'+str(self.pixres)+'_'+str()+'_'+str()+'_'+str()
+                with open(os.path.join(self.resultsdir,newfilename), 'w') as f:
+                    writer = csv.writer(f)
+                    writer.writerows(data_set3)
+            
+        else:
+            # append file
+            lockname=self.compiledfilename+'.lock'
+            lock = filelock.FileLock(lockname)
+            try:
+                with lock.acquire(timeout=60):
+                    with open(self.compiledfilename, 'a') as f:
+                        writer = csv.writer(f)
+                        writer.writerows(data_set3)
+
+            except Exception as e:
+                print('Could not get file lock on target, writing to specific file instead, append to main later')
+                newfilename = str(self.username)+'_'+str(self.jobname)+'_'+str(self.lon_min)\
+                +'_'+str(self.lon_max)+'_'+str(self.lat_min)+'_'+str(self.lat_max)+\
+                +'_'+str(self.pixres)+'_'+str()+'_'+str()+'_'+str()
+                with open(os.path.join(self.resultsdir,newfilename), 'w') as f:
+                    writer = csv.writer(f)
+                    writer.writerows(data_set3)
+
         return 
     
     def create_segments(self):
@@ -611,7 +661,8 @@ class GEE_Mine(object):
             # if (nasa == -999):
             #     nasa = interp_elev.__call__(center_lon, center_lat)
 
-            change = 250*0.00001
+            # km to degrees
+            change = np.float64(self.pixres)*0.01
 
             # Left and right neighbors will have the same center lat
             left = [center_lon - change, center_lat]
@@ -924,48 +975,70 @@ class GEE_Mine(object):
           })
         b6_val = stats.get('b6')
         return feature.set('b6', b6_val)
-
-    def compile_results(self):
-        os.system("cat "+str(self.resultsdir,'/*csv')+" > "+str(os.path.join(self.resultsdir,self.compiledfilename+".csv"))) # compile all results into one csv file
-        os.system("rm -rf "+str(self.resultsdir)+"/job*") # remove individual results files
-        os.system("rm -rf "+str(self.outputdir)+"/slurm*") # remove slurm files
-        os.system("rm -rf slurm*") # remove slurm files
-        os.system("rm -rf "+str(self.jobdir)+"/"+str(self.jobname)+"*") # remove batch files
-        os.system("rm queue.txt") # remove temp queue file
-        os.system("rm failed.txt") # remove failed jobs txt file
-        os.system("rm start_routine.sh") # remove step 1 bash file
-        return
     
     
     def check_failures(self):
         # remove all slurm files with no exceptions
-        os.system("find | grep -l -L -E exception "+str(self.outputdir)+"/slurm* | xargs rm -f")
-
+        os.system("find | grep -l -L -E exception "+str(self.jobdir)+"/slurm* | xargs rm -f")
         # create a txt file containing job numbers of all failed jobs
         # and while there exist failed cases, re-submit the job
         keep_running=False
-        while os.system("grep JOB "+str(self.outputdir)+"/slurm* > failed.txt"):
+        if os.system("grep JOB "+str(self.jobdir)+"/slurm* > failed.txt") == 0:
             keep_running = True
             with open('failed.txt') as file:
                 for line in file:
-                    # get the index of the job number's location
-                    i = line.index('JOB')
-                    # get the job number
-                    job_number = int(line[i:].rstrip()[-1]) + 1000000
-                    # resubmit the failed job
-                    os.system('find '+str(self.jobdir)+' -name '+str(self.jobname)+'_job_' + str(job_number) + '.sh | xargs sbatch')
-        return rerun
+                    with open(os.path.join(self.resultsdir,line)) as f: 
+                        data=f.readlines
+                    for i in range(len(data)):
+                        if(data[i][0:6] == 'python'):
+                            commands = data[i].split(' ')
+                            lon_min = commands[1]
+                            lat_min = commands[2]
+                            lon_max = commands[3]
+                            lat_max = commands[4]
+
+                            count = int(commands[5])
+                            pixres = np.float64(commands[6])
+
+                            system = commands[7]
+                            username = commands[8]
+                            jobname = commands[9]
+                            wd = commands[10]
+                            outputdir = commands[11]
+                            resultsdir = commands[12]
+                            jobdir = commands[13]
+                            compiledfilename = commands[14]
+                            makefeaturecollection = commands[15]
+                            assetid = commands[16]
+                            featgeedescription= commands[17]
+                            multiple = commands[18]
+                            # reduce size of target area if failed
+                            target_area = np.float64(commands[19]) * 0.5
+
+                            x = GEE_Mine(system,username,jobname,wd,outputdir,resultsdir,jobdir,\
+                                         compiledfilename,assetid,featgeedescription,makefeaturecollection)
+
+
+                            x.start_process(lon_min,lat_min,lon_max,lat_max,target_area,multiple,count=count,pixres=pixres)
+                        os.system("rm os.path.join(self.resultsdir,line)")
+
+        return keep_running
 
     def check_status(self):
         """
         This routine will patiently run until all jobs that have been submitted are complete
         i.e. no more jobs in the queue.
         """
+        # get jobs in queue
         os.system('squeue -u '+str(self.username)+' > queue.txt')
-        while (os.system('grep '+str(self.jobname)+' queue.txt') == 0):
-            time.sleep(60)
-            os.system('squeue -u '+str(self.username)+' > queue.txt')
-        return 
+        # get list of local jobs in queue
+        # if empty, then !=0 == False, else if still some running then it successfully ran a grep == 0 == True
+        if (os.system('grep '+str(self.jobname)+' queue.txt') == 0):
+            # false, not yet done
+            return False
+        else:
+            # true, we are done
+            return True
     
     
     
@@ -1007,18 +1080,18 @@ class GEE_Mine(object):
                     new_lon = top.subtract(diff_lon)
 
                     bash_filename = str(self.jobname)+'_job_' + str(1000000 + count) + '.sh'
-                    with open(bash_filename,'w') as f:
+                    with open(os.path.join(self.jobdir,bash_filename),'w') as f:
                         f.write('#!/bin/bash'+'\n')
                         f.write('#SBATCH --nodes=1'+'\n')
                         f.write('#SBATCH --time=01:00:00'+'\n')
                         f.write('#SBATCH --job-name='+str(self.jobname)+'_job'+'\n')
                         f.write('#SBATCH --partition=short'+'\n')
-                        f.write('#SBATCH --mem=64GB'+'\n')
+                        f.write('#SBATCH --mem=16GB'+'\n')
                         f.write('#SBATCH --output='+str(self.outputdir)+'/slurm-%j.out'+'\n')
                         f.write('module load anaconda3/3.7'+'\n')
                         f.write('source activate '+'\n')
-                        f.write('source activate ee'+'\n')
-                        f.write('conda activate ee'+'\n')
+                        f.write('source activate '+str(self.conda_env_name)+'\n')
+                        f.write('conda activate '+str(self.conda_env_name)+'\n')
                         f.write('conda init bash'+'\n')
                         f.write('python3 GEE_Module.py ' + str(left.getInfo()) + ' ' +\
                                 str(new_lat.getInfo()) + ' ' + \
@@ -1029,9 +1102,9 @@ class GEE_Mine(object):
                                 str(self.outputdir)+' '+str(self.resultsdir)+' '+str(self.jobdir)+' '+\
                                 str(self.compiledfilename)+' '+str(self.makefeaturecollection)+' '+\
                                 str(self.assetid)+' '+str(self.featgeedescription)+' '+\
-                                str(multiple)+' '+str(self.size)+'\n')
+                                str(multiple)+' '+str(self.size)+' '+str(self.conda_env_name)+'\n')
 
-                    os.system("sbatch "+str(bash_filename))
+                    os.system("sbatch "+str(os.path.join(self.jobdir,bash_filename)))
 
                     count += 1
                     left = new_lat
@@ -1064,12 +1137,11 @@ if __name__ == '__main__':
     featgeedescription= sys.argv[17]
     multiple = sys.argv[18]
     target_area = np.float64(sys.argv[19])
+    conda_env_name = sys.argv[20]
         
     x = GEE_Mine(system,username,jobname,wd,outputdir,resultsdir,jobdir,\
-                 compiledfilename,assetid,featgeedescription,makefeaturecollection)
+                 compiledfilename,assetid,featgeedescription,makefeaturecollection,conda_env_name)
     
     x.start_process(lon_min,lat_min,lon_max,lat_max,target_area,multiple,count=count,pixres=pixres)
 
-    
-        
         

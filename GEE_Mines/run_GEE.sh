@@ -12,7 +12,7 @@ lat_max='3.01'
 # count means nothing 
 count='0'
 # desired pixel resolution in km
-pixres='0.5'
+pixres='0.7'
 # system will be 'Cluster' or 'cloud'. Right now, cluster is the only option
 system='Cluster'
 # username for job tracking
@@ -39,6 +39,6 @@ featgeedescription='compiled_results'
 # Else False will just run one job in your region, possibly at high res
 multiple='True'
 # max target area (kmxkm)per job. Not used if multiple = False as it is used in the creation of multiple jobs
-targetarea='0.5'
+targetarea='1.1'
 
 python3 GEE_Module.py $lon_min $lat_min $lon_max $lat_max $count $pixres $system $username $jobname $wd $outputdir $resultsdir $jobdir $compiledfilename $makefeaturecollection $assetid $featgeedescription $multiple $targetarea
