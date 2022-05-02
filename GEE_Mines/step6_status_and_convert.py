@@ -10,7 +10,7 @@ file_name = sys.argv[1]
 # Passing region results only will be saved in "[file_name]_status_passing.csv"
 
 # Open the input file in read mode and output file in write mode
-with open('results/' + file_name + '_scores.csv', 'r') as read_obj, \
+with open('results/' + file_name + '.csv', 'r') as read_obj, \
         open('results/' + file_name + '_status.csv', 'w', newline='') as write_obj:
     # Create a csv.reader object from the input file object
     csv_reader = reader(read_obj)
