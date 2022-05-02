@@ -331,53 +331,60 @@ class GEE_Mine(object):
         # Create above array for each segment, and transform into format that can be written to a CSV file
         data_set = results.map(self.create_results)
         data_set2 = data_set.aggregate_array('info')
-        data_set3 = data_set2.getInfo() # <- slow
+        Pass = True
+        try:
+            data_set3 = data_set2.getInfo() # <- slow
+        except Exception as e:
+            Pass=Fail
+            print(f'Caught error {e} on getinfo - trying to re-run with smaller target area')
+            x.start_process(self.lon_min,self.lat_min,self.lon_max,self.lat_max,\
+                            self.size*0.5,self.multiple,self.count,self.pixres)
+        if(Pass == True):
+            complete_path = os.path.join(self.resultsdir,  + '.csv')
 
-        complete_path = os.path.join(self.resultsdir,  + '.csv')
+            # CSV header
+            header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
+                  'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B', 'NASADEM Elevation', 'GEDI Elevation','GEDI-SRTM Elevation','GEDI Quality Flag', 'B5', 'B6']
 
-        # CSV header
-        header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
-              'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B', 'NASADEM Elevation', 'GEDI Elevation','GEDI-SRTM Elevation','GEDI Quality Flag', 'B5', 'B6']
-            
-        # Create CSV and add header & data
-        # new file if not already existing
-        if(os.path.exists(self.compiledfilename) == False ):
-            lockname=self.compiledfilename+'.lock'
-            lock = filelock.FileLock(lockname)
-            try:
-                with lock.acquire(timeout=60):
-                    with open(self.compiledfilename, 'w') as f:
-                        writer = csv.writer(f)
-                        writer.writerow(header_list)
-                        writer.writerows(data_set3)
+            # Create CSV and add header & data
+            # new file if not already existing
+            if(os.path.exists(self.compiledfilename) == False ):
+                lockname=self.compiledfilename+'.lock'
+                lock = filelock.FileLock(lockname)
+                try:
+                    with lock.acquire(timeout=60):
+                        with open(self.compiledfilename, 'w') as f:
+                            writer = csv.writer(f)
+                            writer.writerow(header_list)
+                            writer.writerows(data_set3)
 
-            except Exception as e:
-                print('Could not get file lock on target, writing to specific file instead, append to main later')
-                newfilename = str(self.username)+'_'+str(self.jobname)+'_'+str(self.lon_min)\
-                +'_'+str(self.lon_max)+'_'+str(self.lat_min)+'_'+str(self.lat_max)+\
-                +'_'+str(self.pixres)+'_'+str()+'_'+str()+'_'+str()
-                with open(os.path.join(self.resultsdir,newfilename), 'w') as f:
-                    writer = csv.writer(f)
-                    writer.writerows(data_set3)
-            
-        else:
-            # append file
-            lockname=self.compiledfilename+'.lock'
-            lock = filelock.FileLock(lockname)
-            try:
-                with lock.acquire(timeout=60):
-                    with open(self.compiledfilename, 'a') as f:
+                except Exception as e:
+                    print('Could not get file lock on target, writing to specific file instead, append to main later')
+                    newfilename = str(self.username)+'_'+str(self.jobname)+'_'+str(self.lon_min)\
+                    +'_'+str(self.lon_max)+'_'+str(self.lat_min)+'_'+str(self.lat_max)+\
+                    +'_'+str(self.pixres)+'_'+str()+'_'+str()+'_'+str()
+                    with open(os.path.join(self.resultsdir,newfilename), 'w') as f:
                         writer = csv.writer(f)
                         writer.writerows(data_set3)
+            
+            else:
+                # append file
+                lockname=self.compiledfilename+'.lock'
+                lock = filelock.FileLock(lockname)
+                try:
+                    with lock.acquire(timeout=60):
+                        with open(self.compiledfilename, 'a') as f:
+                            writer = csv.writer(f)
+                            writer.writerows(data_set3)
 
-            except Exception as e:
-                print('Could not get file lock on target, writing to specific file instead, append to main later')
-                newfilename = str(self.username)+'_'+str(self.jobname)+'_'+str(self.lon_min)\
-                +'_'+str(self.lon_max)+'_'+str(self.lat_min)+'_'+str(self.lat_max)+\
-                +'_'+str(self.pixres)+'_'+str()+'_'+str()+'_'+str()
-                with open(os.path.join(self.resultsdir,newfilename), 'w') as f:
-                    writer = csv.writer(f)
-                    writer.writerows(data_set3)
+                except Exception as e:
+                    print('Could not get file lock on target, writing to specific file instead, append to main later')
+                    newfilename = str(self.username)+'_'+str(self.jobname)+'_'+str(self.lon_min)\
+                    +'_'+str(self.lon_max)+'_'+str(self.lat_min)+'_'+str(self.lat_max)+\
+                    +'_'+str(self.pixres)+'_'+str()+'_'+str()+'_'+str()
+                    with open(os.path.join(self.resultsdir,newfilename), 'w') as f:
+                        writer = csv.writer(f)
+                        writer.writerows(data_set3)
 
         return 
     
@@ -1016,11 +1023,11 @@ class GEE_Mine(object):
                             target_area = np.float64(commands[19]) * 0.5
 
                             x = GEE_Mine(system,username,jobname,wd,outputdir,resultsdir,jobdir,\
-                                         compiledfilename,assetid,featgeedescription,makefeaturecollection)
+                                         compiledfilename,assetid,featgeedescription,makefeaturecollection,conda_env_name)
 
 
                             x.start_process(lon_min,lat_min,lon_max,lat_max,target_area,multiple,count=count,pixres=pixres)
-                        os.system("rm os.path.join(self.resultsdir,line)")
+                        os.system("rm "+os.path.join(self.resultsdir,line))
 
         return keep_running
 
