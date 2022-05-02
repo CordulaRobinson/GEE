@@ -40,5 +40,7 @@ featgeedescription='compiled_results'
 multiple='True'
 # max target area (kmxkm)per job. Not used if multiple = False as it is used in the creation of multiple jobs
 targetarea='1.1'
+# name of conda environment
+conda_env_name='gee'
 
-python3 GEE_Module.py $lon_min $lat_min $lon_max $lat_max $count $pixres $system $username $jobname $wd $outputdir $resultsdir $jobdir $compiledfilename $makefeaturecollection $assetid $featgeedescription $multiple $targetarea
+python3 GEE_Module.py $lon_min $lat_min $lon_max $lat_max $count $pixres $system $username $jobname $wd $outputdir $resultsdir $jobdir $compiledfilename $makefeaturecollection $assetid $featgeedescription $multiple $targetarea $conda_env_name
