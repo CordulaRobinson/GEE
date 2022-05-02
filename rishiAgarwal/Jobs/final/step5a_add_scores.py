@@ -9,7 +9,6 @@ ee.Initialize()
 file_name = sys.argv[1]
 
 ex = np.genfromtxt("results/" + file_name + ".csv", delimiter=',', skip_header=0)
-#ex = np.delete(data, -1, axis=1)
 
 new_array = np.empty((0,17), float)
 for row in ex:
@@ -88,5 +87,4 @@ for row in new_array:
 #             B5 Value, B6 Value, Center Lat, Center Lon, Elevation Score, Band Variation Score'
 # final = np.savetxt("results/compiled_scores.csv", new_array2, delimiter=",", header=header_list)
 final = np.savetxt("results/" + file_name + "_scores.csv", new_array2, delimiter=",")
-
-os.system("python3 step6_status_and_convert.py " + file_name)
+os.system('rm results/' + file_name + '.csv')

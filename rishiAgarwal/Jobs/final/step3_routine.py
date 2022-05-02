@@ -730,3 +730,4 @@ with open(complete_path, 'w') as f:
 
 f.close()
 
+os.system('python3 step5a_add_scores.py ' + file_name)
