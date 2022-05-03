@@ -64,8 +64,8 @@ class GEE_Mine(object):
         
         
         print("input= ",self.lon_min,' ',self.lat_min,' ',self.lon_max,' ',self.lat_max,' ',self.count,' ',\
-             self.pixres,' ',self.system,' ',self.username,' ',self.jobname,' ',self.wd,' ',self.outputdir,' ',\
-              self.resultsdir,' ',self.jobdir,' ',self.compiledfilename,' ',self.makefeaturecollection,' ',\
+             self.pixres,' ',self.system,' ',self.username,' ',self.jobname,' ',self.wd,' ',os.path.basename(self.outputdir),' ',\
+              os.path.basename(self.resultsdir),' ',os.path.basename(self.jobdir),' ',os.path.basename(self.compiledfilename).split('.csv')[0],' ',self.makefeaturecollection,' ',\
               self.assetid,' ',self.featgeedescription,' ',\
              self.multiple,' ',self.size,self.conda_env_name+'\n')
         
@@ -83,6 +83,7 @@ class GEE_Mine(object):
             os.mkdir(self.jobdir)
             
         self.compiledfilename = os.path.join(self.resultsdir,self.compiledfilename+'.csv')
+        print('compiled name',self.compiledfilename)
             
         
         #region of interest
@@ -103,18 +104,19 @@ class GEE_Mine(object):
         else:
             # we just want to run one job, on one area
             self.main_routine()
-            # check if there are any others running
-            complete=self.check_status()
-            if(complete == True):
-                # check for failures after no more jobs detected in queue
-                keep_running = self.check_failures()
-                if(keep_running == False):
-                    # if keep running is False, then we can run analysis
+            # check for failures
+            keep_running = self.check_failures()
+            time.sleep(10)
+            print('keep running',keep_running)
+            if(keep_running == False):
+                # check if there are any others running in queue
+                complete=self.check_status()
+                print('complete ',complete)
+                if(complete == True):
+                    # if keep running is False and no more in queue (complete==True), then we can run analysis
                     # but first ensure only one csv in folder of results
                     # else there were filelock errors, and the smaller one needs to be appended to larger one
-                    #try:
-                    t=1
-                    while t==1:
+                    try:
                         glob_files = glob.glob(self.resultsdir+'/*.csv')
                         if(len(glob_files) > 1):
                             for file in glob_files:
@@ -126,13 +128,13 @@ class GEE_Mine(object):
                                         for row in csv_reader:
                                             csv_writer.writerow(row)
                                 os.system("rm "+str(file))
-                        t=5
-                    #except:
-                    #    print('Error on merging .csv files, exitting')
-                    #    exit()
+                    except:
+                        print('Error on merging .csv files, exitting')
+                        exit()
                     
                     #No running jobs, no failures, now we analyze
                     continu = self.check_false_positive()
+                    print('continu ',continu)
                     if(continu == True):
                         self.convert()
                         if self.makefeaturecollection == True:
@@ -1016,7 +1018,7 @@ class GEE_Mine(object):
     
     def check_failures(self):
         # remove all slurm files with no exceptions
-        os.system("find | grep -l -L -E exception "+str(self.outputdir)+"/slurm* | xargs rm -f")
+        os.system("find | grep -l -L -E exception "+str(self.outputdir)+"/slurm* ")# | xargs rm -f")
         # create a txt file containing job numbers of all failed jobs
         # and while there exist failed cases, re-submit the job
         keep_running=False
@@ -1068,15 +1070,29 @@ class GEE_Mine(object):
         i.e. no more jobs in the queue.
         """
         # get jobs in queue
-        os.system('squeue -u '+str(self.username)+' > queue.txt')
-        # get list of local jobs in queue
-        # if empty, then !=0 == False, else if still some running then it successfully ran a grep == 0 == True
-        if (os.system('grep '+str(self.jobname)+' queue.txt') == 0):
-            # false, not yet done
-            return False
-        else:
-            # true, we are done
-            return True
+        qname = 'queue.txt'
+        lockname=qname+'.lock'
+        lock = filelock.FileLock(lockname)
+        with lock.acquire(timeout=60):
+            with open(qname, 'w') as f:
+                os.system('squeue -u '+str(self.username)+' >'+str(qname))
+            # get list of local jobs in queue
+            # if empty, then !=0 == False, else if still some running then it successfully ran a grep == 0 == True
+            file='number.txt'
+            lockname1=file+'.lock'
+            lock1 = filelock.FileLock(lockname1)
+            with lock1.acquire(timeout=60):
+                os.system('grep '+str(self.jobname)+' '+str(qname)+' | wc -l > '+str(file))
+                with open(file,'r') as f:
+                    data=f.readlines()
+                njobs = int(data[0].split('\n')[0])
+                print('njobs ',njobs)
+                if(njobs > 1):   
+                    # false, not yet done
+                    return False
+                else:
+                    # true, we are done
+                    return True
     
     
     

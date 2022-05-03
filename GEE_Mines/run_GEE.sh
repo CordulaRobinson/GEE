@@ -5,14 +5,14 @@ source activate gee
 conda activate gee
 conda init bash
 
-lon_min='25.505'
+lon_min='25.5'
 lat_min='3.0'
 lon_max='25.51'
-lat_max='3.005'
+lat_max='3.01'
 # count means nothing 
 count='0'
 # desired pixel resolution in km
-pixres='0.7'
+pixres='0.1'
 # system will be 'Cluster' or 'cloud'. Right now, cluster is the only option
 system='Cluster'
 # username for job tracking
@@ -39,7 +39,7 @@ featgeedescription='compiled_results'
 # Else False will just run one job in your region, possibly at high res
 multiple='True'
 # max target area (kmxkm)per job. Not used if multiple = False as it is used in the creation of multiple jobs
-targetarea='1.1'
+targetarea='0.5'
 # name of conda environment
 conda_env_name='gee'
 
