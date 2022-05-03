@@ -6,7 +6,8 @@ import time
 import csv
 from scipy.interpolate import LinearNDInterpolator
 import numpy as np
-from filelock import FileLock
+import filelock# import FileLock
+import glob
 
 class GEE_Mine(object):
 
@@ -19,19 +20,12 @@ class GEE_Mine(object):
         
         self.wd = wd
         
-        self.outputdir = os.path.join(self.wd,outputdir)
-        if os.path.exists(self.outputdir)==False:
-            os.mkdir(self.outputdir)
-            
-        self.resultsdir = os.path.join(self.wd,resultsdir)
-        if os.path.exists(self.resultsdir) == False:
-            os.mkdir(self.resultsdir)
+        self.outputdir = outputdir
+        self.resultsdir = resultsdir
+        self.jobdir = jobdir
 
-        self.jobdir = os.path.join(self.wd,jobdir)
-        if os.path.exists(self.jobdir) == False:
-            os.mkdir(self.jobdir)
+        self.compiledfilename = compiledfilename
         
-        self.compiledfilename = os.path.join(self.resultsdir,compiledfilename)
         self.assetid = assetid
         self.featgeedescription = featgeedescription
         
@@ -68,12 +62,37 @@ class GEE_Mine(object):
         self.count=count
         self.pixres=pixres
         
+        
+        print("input= ",self.lon_min,' ',self.lat_min,' ',self.lon_max,' ',self.lat_max,' ',self.count,' ',\
+             self.pixres,' ',self.system,' ',self.username,' ',self.jobname,' ',self.wd,' ',self.outputdir,' ',\
+              self.resultsdir,' ',self.jobdir,' ',self.compiledfilename,' ',self.makefeaturecollection,' ',\
+              self.assetid,' ',self.featgeedescription,' ',\
+             self.multiple,' ',self.size,self.conda_env_name+'\n')
+        
+        
+        self.outputdir = os.path.join(self.wd,self.outputdir)
+        if os.path.exists(self.outputdir)==False:
+            os.mkdir(self.outputdir)
+            
+        self.resultsdir = os.path.join(self.wd,self.resultsdir)
+        if os.path.exists(self.resultsdir) == False:
+            os.mkdir(self.resultsdir)
+
+        self.jobdir = os.path.join(self.wd,self.jobdir)
+        if os.path.exists(self.jobdir) == False:
+            os.mkdir(self.jobdir)
+            
+        self.compiledfilename = os.path.join(self.resultsdir,self.compiledfilename+'.csv')
+            
+        
         #region of interest
         self.region = ee.Geometry.Polygon(
                 [[[ee.Number.parse(self.lon_min), ee.Number.parse(self.lat_max)],
                   [ee.Number.parse(self.lon_min), ee.Number.parse(self.lat_min)],
-                  [ee.Number.parse(self.lon_max), ee.Number.parse(self.lat_max)],
+                  [ee.Number.parse(self.lon_max), ee.Number.parse(self.lat_min)],
                   [ee.Number.parse(self.lon_max), ee.Number.parse(self.lat_max)]]])
+        
+
 
         # setting up for running lots of jobs
         if self.multiple == True:
@@ -93,27 +112,31 @@ class GEE_Mine(object):
                     # if keep running is False, then we can run analysis
                     # but first ensure only one csv in folder of results
                     # else there were filelock errors, and the smaller one needs to be appended to larger one
-                    try:
-                        glob = glob.glob(self.resultsdir+'/*.csv')
-                        if(len(glob) > 1):
-                            for file in glob:
-                                if (file != os.path.join(self.compiledfilename+'.csv')):
+                    #try:
+                    t=1
+                    while t==1:
+                        glob_files = glob.glob(self.resultsdir+'/*.csv')
+                        if(len(glob_files) > 1):
+                            for file in glob_files:
+                                if (file != self.compiledfilename):
                                     with open(file,'r') as f:
                                         csv_reader = reader(f)
-                                    with open(os.path.join(self.compiledfilename+'.csv'),'a') as g:
+                                    with open(self.compiledfilename,'a') as g:
                                         csv_writer = writer(g)
                                         for row in csv_reader:
                                             csv_writer.writerow(row)
                                 os.system("rm "+str(file))
-                    except:
-                        print('Error on merging .csv files, exitting')
-                        exit()
+                        t=5
+                    #except:
+                    #    print('Error on merging .csv files, exitting')
+                    #    exit()
                     
                     #No running jobs, no failures, now we analyze
-                    self.check_false_positive()
-                    self.convert()
-                    if self.makefeaturecollection == True:
-                        self.geefeature()
+                    continu = self.check_false_positive()
+                    if(continu == True):
+                        self.convert()
+                        if self.makefeaturecollection == True:
+                            self.geefeature()
    
         return
     
@@ -340,8 +363,6 @@ class GEE_Mine(object):
             x.start_process(self.lon_min,self.lat_min,self.lon_max,self.lat_max,\
                             self.size*0.5,self.multiple,self.count,self.pixres)
         if(Pass == True):
-            complete_path = os.path.join(self.resultsdir,  + '.csv')
-
             # CSV header
             header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
                   'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B', 'NASADEM Elevation', 'GEDI Elevation','GEDI-SRTM Elevation','GEDI Quality Flag', 'B5', 'B6']
@@ -394,6 +415,7 @@ class GEE_Mine(object):
         top = ee.Number(ee.List(coords.get(2)).get(1))
         left = ee.Number(ee.List(coords.get(0)).get(0))
         top_left_point = ee.Geometry.Point([left, top])
+        
 
         # calculate square pixel width and height
         width = int(ee.Geometry.Point(coords.get(0)).distance(ee.Geometry.Point(coords.get(1))).divide(1000 * self.pixres).getInfo()) # how many squares can fit in the width of the bounding box
@@ -413,7 +435,6 @@ class GEE_Mine(object):
 
         # build the list of squares
         segments = []
-        print(height+1,width+1)
         for y in range(height + 1): # +1 to guarantee we will cover the whole region (squares may extend slightly past the bounding box)
             left = ee.Number(ee.List(coords.get(0)).get(0))
             for x in range(width + 1):
@@ -540,7 +561,8 @@ class GEE_Mine(object):
             
         # Convert to a Feature Collection
         # Create a list of Geometries for areas that passed as possible mines
-        with open(os.path.join(self.resultsdir, self.compiledfilename + '_status_passing.csv'), 'r') as r:
+        tempname = (os.path.basename(self.compiledfilename)).split('.csv')[0]
+        with open(os.path.join(self.resultsdir, tempname + '_status_passing.csv'), 'r') as r:
             csv_reader = reader(r)
             # Skip Header in input file
             header = next(csv_reader)
@@ -576,8 +598,9 @@ class GEE_Mine(object):
         # Passing region results only will be saved in "[file_name]_status_passing.csv"
 
         # Open the input file in read mode and output file in write mode
-        with open(os.path.join(self.resultsdir, self.compiledfilename + '_scores.csv'), 'r') as read_obj, \
-                open(os.path.join(self.resultsdir, self.compiledfilename + '_status.csv'), 'w', newline='') as write_obj:
+        tempname = (os.path.basename(self.compiledfilename)).split('.csv')[0]
+        with open(os.path.join(self.resultsdir, tempname + '_scores.csv'), 'r') as read_obj, \
+                open(os.path.join(self.resultsdir, tempname + '_status.csv'), 'w', newline='') as write_obj:
             # Create a csv.reader object from the input file object
             csv_reader = reader(read_obj)
             # Create a csv.writer object from the output file object
@@ -603,8 +626,9 @@ class GEE_Mine(object):
                 csv_writer.writerow(row)
 
         # Create a file of only passing statuses
-        with open(os.path.join(self.resultsdir , self.compiledfilename + '_status.csv'), 'r') as r, \
-                open(os.path.join(self.resultsdir , self.compiledfilename + '_status_passing.csv'), 'w', newline='') as w:
+        tempname = (os.path.basename(self.compiledfilename)).split('.csv')[0]
+        with open(os.path.join(self.resultsdir , tempname + '_status.csv'), 'r') as r, \
+                open(os.path.join(self.resultsdir , tempname + '_status_passing.csv'), 'w', newline='') as w:
             # Create a csv.reader object from the input file object
             csv_reader = reader(r)
             # Create a csv.writer object from the output file object
@@ -623,88 +647,94 @@ class GEE_Mine(object):
     
     def check_false_positive(self):
         
-        ex = np.genfromtxt(os.path.join(self.resultsdir, self.compiledfilename + ".csv"), delimiter=',', skip_header=0)
-
-        new_array = np.empty((0,17), float)
-        for row in ex:
-            min_lon = row[0]
-            min_lat = row[1]
-            max_lon = row[2]
-            max_lat = row[3]
-
-            # Center Lon/Lat positions:
-            center_lon = min_lon + (max_lon-min_lon)/2
-            center_lat = min_lat + (max_lat-min_lat)/2
-
-            new_row = np.append(row, [center_lon, center_lat], axis=None)
-            new_array = np.append(new_array, np.array([new_row]), axis=0)
-
-        # Remove null values - not needed - null values were in the GEDI data
-        # new_array2 = np.delete(new_array, np.where(new_array[:,9]==-999), axis=0)
-
-        # Columns
-        lons = new_array[:,15]
-        lats = new_array[:,16]
-        nasa_dem = new_array[:,9]
-        b5_vals = new_array[:,13]
-        b6_vals = new_array[:,14]
-        # Interpolate all the center lon/lat positions with the elevation and band data metrics.
-        interp_elev = LinearNDInterpolator((lons, lats), nasa_dem)
-        interp_b5 = LinearNDInterpolator((lons, lats), b5_vals)
-        interp_b6 = LinearNDInterpolator((lons, lats), b6_vals)
-
-        new_array2 = np.empty((0,19), float)
-        for row in new_array:
-            center_lon = row[15]
-            center_lat = row[16]
-            nasa = row[9]
-            b5 = row[13]
-            b6 = row[14]
-            nd = ((b5 - b6)/(b5 + b6))
-            score_elev = 0
-            score_bands = 0
-
-            # Replace null values - not needed - null values were in the GEDI data
-            # if (nasa == -999):
-            #     nasa = interp_elev.__call__(center_lon, center_lat)
-
-            # km to degrees
-            change = np.float64(self.pixres)*0.01
-
-            # Left and right neighbors will have the same center lat
-            left = [center_lon - change, center_lat]
-            right = [center_lon + change, center_lat]
-            # Up and down neighbors will have the same center lon
-            up = [center_lon, center_lat + change]
-            down = [center_lon, center_lat - change]
-            # Corner neighbors
-            ul = [center_lon - change, center_lat + change]
-            ur = [center_lon + change, center_lat + change]
-            dl = [center_lon - change, center_lat - change]
-            dr = [center_lon + change, center_lat - change]
-    
-            neighbors = [left, right, up, down, ul, ur, dl, dr]
-            for x in neighbors:
-                x_nasa = interp_elev.__call__(x[0], x[1])
-                x_b5 = interp_b5.__call__(x[0], x[1])
-                x_b6 = interp_b6.__call__(x[0], x[1])
-                x_nd = ((x_b5 - x_b6)/(x_b5 + x_b6))
-                if (nasa < x_nasa):
-                    score_elev = score_elev+1
-                if (abs(nd - x_nd) > 0.05):
-                    score_bands = score_bands+1
-
-            new_row = np.append(row, [score_elev, score_bands], axis=None)
-            new_array2 = np.append(new_array2, np.array([new_row]), axis=0)
-
-        # header_list = 'Mininum Longitude, Minimum Latitude, Maximum Longitude, Maximum Latitude, \
-        #             Percent Vegetation Loss, Percent Bare Initial, Percent Significant VH Values, \
-        #             Average NIR/G, Average SWIR1/B, NASA Elev, GEDI Elev, Elev Loss,GEDI Qual. Flag,\
-        #             B5 Value, B6 Value, Center Lat, Center Lon, Elevation Score, Band Variation Score'
-        # final = np.savetxt("results/compiled_scores.csv", new_array2, delimiter=",", header=header_list)
-        final = np.savetxt(os.path.join(self.resultsdir, self.compiledfilename + "_scores.csv"), new_array2, delimiter=",")
+        ex = np.genfromtxt( self.compiledfilename , delimiter=',', skip_header=0)
         
-        return
+        if(ex.shape[0] > 50):
+            continu = True
+            new_array = np.empty((0,17), float)
+            for row in ex:
+                min_lon = row[0]
+                min_lat = row[1]
+                max_lon = row[2]
+                max_lat = row[3]
+
+                # Center Lon/Lat positions:
+                center_lon = min_lon + (max_lon-min_lon)/2
+                center_lat = min_lat + (max_lat-min_lat)/2
+
+                new_row = np.append(row, [center_lon, center_lat], axis=None)
+                new_array = np.append(new_array, np.array([new_row]), axis=0)
+
+            # Remove null values - not needed - null values were in the GEDI data
+            # new_array2 = np.delete(new_array, np.where(new_array[:,9]==-999), axis=0)
+
+            # Columns
+            lons = new_array[:,15]
+            lats = new_array[:,16]
+            nasa_dem = new_array[:,9]
+            b5_vals = new_array[:,13]
+            b6_vals = new_array[:,14]
+            # Interpolate all the center lon/lat positions with the elevation and band data metrics.
+            interp_elev = LinearNDInterpolator((lons, lats), nasa_dem)
+            interp_b5 = LinearNDInterpolator((lons, lats), b5_vals)
+            interp_b6 = LinearNDInterpolator((lons, lats), b6_vals)
+
+            new_array2 = np.empty((0,19), float)
+            for row in new_array:
+                center_lon = row[15]
+                center_lat = row[16]
+                nasa = row[9]
+                b5 = row[13]
+                b6 = row[14]
+                nd = ((b5 - b6)/(b5 + b6))
+                score_elev = 0
+                score_bands = 0
+
+                # Replace null values - not needed - null values were in the GEDI data
+                # if (nasa == -999):
+                #     nasa = interp_elev.__call__(center_lon, center_lat)
+
+                # km to degrees
+                change = np.float64(self.pixres)*0.01
+
+                # Left and right neighbors will have the same center lat
+                left = [center_lon - change, center_lat]
+                right = [center_lon + change, center_lat]
+                # Up and down neighbors will have the same center lon
+                up = [center_lon, center_lat + change]
+                down = [center_lon, center_lat - change]
+                # Corner neighbors
+                ul = [center_lon - change, center_lat + change]
+                ur = [center_lon + change, center_lat + change]
+                dl = [center_lon - change, center_lat - change]
+                dr = [center_lon + change, center_lat - change]
+
+                neighbors = [left, right, up, down, ul, ur, dl, dr]
+                for x in neighbors:
+                    x_nasa = interp_elev.__call__(x[0], x[1])
+                    x_b5 = interp_b5.__call__(x[0], x[1])
+                    x_b6 = interp_b6.__call__(x[0], x[1])
+                    x_nd = ((x_b5 - x_b6)/(x_b5 + x_b6))
+                    if (nasa < x_nasa):
+                        score_elev = score_elev+1
+                    if (abs(nd - x_nd) > 0.05):
+                        score_bands = score_bands+1
+
+                new_row = np.append(row, [score_elev, score_bands], axis=None)
+                new_array2 = np.append(new_array2, np.array([new_row]), axis=0)
+
+            # header_list = 'Mininum Longitude, Minimum Latitude, Maximum Longitude, Maximum Latitude, \
+            #             Percent Vegetation Loss, Percent Bare Initial, Percent Significant VH Values, \
+            #             Average NIR/G, Average SWIR1/B, NASA Elev, GEDI Elev, Elev Loss,GEDI Qual. Flag,\
+            #             B5 Value, B6 Value, Center Lat, Center Lon, Elevation Score, Band Variation Score'
+            # final = np.savetxt("results/compiled_scores.csv", new_array2, delimiter=",", header=header_list)
+            tempname = (os.path.basename(self.compiledfilename)).split('.csv')[0]
+            final = np.savetxt(os.path.join(self.resultsdir, tempname + "_scores.csv"), new_array2, delimiter=",")
+        else:
+            print('Caution: Check False Positive Failed due to insufficient points, run more')
+            continu = False
+        
+        return continu
     
     # VERTICAL FILTER CALCULATIONS
     # vegetation percentage change
@@ -986,18 +1016,19 @@ class GEE_Mine(object):
     
     def check_failures(self):
         # remove all slurm files with no exceptions
-        os.system("find | grep -l -L -E exception "+str(self.jobdir)+"/slurm* | xargs rm -f")
+        os.system("find | grep -l -L -E exception "+str(self.outputdir)+"/slurm* | xargs rm -f")
         # create a txt file containing job numbers of all failed jobs
         # and while there exist failed cases, re-submit the job
         keep_running=False
-        if os.system("grep JOB "+str(self.jobdir)+"/slurm* > failed.txt") == 0:
+        if os.system("grep exception "+str(self.outputdir)+"/slurm* > failed.txt") == 0:
             keep_running = True
             with open('failed.txt') as file:
                 for line in file:
-                    with open(os.path.join(self.resultsdir,line)) as f: 
+                    # read output of failed job
+                    with open(os.path.join(self.outputdir,line)) as f: 
                         data=f.readlines
                     for i in range(len(data)):
-                        if(data[i][0:6] == 'python'):
+                        if(data[i][0:6] == 'input='):
                             commands = data[i].split(' ')
                             lon_min = commands[1]
                             lat_min = commands[2]
@@ -1101,8 +1132,8 @@ class GEE_Mine(object):
                         f.write('conda activate '+str(self.conda_env_name)+'\n')
                         f.write('conda init bash'+'\n')
                         f.write('python3 GEE_Module.py ' + str(left.getInfo()) + ' ' +\
-                                str(new_lat.getInfo()) + ' ' + \
-                                str(new_lon.getInfo()) + ' ' + str(top.getInfo()) + ' ' +\
+                                str(new_lon.getInfo()) + ' ' + \
+                                str(new_lat.getInfo()) + ' ' + str(top.getInfo()) + ' ' +\
                                 str(count) +' '+str(self.pixres)+' '+\
                                 str(self.system)+' '+str(self.username)+' '+str(self.jobname)+' '+\
                                 str(self.wd)+' '+\
@@ -1127,8 +1158,6 @@ if __name__ == '__main__':
     lat_min = sys.argv[2]
     lon_max = sys.argv[3]
     lat_max = sys.argv[4]
-    
-    print(lon_min,lon_max,lat_min,lat_max)
     
     count = int(sys.argv[5])
     pixres = np.float64(sys.argv[6])
