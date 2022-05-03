@@ -3,7 +3,7 @@ import sys
 import math
 import ee
 import time
-import csv
+from csv import reader,writer
 from scipy.interpolate import LinearNDInterpolator
 import numpy as np
 import filelock# import FileLock
@@ -377,9 +377,9 @@ class GEE_Mine(object):
                 try:
                     with lock.acquire(timeout=60):
                         with open(self.compiledfilename, 'w') as f:
-                            writer = csv.writer(f)
-                            writer.writerow(header_list)
-                            writer.writerows(data_set3)
+                            csv_writer = writer(f)
+                            csv_writer.writerow(header_list)
+                            csv_writer.writerows(data_set3)
 
                 except Exception as e:
                     print('Could not get file lock on target, writing to specific file instead, append to main later')
@@ -387,8 +387,8 @@ class GEE_Mine(object):
                     +'_'+str(self.lon_max)+'_'+str(self.lat_min)+'_'+str(self.lat_max)+\
                     +'_'+str(self.pixres)+'_'+str()+'_'+str()+'_'+str()
                     with open(os.path.join(self.resultsdir,newfilename), 'w') as f:
-                        writer = csv.writer(f)
-                        writer.writerows(data_set3)
+                        csv_writer = writer(f)
+                        csv_writer.writerows(data_set3)
             
             else:
                 # append file
@@ -397,8 +397,8 @@ class GEE_Mine(object):
                 try:
                     with lock.acquire(timeout=60):
                         with open(self.compiledfilename, 'a') as f:
-                            writer = csv.writer(f)
-                            writer.writerows(data_set3)
+                            csv_writer = writer(f)
+                            csv_writer.writerows(data_set3)
 
                 except Exception as e:
                     print('Could not get file lock on target, writing to specific file instead, append to main later')
@@ -406,8 +406,8 @@ class GEE_Mine(object):
                     +'_'+str(self.lon_max)+'_'+str(self.lat_min)+'_'+str(self.lat_max)+\
                     +'_'+str(self.pixres)+'_'+str()+'_'+str()+'_'+str()
                     with open(os.path.join(self.resultsdir,newfilename), 'w') as f:
-                        writer = csv.writer(f)
-                        writer.writerows(data_set3)
+                        csv_writer = writer(f)
+                        csv_writer.writerows(data_set3)
 
         return 
     
@@ -649,7 +649,7 @@ class GEE_Mine(object):
     
     def check_false_positive(self):
         
-        ex = np.genfromtxt( self.compiledfilename , delimiter=',', skip_header=0)
+        ex = np.genfromtxt( self.compiledfilename , delimiter=',', skip_header=1)
         
         if(ex.shape[0] > 50):
             continu = True
@@ -1153,12 +1153,14 @@ class GEE_Mine(object):
                                 str(count) +' '+str(self.pixres)+' '+\
                                 str(self.system)+' '+str(self.username)+' '+str(self.jobname)+' '+\
                                 str(self.wd)+' '+\
-                                str(self.outputdir)+' '+str(self.resultsdir)+' '+str(self.jobdir)+' '+\
-                                str(self.compiledfilename)+' '+str(self.makefeaturecollection)+' '+\
+                                str(os.path.basename(self.outputdir))+' '+str(os.path.basename(self.resultsdir))+' '+str(os.path.basename(self.jobdir))+' '+\
+                                str(os.path.basename(self.compiledfilename)).split('.csv')[0]+' '+str(self.makefeaturecollection)+' '+\
                                 str(self.assetid)+' '+str(self.featgeedescription)+' '+\
                                 str(multiple)+' '+str(self.size)+' '+str(self.conda_env_name)+'\n')
 
                     os.system("sbatch "+str(os.path.join(self.jobdir,bash_filename)))
+                    # wait 5 seconds to give adequate time spacing between jobs
+                    time.sleep(5)
 
                     count += 1
                     left = new_lat
