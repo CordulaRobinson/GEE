@@ -6,7 +6,7 @@ import time
 from csv import reader,writer
 from scipy.interpolate import LinearNDInterpolator
 import numpy as np
-import filelock# import FileLock
+import filelock
 import glob
 
 class GEE_Mine(object):
@@ -39,8 +39,8 @@ class GEE_Mine(object):
     def start_process(self,lon_min,lat_min,lon_max,lat_max,size,multiple,count,pixres):
         """
         args:
-        bounding region, that is approx size*size in area (km**2)
-        size: desired target size in km, only imortant when multiple == True i.e for creating large regions
+        bounding region, in lon/lat
+        size: desired target size in km**2, only imortant when multiple == True i.e for creating large regions
         pixres: pixel resolution in km. Must be entered regardless of multiple=True/False
         multiple: 
         True: are we going to run multiple jobs on this bounding region at a desired target resolution of size, or, 
@@ -62,7 +62,7 @@ class GEE_Mine(object):
         self.count=count
         self.pixres=pixres
         
-        
+        # this is for capturing failed jobs - the code will search and get this line when GEE exceptions are detected
         print("input= ",self.lon_min,' ',self.lat_min,' ',self.lon_max,' ',self.lat_max,' ',self.count,' ',\
              self.pixres,' ',self.system,' ',self.username,' ',self.jobname,' ',self.wd,' ',os.path.basename(self.outputdir),' ',\
               os.path.basename(self.resultsdir),' ',os.path.basename(self.jobdir),' ',os.path.basename(self.compiledfilename).split('.csv')[0],' ',self.makefeaturecollection,' ',\
@@ -83,7 +83,6 @@ class GEE_Mine(object):
             os.mkdir(self.jobdir)
             
         self.compiledfilename = os.path.join(self.resultsdir,self.compiledfilename+'.csv')
-        print('compiled name',self.compiledfilename)
             
         
         #region of interest
@@ -107,11 +106,9 @@ class GEE_Mine(object):
             # check for failures
             keep_running = self.check_failures()
             time.sleep(10)
-            print('keep running',keep_running)
             if(keep_running == False):
                 # check if there are any others running in queue
                 complete=self.check_status()
-                print('complete ',complete)
                 if(complete == True):
                     # if keep running is False and no more in queue (complete==True), then we can run analysis
                     # but first ensure only one csv in folder of results
@@ -134,7 +131,6 @@ class GEE_Mine(object):
                     
                     #No running jobs, no failures, now we analyze
                     continu = self.check_false_positive()
-                    print('continu ',continu)
                     if(continu == True):
                         self.convert()
                         if self.makefeaturecollection == True:
@@ -1018,7 +1014,7 @@ class GEE_Mine(object):
     
     def check_failures(self):
         # remove all slurm files with no exceptions
-        os.system("find | grep -l -L -E exception "+str(self.outputdir)+"/slurm* ")# | xargs rm -f")
+        os.system("find | grep -l -L -E exception "+str(self.outputdir)+"/slurm* | xargs rm -f")
         # create a txt file containing job numbers of all failed jobs
         # and while there exist failed cases, re-submit the job
         keep_running=False
