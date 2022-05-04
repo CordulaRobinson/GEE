@@ -571,8 +571,15 @@ class GEE_Mine(object):
             # Read each row of the input csv file as list
             for row in csv_reader:
                 # Calculate Status and append to the end of the row/list
-                # Passing: (Veg loss > 20% or Initial Bare Earth > 10%) and SAR VH > 5% and NIR/G <= 0.45 and SWIR1/B < 0.65 
-                status = (((float(row[4]) > 20) or (float(row[5]) > 10))and (float(row[6]) > 5) and (float(row[7]) <= 0.45) and (float(row[8]) < 0.65))
+                # Passing:
+                # If Veg Loss < 20 and Bare Earth > 20: 
+                # # SAR VH > 5% and NIR/G <= 0.45 and SWIR1/B < 0.65 and Elevation Score >= 5 and B5/B6 Score >= 4
+                # Else: 
+                # # Veg Loss > 20 and SAR VH > 5% and NIR/G <= 0.45 and SWIR1/B < 0.65
+                if ((float(row[4]) < 20) and (float(row[5]) > 20)):
+                    status = ((float(row[6]) > 5) and (float(row[7]) <= 0.45) and (float(row[8]) < 0.65) and (float(row[17]) >= 5) and (float(row[18]) >= 4))
+                else: 
+                    status = ((float(row[4]) > 20) and (float(row[6]) > 5) and (float(row[7]) <= 0.45) and (float(row[8]) < 0.65))
                 if status:
                     row.append("Pass")
                 else: 
