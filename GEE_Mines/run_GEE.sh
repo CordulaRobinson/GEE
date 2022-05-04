@@ -1,26 +1,21 @@
-#!bin/bash
+#!/bin/bash
 # The GEE Code expects a couple of input variables from us to begin
-source activate
-source activate gee
-conda activate gee
-conda init bash
-
-lon_min='25.5'
-lat_min='3.0'
-lon_max='25.51'
-lat_max='3.01'
+lon_min='29.554'
+lat_min='3.092'
+lon_max='29.625'
+lat_max='3.159'
 # count means nothing 
 count='0'
 # desired pixel resolution in km
-pixres='0.1'
+pixres='0.25'
 # system will be 'Cluster' or 'cloud'. Right now, cluster is the only option
 system='Cluster'
 # username for job tracking
-username='e.conway'
+username='eah.r'
 # name of submitted jobs
 jobname='routine'
 # working directory
-wd='/scratch/e.conway/GEDI/GEE_Gedi/GEE_Modularize'
+wd='/scratch/eah.r/gee_eamon/GEE_Mines/GEE_Modularize'
 # output directory
 outputdir='outputs'
 # results directory
@@ -32,15 +27,20 @@ compiledfilename='compiled'
 # do we make a feature collection once done: string
 makefeaturecollection='False'
 # asset ID if making a feature collection 
-assetid='users/econway/FinalResults'
+assetid='users/raymondeah/FinalResults'
 # description of feature 
 featgeedescription='compiled_results'
 # Multiple = True will run mutliple jobs in your region,
 # Else False will just run one job in your region, possibly at high res
 multiple='True'
 # max target area (kmxkm)per job. Not used if multiple = False as it is used in the creation of multiple jobs
-targetarea='0.5'
+targetarea='10'
 # name of conda environment
-conda_env_name='gee'
+conda_env_name='ee'
+
+source activate
+source activate $conda_env_name
+conda activate $conda_env_name
+conda init bash
 
 python3 GEE_Module.py $lon_min $lat_min $lon_max $lat_max $count $pixres $system $username $jobname $wd $outputdir $resultsdir $jobdir $compiledfilename $makefeaturecollection $assetid $featgeedescription $multiple $targetarea $conda_env_name
