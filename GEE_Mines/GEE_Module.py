@@ -460,7 +460,7 @@ class GEE_Mine(object):
     def passing_mine(self,feature):
         veg = self.calculate_percentage_change(feature)
         sar = self.calculate_sar_vh(feature)
-        bands_and_indices = self.get_bands_and_indices(feature)
+        bands_and_indices = self.get_s2_bands_and_indices(feature)
         NASADEM = self.get_NASADEM(feature)
         GEDI = self.calc_gedi_loss(feature)
         return ee.Feature(feature \
@@ -785,7 +785,7 @@ class GEE_Mine(object):
         return feature.set('vh_percent', percent_mine)
 
     # nir/g
-    def get_bands_and_indices(self,feature):
+    def get_s2_bands_and_indices(self,feature):
         g = feature.geometry()
 
         # Images and Bands
@@ -936,7 +936,7 @@ class GEE_Mine(object):
                     data=f.readlines()
                 njobs = int(data[0].split('\n')[0])
                 print('njobs ',njobs)
-                return not njobs > 1
+                return njobs <= 1 # if >1 jobs, jobs are not finished so return False, else return True
     
     
     def create_large_squares(self):
