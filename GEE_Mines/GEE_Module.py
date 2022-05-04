@@ -1,6 +1,5 @@
 import os
 import sys
-import math
 import ee
 import time
 from csv import reader,writer
@@ -11,32 +10,23 @@ import glob
 
 class GEE_Mine(object):
 
-    def __init__(self,system = 'Cluster',username='e.conway',jobname='routine',wd='/scratch/e.conway/',outputdir='outputs',\
-                resultsdir='results',jobdir='batch',compiledfilename='compiled',assetid = 'users/EmilyNason/FinalResults',featgeedescription='compiled_results',makefeaturecollection='False',conda_env_name='gee'):
+    def __init__(self,system = 'Cluster', username='e.conway', jobname='routine', wd='/scratch/e.conway/', outputdir='outputs', \
+                resultsdir='results', jobdir='batch', compiledfilename='compiled', assetid = 'users/EmilyNason/FinalResults', \
+                featgeedescription='compiled_results', makefeaturecollection='False', conda_env_name='gee'):
         self.system = system
         self.username = username
         self.jobname = jobname
         self.conda_env_name = conda_env_name
-        
         self.wd = wd
-        
         self.outputdir = outputdir
         self.resultsdir = resultsdir
         self.jobdir = jobdir
-
         self.compiledfilename = compiledfilename
-        
         self.assetid = assetid
         self.featgeedescription = featgeedescription
-        
-        self.makefeaturecollection = makefeaturecollection
-        
-        if(self.makefeaturecollection=='False'):
-            self.makefeaturecollection = False
-        elif(self.makefeaturecollection=='True'):
-            self.makefeaturecollection = True
+        self.makefeaturecollection = True if makefeaturecollection == 'True' else False
 
-    def start_process(self,lon_min,lat_min,lon_max,lat_max,size,multiple,count,pixres):
+    def start_process(self, lon_min, lat_min, lon_max, lat_max, size, multiple, count, pixres):
         """
         args:
         bounding region, in lon/lat
@@ -53,11 +43,7 @@ class GEE_Mine(object):
         self.lat_min = lat_min
         self.lon_max = lon_max
         self.lat_max = lat_max
-        self.multiple = multiple
-        if(self.multiple=='False'):
-            self.multiple = False
-        elif(self.multiple=='True'):
-            self.multiple = True
+        self.multiple = True if multiple == 'True' else False
         self.size=size
         self.count=count
         self.pixres=pixres
@@ -69,21 +55,19 @@ class GEE_Mine(object):
               self.assetid,' ',self.featgeedescription,' ',\
              self.multiple,' ',self.size,self.conda_env_name+'\n')
         
-        
         self.outputdir = os.path.join(self.wd,self.outputdir)
-        if os.path.exists(self.outputdir)==False:
+        if not os.path.exists(self.outputdir):
             os.mkdir(self.outputdir)
             
         self.resultsdir = os.path.join(self.wd,self.resultsdir)
-        if os.path.exists(self.resultsdir) == False:
+        if not os.path.exists(self.resultsdir):
             os.mkdir(self.resultsdir)
 
         self.jobdir = os.path.join(self.wd,self.jobdir)
-        if os.path.exists(self.jobdir) == False:
+        if not os.path.exists(self.jobdir):
             os.mkdir(self.jobdir)
             
         self.compiledfilename = os.path.join(self.resultsdir,self.compiledfilename+'.csv')
-            
         
         #region of interest
         self.region = ee.Geometry.Polygon(
@@ -92,10 +76,8 @@ class GEE_Mine(object):
                   [ee.Number.parse(self.lon_max), ee.Number.parse(self.lat_min)],
                   [ee.Number.parse(self.lon_max), ee.Number.parse(self.lat_max)]]])
         
-
-
         # setting up for running lots of jobs
-        if self.multiple == True:
+        if self.multiple:
             # execute the GEE Mine Routine i.e. submit lots of jobs
             # the code will keep appending to one single file, unless an issue happens
             # when it will write a unique file rather than starting again
@@ -106,18 +88,18 @@ class GEE_Mine(object):
             # check for failures
             keep_running = self.check_failures()
             time.sleep(10)
-            if(keep_running == False):
+            if not keep_running:
                 # check if there are any others running in queue
                 complete=self.check_status()
-                if(complete == True):
+                if complete:
                     # if keep running is False and no more in queue (complete==True), then we can run analysis
                     # but first ensure only one csv in folder of results
                     # else there were filelock errors, and the smaller one needs to be appended to larger one
                     try:
                         glob_files = glob.glob(self.resultsdir+'/*.csv')
-                        if(len(glob_files) > 1):
+                        if len(glob_files) > 1:
                             for file in glob_files:
-                                if (file != self.compiledfilename):
+                                if file != self.compiledfilename:
                                     with open(file,'r') as f:
                                         csv_reader = reader(f)
                                     with open(self.compiledfilename,'a') as g:
@@ -131,12 +113,17 @@ class GEE_Mine(object):
                     
                     #No running jobs, no failures, now we analyze
                     continu = self.check_false_positive()
-                    if(continu == True):
+                    if continu:
                         self.convert()
-                        if self.makefeaturecollection == True:
+                        if self.makefeaturecollection:
                             self.geefeature()
-   
-        return
+
+                    # Remove accumulated files
+                    os.system('rm failed.txt queue.txt queue.txt.lock number.txt number.txt.lock slurm*')
+                    os.chdir(wd)
+                    os.system('rm ' + self.outputdir + '/* ' + self.jobdir + '/*')
+                    os.system('rm ' + self.compiledfilename + '.lock')
+        return 
     
     def main_routine(self):
 
@@ -287,8 +274,6 @@ class GEE_Mine(object):
                       "system:index": "4"
                     })])
 
-
-
         # TRAINING CLASSIFIERS
         # landsat
         training = bare.merge(vegetation)
@@ -341,9 +326,6 @@ class GEE_Mine(object):
           'inputProperties': composite2021.bandNames()
         })
 
- 
-        
-
         # Calculate values for pixresxpixres squares
         regions = self.create_segments()
         segments = ee.FeatureCollection(regions)
@@ -356,18 +338,18 @@ class GEE_Mine(object):
         try:
             data_set3 = data_set2.getInfo() # <- slow
         except Exception as e:
-            Pass=Fail
+            Pass = False
             print(f'Caught error {e} on getinfo - trying to re-run with smaller target area')
             x.start_process(self.lon_min,self.lat_min,self.lon_max,self.lat_max,\
                             self.size*0.5,self.multiple,self.count,self.pixres)
-        if(Pass == True):
+        if Pass:
             # CSV header
             header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
                   'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B', 'NASADEM Elevation', 'GEDI Elevation','GEDI-SRTM Elevation','GEDI Quality Flag', 'B5', 'B6']
 
             # Create CSV and add header & data
             # new file if not already existing
-            if(os.path.exists(self.compiledfilename) == False ):
+            if not os.path.exists(self.compiledfilename):
                 lockname=self.compiledfilename+'.lock'
                 lock = filelock.FileLock(lockname)
                 try:
@@ -452,27 +434,6 @@ class GEE_Mine(object):
 
         return segments
     
-        # routine
-    def filter_by_vegetation_loss(self,squares, threshold1, threshold2):
-        with_percent_change = squares.map(self.calculate_percentage_change)
-        passed = with_percent_change.filter((ee.Filter.gt('percent loss', threshold1)).Or(ee.Filter.gt('percent bare', threshold2)))
-        return passed
-
-    def filter_by_vh_percent(self,squares, threshold):
-        with_change = squares.map(self.calculate_sar_vh)
-        passed = with_change.filter(ee.Filter.gt('vh_percent', threshold))
-        return passed
-
-    def filter_by_nir_g(self,squares, threshold):
-        with_change = squares.map(self.calculate_nir_g)
-        passed = with_change.filter(ee.Filter.lte('nir/g', threshold))
-        return passed
-
-    def filter_by_swir1_b(self,squares, threshold):
-        with_swir1_b = squares.map(self.calculate_swir1_b)
-        passed = with_swir1_b.filter(ee.Filter.lte('swir/b', threshold))
-        return passed
-    
     # CLOUD MASKING FUNCTIONS
     # landsat
     def mask_ls5_clouds(self,image):
@@ -499,24 +460,21 @@ class GEE_Mine(object):
     def passing_mine(self,feature):
         veg = self.calculate_percentage_change(feature)
         sar = self.calculate_sar_vh(feature)
-        nir_g = self.calculate_nir_g(feature)
-        swir1_b = self.calculate_swir1_b(feature)
+        bands_and_indices = self.get_s2_bands_and_indices(feature)
         NASADEM = self.get_NASADEM(feature)
         GEDI = self.calc_gedi_loss(feature)
-        b5 = self.get_B5(feature)
-        b6 = self.get_B6(feature)
         return ee.Feature(feature \
             .set('vegetation loss', veg.get('percent loss')) \
             .set('percent bare', veg.get('percent bare')) \
             .set('vh', sar.get('vh_percent')) \
-            .set('nir/g', nir_g.get('nir/g')) \
-            .set('swir1/b', swir1_b.get('swir/b'))\
+            .set('nir/g', bands_and_indices.get('NIR/G')) \
+            .set('swir1/b', bands_and_indices.get('SWIR1/B'))\
             .set('NASADEM Elevation',NASADEM.get('elevation')) \
             .set('GEDI Elevation',GEDI.get('GEDI'))\
             .set('GEDI-SRTM Elevation',GEDI.get('loss'))\
             .set('GEDI Quality Flag',GEDI.get('quality flag'))\
-            .set('B5 value', b5.get('b5'))\
-            .set('B6 value', b6.get('b6')))
+            .set('B5 value', bands_and_indices.get('B5'))\
+            .set('B6 value', bands_and_indices.get('B6')))
             
 
     def create_results(self,feature):
@@ -554,7 +512,6 @@ class GEE_Mine(object):
             new_feature = ee.Feature(None, {'info': row})
             return new_feature
 
-    
     def geefeature(self):
             
         # Convert to a Feature Collection
@@ -584,7 +541,7 @@ class GEE_Mine(object):
               'collection': fc,
               'description':self.featgeedescription,
               'assetId': self.assetid, # change to your GEE Asset path and a unique name (will not overwrite already existing assets, so old names cannot be reused)
-            });
+            })
 
         task.start()
         return
@@ -644,10 +601,9 @@ class GEE_Mine(object):
         return 
     
     def check_false_positive(self):
-        
         ex = np.genfromtxt( self.compiledfilename , delimiter=',', skip_header=1)
         
-        if(ex.shape[0] > 50):
+        if ex.shape[0] > 50:
             continu = True
             new_array = np.empty((0,17), float)
             for row in ex:
@@ -713,19 +669,14 @@ class GEE_Mine(object):
                     x_b5 = interp_b5.__call__(x[0], x[1])
                     x_b6 = interp_b6.__call__(x[0], x[1])
                     x_nd = ((x_b5 - x_b6)/(x_b5 + x_b6))
-                    if (nasa < x_nasa):
+                    if nasa < x_nasa:
                         score_elev = score_elev+1
-                    if (abs(nd - x_nd) > 0.05):
+                    if abs(nd - x_nd) > 0.05:
                         score_bands = score_bands+1
 
                 new_row = np.append(row, [score_elev, score_bands], axis=None)
                 new_array2 = np.append(new_array2, np.array([new_row]), axis=0)
 
-            # header_list = 'Mininum Longitude, Minimum Latitude, Maximum Longitude, Maximum Latitude, \
-            #             Percent Vegetation Loss, Percent Bare Initial, Percent Significant VH Values, \
-            #             Average NIR/G, Average SWIR1/B, NASA Elev, GEDI Elev, Elev Loss,GEDI Qual. Flag,\
-            #             B5 Value, B6 Value, Center Lat, Center Lon, Elevation Score, Band Variation Score'
-            # final = np.savetxt("results/compiled_scores.csv", new_array2, delimiter=",", header=header_list)
             tempname = (os.path.basename(self.compiledfilename)).split('.csv')[0]
             final = np.savetxt(os.path.join(self.resultsdir, tempname + "_scores.csv"), new_array2, delimiter=",")
         else:
@@ -733,6 +684,15 @@ class GEE_Mine(object):
             continu = False
         
         return continu
+
+    def reduce_region(self, image, reducer, geometry, scale):
+        reduced = image.reduceRegion(**{
+            'reducer': reducer,
+            'geometry': geometry,
+            'scale': scale
+        })
+    
+        return reduced
     
     # VERTICAL FILTER CALCULATIONS
     # vegetation percentage change
@@ -769,44 +729,22 @@ class GEE_Mine(object):
         vegetation_to_bare = initial_vegetation.And(bare)
 
         area_image = vegetation_to_bare.multiply(ee.Image.pixelArea())
-
-        area = area_image.reduceRegion(**{
-              'reducer': ee.Reducer.sum(),
-              'geometry': g,
-              'scale': 100,
-              'maxPixels': 1e10
-        })
-
+        area = self.reduce_region(area_image, ee.Reducer.sum(), g, 100)
         area_vegetation_to_bare = ee.Number(area.get('remapped')).divide(1e6)
 
         area_initial_vegetation = left_classified.eq(1).multiply(ee.Image.pixelArea())
-
-        area2 = area_initial_vegetation.reduceRegion(**{
-              'reducer': ee.Reducer.sum(),
-              'geometry': g,
-              'scale': 100,
-              'maxPixels': 1e10
-        })
-
+        area2 = self.reduce_region(area_initial_vegetation, ee.Reducer.sum(), g, 100)
         area_initial_vegetation = ee.Number(area2.get('classification')).divide(1e6)
 
         percent_loss = area_vegetation_to_bare.divide(area_initial_vegetation).multiply(100)
 
-        ## account for loss of vegetation from before 1985
-
+        # account for loss of vegetation from before 1985
         #area of image
         total_area = g.area()
         total_SqKm = ee.Number(total_area).divide(1e6)
         #area of bare earth 2021
         bare_image = bare.multiply(ee.Image.pixelArea())
-
-        area3 = bare_image.reduceRegion(**{
-              'reducer': ee.Reducer.sum(),
-              'geometry': g,
-              'scale': 100,
-              'maxPixels': 1e10
-        })
-
+        area3 = self.reduce_region(bare_image, ee.Reducer.sum(), g, 100)
         area_bare = ee.Number(area3.get('remapped')).divide(1e6)
 
         percent_bare = area_bare.divide(total_SqKm).multiply(100)
@@ -838,13 +776,8 @@ class GEE_Mine(object):
         area_mines = area_mines.updateMask(connect.gt(8));
         area_mines = area_mines.multiply(ee.Image.pixelArea())
 
-        area = area_mines.reduceRegion(**{
-              'reducer': ee.Reducer.sum(),
-              'geometry': g,
-              'scale': 30,
-              'maxPixels': 1e10
-        })
-
+        area = self.reduce_region(area_mines, ee.Reducer.sum(), g, 30)
+    
         mines_SqKm = ee.Number(area.get('mines')).divide(1e6)
 
         percent_mine = ee.Number(mines_SqKm.divide(total_SqKm).multiply(100))
@@ -852,7 +785,7 @@ class GEE_Mine(object):
         return feature.set('vh_percent', percent_mine)
 
     # nir/g
-    def calculate_nir_g(self,feature):
+    def get_s2_bands_and_indices(self,feature):
         g = feature.geometry()
 
         # Images and Bands
@@ -865,41 +798,23 @@ class GEE_Mine(object):
                 .median() \
                 .clip(g)
 
-        nir_g_s2 = composite_s2.normalizedDifference(['B8', 'B3']).rename('NIR/G')
+        nir_g = composite_s2.normalizedDifference(['B8', 'B3']).rename('NIR/G')
+        swir1_b = composite_s2.normalizedDifference(['B11', 'B2']).rename('SWIR1/B')
+        b5 = composite_s2.select('B5').rename('B5')
+        b6 = composite_s2.select('B6').rename('B6')
 
         # Average NIR/G   
-        stats_s2 = nir_g_s2.reduceRegion(**{
-                'reducer': ee.Reducer.mean(),
-                'geometry': nir_g_s2.geometry(),
-                'scale': 30
-        })
+        stats_nir_g = self.reduce_region(nir_g, ee.Reducer.mean(), g, 30)
+        stats_swir1_b = self.reduce_region(swir1_b, ee.Reducer.mean(), g, 30)
+        stats_b5 = self.reduce_region(b5, ee.Reducer.mean(), g, 30)
+        stats_b6 = self.reduce_region(b6, ee.Reducer.mean(), g, 30)
+        
+        avg_nir_g = ee.Number(stats_nir_g.get('NIR/G'))
+        avg_swir1_b = ee.Number(stats_swir1_b.get('SWIR1/B'))
+        avg_b5 = ee.Number(stats_b5.get('B5'))
+        avg_b6 = ee.Number(stats_b6.get('B6'))
 
-        avg_s2 = ee.Number(stats_s2.get('NIR/G'))
-
-        return feature.set('nir/g',  avg_s2)
-
-    # swir1/b
-    def calculate_swir1_b(self,feature):
-        g = feature.geometry()
-        composite_s2 = self.s2 \
-                .filter(ee.Filter.bounds(g)) \
-                .filter(ee.Filter.date('2021-01-01', '2021-12-31')) \
-                .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)) \
-                .map(self.mask_s2_clouds) \
-                .select('B.*') \
-                .median() \
-                .clip(g) 
-        swirb = composite_s2.normalizedDifference(['B11', 'B2']).rename('SWIR1/B')
-        stats = swirb.reduceRegion(**{
-                'reducer': ee.Reducer.mean(),
-                'geometry': g,
-                'scale': 30,
-                'maxPixels': 1e10
-        })
-        swirb_val = stats.get('SWIR1/B')
-
-        return feature.set('swir/b', swirb_val)
-
+        return feature.set('NIR/G', avg_nir_g).set('SWIR1/B', avg_swir1_b).set('B5', avg_b5).set('B6', avg_b6)
 
     def get_NASADEM(self,feature):
         """
@@ -908,15 +823,10 @@ class GEE_Mine(object):
         """
         g = feature.geometry()
         srtm = ee.Image('NASA/NASADEM_HGT/001').select('elevation')
-        red_srtm = srtm.reduceRegion(**{
-                'reducer': ee.Reducer.mean(),
-                'geometry': g,
-                'scale': 30
-        })
+        red_srtm = self.reduce_region(srtm, ee.Reducer.mean(), g, 30)
         mean = ee.Number(red_srtm.get('elevation'))
         mean = ee.Algorithms.If(mean, mean, -999) # null values replaced with -999
         return feature.set('elevation',mean)
-
 
     def calc_gedi_loss(self,feature):
         """
@@ -932,7 +842,6 @@ class GEE_Mine(object):
                           .filter(ee.Filter.bounds(g))\
         .select('elev_highestreturn','digital_elevation_model','digital_elevation_model_srtm','quality_flag').median().clip(g)
 
-
         x = gedi_coll
         srtm = x.select('digital_elevation_model_srtm')
         gedi = x.select('elev_highestreturn')
@@ -940,78 +849,22 @@ class GEE_Mine(object):
         loss = gedi.subtract(srtm).rename('loss')
 
         # Averaging Loss
-        avg_loss = loss.reduceRegion(**{
-                'reducer': ee.Reducer.mean(),
-                'geometry': g,
-                'scale': 30
-        })
+        avg_loss = self.reduce_region(loss, ee.Reducer.mean(), g, 30)
         loss = ee.Number(avg_loss.get('loss'))
         loss = ee.Algorithms.If(loss, loss, -999) # null values replaced with -999
 
-        # Avergaing GEDI
-        avg_gedi = gedi.reduceRegion(**{
-                'reducer': ee.Reducer.mean(),
-                'geometry': g,
-                'scale': 30
-        })
+        # Averaging GEDI
+        avg_gedi = self.reduce_region(gedi, ee.Reducer.mean(), g, 30)
         gedi_mean = ee.Number(avg_gedi.get('elev_highestreturn'))
         gedi_mean = ee.Algorithms.If(gedi_mean, gedi_mean, -999) # null values replaced with -999
 
-        # Avergaing GEDI Quality Flag
-        avg_qual = quality.reduceRegion(**{
-                'reducer': ee.Reducer.mean(),
-                'geometry': g,
-                'scale': 30
-        })
-
-
+        # Averaging GEDI Quality Flag
+        avg_qual = self.reduce_region(quality, ee.Reducer.mean(), g, 30)
         qual = ee.Number(avg_qual.get('quality_flag'))
         qual = ee.Algorithms.If(qual, qual, -999) # null values replaced with -999
 
         return feature.set('loss',loss).set('GEDI',gedi_mean).set('quality flag',qual)
 
-    def get_B5(self,feature):
-        g = feature.geometry()
-        composite_s2 = self.s2 \
-              .filter(ee.Filter.bounds(g)) \
-              .filter(ee.Filter.date('2021-01-01', '2021-12-31')) \
-              .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)) \
-              .map(self.mask_s2_clouds) \
-              .select('B.*') \
-              .median() \
-              .clip(g) 
-        s2_b5 = composite_s2.select('B5').rename('b5')
-        stats = s2_b5.reduceRegion(**{
-              'reducer': ee.Reducer.mean(),
-              'geometry': g,
-              'scale': 30,
-              'maxPixels': 1e10
-          })
-        b5_val = stats.get('b5')
-
-        return feature.set('b5', b5_val)
-
-    def get_B6(self,feature):
-        g = feature.geometry()
-        composite_s2 = self.s2 \
-              .filter(ee.Filter.bounds(g)) \
-              .filter(ee.Filter.date('2021-01-01', '2021-12-31')) \
-              .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)) \
-              .map(self.mask_s2_clouds) \
-              .select('B.*') \
-              .median() \
-              .clip(g) 
-        s2_b6 = composite_s2.select('B6').rename('b6')
-        stats = s2_b6.reduceRegion(**{
-              'reducer': ee.Reducer.mean(),
-              'geometry': g,
-              'scale': 30,
-              'maxPixels': 1e10
-          })
-        b6_val = stats.get('b6')
-        return feature.set('b6', b6_val)
-    
-    
     def check_failures(self):
         # remove all slurm files with no exceptions
         os.system("find | grep -l -L -E exception "+str(self.outputdir)+"/slurm* | xargs rm -f")
@@ -1026,7 +879,7 @@ class GEE_Mine(object):
                     with open(os.path.join(self.outputdir,line)) as f: 
                         data=f.readlines
                     for i in range(len(data)):
-                        if(data[i][0:6] == 'input='):
+                        if data[i][0:6] == 'input=':
                             commands = data[i].split(' ')
                             lon_min = commands[1]
                             lat_min = commands[2]
@@ -1083,13 +936,7 @@ class GEE_Mine(object):
                     data=f.readlines()
                 njobs = int(data[0].split('\n')[0])
                 print('njobs ',njobs)
-                if(njobs > 1):   
-                    # false, not yet done
-                    return False
-                else:
-                    # true, we are done
-                    return True
-    
+                return njobs <= 1 # if >1 jobs, jobs are not finished so return False, else return True
     
     
     def create_large_squares(self):
@@ -1166,8 +1013,6 @@ class GEE_Mine(object):
  
 # here we will run the individual jobs that HPC will execute
 if __name__ == '__main__':
-
-
     lon_min = sys.argv[1]
     lat_min = sys.argv[2]
     lon_max = sys.argv[3]
@@ -1195,5 +1040,3 @@ if __name__ == '__main__':
                  compiledfilename,assetid,featgeedescription,makefeaturecollection,conda_env_name)
     
     x.start_process(lon_min,lat_min,lon_max,lat_max,target_area,multiple,count=count,pixres=pixres)
-
-        
