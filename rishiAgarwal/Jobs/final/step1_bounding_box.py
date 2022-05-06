@@ -1,6 +1,7 @@
 import os
 import sys
 
+
 bash_filename = 'start_routine.sh'
 with open(bash_filename,'w') as f:
     # one node, one hour

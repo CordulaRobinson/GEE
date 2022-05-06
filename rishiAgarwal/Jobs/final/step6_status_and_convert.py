@@ -28,7 +28,10 @@ with open('results/' + file_name + '.csv', 'r') as read_obj, \
     for row in csv_reader:
         # Calculate Status and append to the end of the row/list
         # Passing: (Veg loss > 20% or Initial Bare Earth > 10%) and SAR VH > 5% and NIR/G <= 0.45 and SWIR1/B < 0.65 
-        status = (((float(row[4]) > 20) or (float(row[5]) > 10))and (float(row[6]) > 5) and (float(row[7]) <= 0.45) and (float(row[8]) < 0.65))
+        if ((float(row[4]) < 20) and (float(row[5]) > 20)):
+            status = ((float(row[6]) > 5) and (float(row[7]) <= 0.45) and (float(row[8]) < 0.65) and (float(row[17])>= 5) and (float(row[18]) >= 4))
+        else: 
+            status = ((float(row[4]) > 20) and (float(row[6]) > 5) and (float(row[7]) <= 0.45) and (float(row[8]) < 0.65))
         if status:
             row.append("Pass")
         else: 
@@ -38,7 +41,7 @@ with open('results/' + file_name + '.csv', 'r') as read_obj, \
 
 # Create a file of only passing statuses
 with open('results/' + file_name + '_status.csv', 'r') as r, \
-        open('results/' + file_name + '_status_passing.csv', 'w', newline='') as w:
+        open('results/' + file_name + '_passing.csv', 'w', newline='') as w:
     # Create a csv.reader object from the input file object
     csv_reader = reader(r)
     # Create a csv.writer object from the output file object
@@ -55,7 +58,7 @@ with open('results/' + file_name + '_status.csv', 'r') as r, \
                 
 # Convert to a Feature Collection
 # Create a list of Geometries for areas that passed as possible mines
-with open('results/' + file_name + '_status_passing.csv', 'r') as r:
+with open('results/' + file_name + '_passing.csv', 'r') as r:
     csv_reader = reader(r)
     # Skip Header in input file
     header = next(csv_reader)
@@ -77,7 +80,7 @@ fc = ee.FeatureCollection(region_list)
 task = ee.batch.Export.table.toAsset(**{
   'collection': fc,
   'description':'compiled_results',
-  'assetId': 'users/EmilyNason/FinalResults', # change to your GEE Asset path and a unique name (will not overwrite already existing assets, so old names cannot be reused)
+  'assetId': 'users/rishiAgarwal/FinalResults', # change to your GEE Asset path and a unique name (will not overwrite already existing assets, so old names cannot be reused)
 });
 
 task.start()
