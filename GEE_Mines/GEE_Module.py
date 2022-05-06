@@ -55,9 +55,9 @@ class GEE_Mine(object):
         
         # this is for capturing failed jobs - the code will search and get this line when GEE exceptions are detected
         print("input= ",self.lon_min,' ',self.lat_min,' ',self.lon_max,' ',self.lat_max,' ',self.count,' ',\
-             self.pixres,' ',self.system,' ',self.username,' ',self.jobname,' ',self.wd,' ',os.path.basename(self.outputdir),' ',\
-              os.path.basename(self.resultsdir),' ',os.path.basename(self.jobdir),' ',os.path.basename(self.compiledfilename).split('.csv')[0],' ',self.makefeaturecollection,' ',\
-              self.assetid,' ',self.featgeedescription,' ',\
+             self.pixres,' ',self.system,' ',self.username,' ',self.jobname,' ',self.wd,' ',self.outputdir,' ',\
+             self.resultsdir,' ',self.jobdir,' ',self.compiledfilename,' ',self.makefeaturecollection,' ',\
+             self.assetid,' ',self.featgeedescription,' ',\
              self.multiple,' ',self.size,self.conda_env_name+'\n')
         
         self.outputdir = os.path.join(self.wd,self.outputdir)
