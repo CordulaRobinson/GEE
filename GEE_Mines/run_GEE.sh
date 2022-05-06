@@ -1,9 +1,9 @@
 #!/bin/bash
 # The GEE Code expects a couple of input variables from us to begin
-lon_min='29.554'
-lat_min='3.092'
-lon_max='29.625'
-lat_max='3.159'
+lon_min='29'
+lat_min='2.5'
+lon_max='30'
+lat_max='3.5'
 # count means nothing 
 count='0'
 # desired pixel resolution in km
@@ -15,7 +15,7 @@ username='eah.r'
 # name of submitted jobs
 jobname='routine'
 # working directory
-wd='/scratch/eah.r/gee_eamon/GEE_Mines/GEE_Modularize'
+wd='/scratch/eah.r/gee_new/GEE_Mines/GEE_Modularize'
 # output directory
 outputdir='outputs'
 # results directory
