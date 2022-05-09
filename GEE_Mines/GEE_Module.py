@@ -126,6 +126,7 @@ class GEE_Mine(object):
                     os.chdir(wd)
                     os.system('rm ' + self.outputdir + '/* ' + self.jobdir + '/*')
                     os.system('rm ' + self.compiledfilename + '.lock')
+                    os.chdir('..')
         return 
     
     def main_routine(self):
@@ -987,7 +988,7 @@ class GEE_Mine(object):
                     with open(os.path.join(self.jobdir,bash_filename),'w') as f:
                         f.write('#!/bin/bash'+'\n')
                         f.write('#SBATCH --nodes=1'+'\n')
-                        f.write('#SBATCH --time=01:00:00'+'\n')
+                        f.write('#SBATCH --time=02:00:00'+'\n')
                         f.write('#SBATCH --job-name='+str(self.jobname)+'_job'+'\n')
                         f.write('#SBATCH --partition=short'+'\n')
                         f.write('#SBATCH --mem=16GB'+'\n')
