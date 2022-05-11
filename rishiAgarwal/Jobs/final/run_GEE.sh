@@ -15,7 +15,7 @@ username='agarwal.rishi'
 # name of submitted jobs
 jobname='routine'
 # working directory
-wd='/scratch/agarwal.rishi/gee/rishiAgarwal/Jobs/final/'
+wd='/scratch/agarwal.rishi/GEE/rishiAgarwal/Jobs/final/'
 # output directory
 outputdir='output'
 # results directory

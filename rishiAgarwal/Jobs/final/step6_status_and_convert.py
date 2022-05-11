@@ -29,9 +29,9 @@ with open('results/' + file_name + '.csv', 'r') as read_obj, \
         # Calculate Status and append to the end of the row/list
         # Passing: (Veg loss > 20% or Initial Bare Earth > 10%) and SAR VH > 5% and NIR/G <= 0.45 and SWIR1/B < 0.65 
         if ((float(row[4]) < 20) and (float(row[5]) > 20)):
-            status = ((float(row[6]) > 5) and (float(row[7]) <= 0.45) and (float(row[8]) < 0.65) and (float(row[17])>= 5) and (float(row[18]) >= 4))
+            status = ((float(row[6]) > 25) and (float(row[7]) <= 0.30) and (float(row[8]) < 0.65) and (float(row[17])>= 5) and (float(row[18]) >= 4))
         else: 
-            status = ((float(row[4]) > 20) and (float(row[6]) > 5) and (float(row[7]) <= 0.45) and (float(row[8]) < 0.65))
+            status = ((float(row[4]) > 20) and (float(row[6]) > 25) and (float(row[7]) <= 0.45) and (float(row[8]) < 0.65))
         if status:
             row.append("Pass")
         else: 
