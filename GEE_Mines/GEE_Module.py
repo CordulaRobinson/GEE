@@ -576,20 +576,33 @@ class GEE_Mine(object):
             csv_writer.writerow(header_list)
             # Read each row of the input csv file as list
             for row in csv_reader:
-                # Calculate Status and append to the end of the row/list
-                # Passing:
-                # If Veg Loss < 20 and Bare Earth > 20: 
-                # # SAR VH > 5% and NIR/G <= 0.45 and SWIR1/B < 0.65 and Elevation Score >= 5 and B5/B6 Score >= 4
-                # Else: 
-                # # Veg Loss > 20 and SAR VH > 5% and NIR/G <= 0.45 and SWIR1/B < 0.65
-                if ((float(row[4]) < 20) and (float(row[5]) > 20)):
-                    status = ((float(row[6]) > 5) and (float(row[7]) <= 0.45) and (float(row[8]) < 0.65) and (float(row[17]) >= 5) and (float(row[18]) >= 4))
+                """
+                Calculate Status and append to the end of the row/list
+
+                Passing Criteria:
+                If Vegetation Loss < 20% and Bare Earth > 20%: 
+                    SAR VH > 25% and NIR/G <= 0.45 and SWIR1/B < 0.65 and Elevation Score >= 5 and B5/B6 Score >= 4
+                Else: 
+                    Vegetation Loss > 20% and SAR VH > 25% and NIR/G <= 0.45 and SWIR1/B < 0.65
+                """
+                vegetation_loss = float(row[4])
+                percent_bare = float(row[5])
+                sar_vh = float(row[6])
+                nir_g = float(row[7])
+                swir1_b = float(row[8])
+                elevation_score = float(row[17])
+                b5_b6_score = float(row[18])
+                
+                if vegetation_loss < 20 and percent_bare > 20:
+                    status = sar_vh > 25 and nir_g <= 0.45 and swir1_b < 0.65 and elevation_score >= 5 and b5_b6_score >= 4
                 else: 
-                    status = ((float(row[4]) > 20) and (float(row[6]) > 5) and (float(row[7]) <= 0.45) and (float(row[8]) < 0.65))
+                    status = percent_bare > 20 and sar_vh > 25 and nir_g <= 0.45 and swir1_b < 0.65
+
                 if status:
-                    row.append("Pass")
+                    row.append('Pass')
                 else: 
-                    row.append("Fail")
+                    row.append('Fail')
+
                 # Add the updated row / list to the output file
                 csv_writer.writerow(row)
 
