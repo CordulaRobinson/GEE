@@ -581,9 +581,9 @@ class GEE_Mine(object):
 
                 Passing Criteria:
                 If Vegetation Loss < 20% and Bare Earth > 20%: 
-                    SAR VH > 25% and NIR/G <= 0.45 and SWIR1/B < 0.65 and Elevation Score >= 5 and B5/B6 Score >= 4
+                    SAR VH > 25% and NIR/G <= 0.3 and SWIR1/B < 0.65 and Elevation Score >= 5 and B5/B6 Score >= 4
                 Else: 
-                    Vegetation Loss > 20% and SAR VH > 25% and NIR/G <= 0.45 and SWIR1/B < 0.65
+                    Vegetation Loss > 20% and SAR VH > 25% and NIR/G <= 0.3 and SWIR1/B < 0.65
                 """
                 vegetation_loss = float(row[4])
                 percent_bare = float(row[5])
@@ -594,9 +594,9 @@ class GEE_Mine(object):
                 b5_b6_score = float(row[18])
                 
                 if vegetation_loss < 20 and percent_bare > 20:
-                    status = sar_vh > 25 and nir_g <= 0.45 and swir1_b < 0.65 and elevation_score >= 5 and b5_b6_score >= 4
+                    status = sar_vh > 25 and nir_g <= 0.3 and swir1_b < 0.65 and elevation_score >= 5 and b5_b6_score >= 4
                 else: 
-                    status = percent_bare > 20 and sar_vh > 25 and nir_g <= 0.45 and swir1_b < 0.65
+                    status = percent_bare > 20 and sar_vh > 25 and nir_g <= 0.3 and swir1_b < 0.65
 
                 if status:
                     row.append('Pass')
