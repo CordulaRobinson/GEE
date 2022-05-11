@@ -55,14 +55,14 @@ Since we were working with two separate datasets, we created two classifiers wit
 
 1. Create a median composite image over an area of interest for the year 1985. We used 1985 because we wanted our time period to span over as many years as possible, and 1985 was the earliest available image.
 2. Collect training data of bare earth and vegetation points using the geometry tools in the Google Earth Engine Code Editor
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/routine_vegetation_loss/images/ls_training.PNG)
+![](https://github.com/CordulaRobinson/GEE/blob/raymondeah/drc/routine_vegetation_loss/images/ls_training.PNG)
 4. Train a Random Forest Classifier using the image and the training data
 
 #### Sentinel-2
 
 1. Create a median composite image over the same area of interest for the year 2021. We used 2021 because it was the most recent year available.
 2. Collect Training data of bare earth and vegetation points using the geometry tools in the Google Earth Engine Code Editor
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/routine_vegetation_loss/images/s2_training.PNG)
+![](https://github.com/CordulaRobinson/GEE/blob/raymondeah/drc/routine_vegetation_loss/images/s2_training.PNG)
 4. Train a Random Forest Classifier using the image and the training data
 
 <hr>
@@ -100,23 +100,23 @@ Specific method details can be found in the "create_segments(geometry, size)" me
 
 Combining everything together, we tested the effectiveness of the vegetation loss metric at identifying mines for several different areas of interest in the DRC. Our current workflow is visualized below.
 
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/routine_vegetation_loss/images/w.png)
+![](https://github.com/CordulaRobinson/GEE/blob/raymondeah/drc/routine_vegetation_loss/images/w.png)
 
 #### Area 1, 500m x 500m squares
 
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/routine_vegetation_loss/images/area1.png)
+![](https://github.com/CordulaRobinson/GEE/blob/raymondeah/drc/routine_vegetation_loss/images/area1.png)
 
 #### Area 2, 500m x 500m squares
 
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/routine_vegetation_loss/images/area2.png)
+![](https://github.com/CordulaRobinson/GEE/blob/raymondeah/drc/routine_vegetation_loss/images/area2.png)
 
 #### Area 3, 500m x 500m squares
 
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/routine_vegetation_loss/images/area3.png)
+![](https://github.com/CordulaRobinson/GEE/blob/raymondeah/drc/routine_vegetation_loss/images/area3.png)
 
 #### Area 4 (small-scale mining), 100m x 100m squares
 
-![](https://github.com/CordulaRobinson/GEE/blob/main/raymondeah/drc/routine_vegetation_loss/images/area4.png)
+![](https://github.com/CordulaRobinson/GEE/blob/raymondeah/drc/routine_vegetation_loss/images/area4.png)
 
 #### Conclusions
 
