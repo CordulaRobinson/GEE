@@ -537,7 +537,7 @@ class GEE_Mine(object):
                                   [float(row[0]), float(row[1])],
                                   [float(row[2]), float(row[1])],
                                   [float(row[2]), float(row[3])]]])
-                    f = ee.Feature(region).set('elevation score', float(row[17])).set('b5/b6 score', float(row[18]))
+                    f = ee.Feature(region).set('elevation score', float(row[18])).set('b5/b6 score', float(row[19]))
                     self.region_list.append(f)
 
 
@@ -623,7 +623,7 @@ class GEE_Mine(object):
             if header != None:
                 # Add passing rows to new file
                 for row in csv_reader:
-                    if row[19] == "Pass":
+                    if row[20] == "Pass":
                         csv_writer.writerow(row)
         
         return
@@ -633,8 +633,8 @@ class GEE_Mine(object):
         arr = np.array(arr)
 
         # columns
-        lons = arr[:,15]
-        lats = arr[:,16]
+        lons = arr[:,16]
+        lats = arr[:,17]
         nasa_dem = arr[:,9]
         b5_vals = arr[:,13]
         b6_vals = arr[:,14]
@@ -648,8 +648,8 @@ class GEE_Mine(object):
         elev_scores = []
         b5_b6_scores = []
         for row in arr:
-            center_lon = row[15]
-            center_lat = row[16]
+            center_lon = row[16]
+            center_lat = row[17]
             center_elev = row[9]
             center_b5 = row[13]
             center_b6 = row[14]
