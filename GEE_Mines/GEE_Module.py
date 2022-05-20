@@ -350,7 +350,7 @@ class GEE_Mine(object):
             with_scores = self.check_false_positive(data_set3)
             # CSV header
             header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
-                  'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B', 'NASADEM Elevation', 'GEDI Elevation','GEDI-SRTM Elevation','GEDI Quality Flag', 'B5', 'B6']
+                  'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B', 'NASADEM Elevation', 'GEDI Elevation','GEDI-SRTM Elevation','GEDI Quality Flag', 'B5', 'B6', 'NDMI']
 
             # Create CSV and add header & data
             # new file if not already existing
@@ -479,7 +479,8 @@ class GEE_Mine(object):
             .set('GEDI-SRTM Elevation',GEDI.get('loss'))\
             .set('GEDI Quality Flag',GEDI.get('quality flag'))\
             .set('B5 value', bands_and_indices.get('B5'))\
-            .set('B6 value', bands_and_indices.get('B6')))
+            .set('B6 value', bands_and_indices.get('B6'))\
+            .set('NDMI', bands_and_indices.get('NDMI')))
             
 
     def create_results(self,feature):
@@ -499,6 +500,7 @@ class GEE_Mine(object):
             gedi_qual = feature.get('GEDI Quality Flag')
             b5_val = feature.get('B5 value')
             b6_val = feature.get('B6 value')
+            ndmi = feature.get('NDMI')
             row = ee.Array([lon_min, 
                            lat_min, 
                            lon_max,
@@ -513,7 +515,8 @@ class GEE_Mine(object):
                            gedi_loss,
                            gedi_qual,
                            b5_val,
-                           b6_val])
+                           b6_val,
+                           ndmi])
             new_feature = ee.Feature(None, {'info': row})
             return new_feature
 
@@ -534,7 +537,7 @@ class GEE_Mine(object):
                                   [float(row[0]), float(row[1])],
                                   [float(row[2]), float(row[1])],
                                   [float(row[2]), float(row[3])]]])
-                    f = ee.Feature(region).set('elevation score', float(row[17])).set('b5/b6 score', float(row[18]))
+                    f = ee.Feature(region).set('elevation score', float(row[18])).set('b5/b6 score', float(row[19]))
                     self.region_list.append(f)
 
 
@@ -571,14 +574,13 @@ class GEE_Mine(object):
             header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
                            'Percent Vegetation Loss', 'Percent Bare Initial', 'Percent Significant VH Values', \
                            'Average NIR/G', 'Average SWIR1/B', 'NASA Elev', 'GEDI Elev', 'Elev Loss','GEDI Qual. Flag',\
-                           'B5 Value', 'B6 Value', 'Center Lon', 'Center Lat','Elevation Score', \
+                           'B5 Value', 'B6 Value', 'NDMI', 'Center Lon', 'Center Lat','Elevation Score', \
                            'Band Variation Score','Status']
             csv_writer.writerow(header_list)
             # Read each row of the input csv file as list
             for row in csv_reader:
                 """
                 Calculate Status and append to the end of the row/list
-
                 Passing Criteria:
                 If Vegetation Loss < 20% and Bare Earth > 20%: 
                     SAR VH > 25% and NIR/G <= 0.3 and SWIR1/B < 0.65 and Elevation Score >= 5 and B5/B6 Score >= 4
@@ -621,7 +623,7 @@ class GEE_Mine(object):
             if header != None:
                 # Add passing rows to new file
                 for row in csv_reader:
-                    if row[19] == "Pass":
+                    if row[20] == "Pass":
                         csv_writer.writerow(row)
         
         return
@@ -631,8 +633,8 @@ class GEE_Mine(object):
         arr = np.array(arr)
 
         # columns
-        lons = arr[:,15]
-        lats = arr[:,16]
+        lons = arr[:,16]
+        lats = arr[:,17]
         nasa_dem = arr[:,9]
         b5_vals = arr[:,13]
         b6_vals = arr[:,14]
@@ -646,8 +648,8 @@ class GEE_Mine(object):
         elev_scores = []
         b5_b6_scores = []
         for row in arr:
-            center_lon = row[15]
-            center_lat = row[16]
+            center_lon = row[16]
+            center_lat = row[17]
             center_elev = row[9]
             center_b5 = row[13]
             center_b6 = row[14]
@@ -793,8 +795,6 @@ class GEE_Mine(object):
 
         #area of possible mines
         area_mines = composite.lt(-19).rename('mines')
-        connect = area_mines.connectedPixelCount(25);
-        area_mines = area_mines.updateMask(connect.gt(8));
         area_mines = area_mines.multiply(ee.Image.pixelArea())
 
         area = self.reduce_region(area_mines, ee.Reducer.sum(), g, 30)
@@ -823,19 +823,22 @@ class GEE_Mine(object):
         swir1_b = composite_s2.normalizedDifference(['B11', 'B2']).rename('SWIR1/B')
         b5 = composite_s2.select('B5').rename('B5')
         b6 = composite_s2.select('B6').rename('B6')
+        ndmi = composite_s2.normalizedDifference(['B8', 'B11']).rename('NDMI') # moisture
 
-        # Average NIR/G   
+        # Average Values   
         stats_nir_g = self.reduce_region(nir_g, ee.Reducer.mean(), g, 30)
         stats_swir1_b = self.reduce_region(swir1_b, ee.Reducer.mean(), g, 30)
         stats_b5 = self.reduce_region(b5, ee.Reducer.mean(), g, 30)
         stats_b6 = self.reduce_region(b6, ee.Reducer.mean(), g, 30)
+        stats_ndmi = self.reduce_region(ndmi, ee.Reducer.mean(), g, 30)
         
         avg_nir_g = ee.Number(stats_nir_g.get('NIR/G'))
         avg_swir1_b = ee.Number(stats_swir1_b.get('SWIR1/B'))
         avg_b5 = ee.Number(stats_b5.get('B5'))
         avg_b6 = ee.Number(stats_b6.get('B6'))
-
-        return feature.set('NIR/G', avg_nir_g).set('SWIR1/B', avg_swir1_b).set('B5', avg_b5).set('B6', avg_b6)
+        avg_ndmi = ee.Number(stats_ndmi.get('NDMI'))
+        
+        return feature.set('NIR/G', avg_nir_g).set('SWIR1/B', avg_swir1_b).set('B5', avg_b5).set('B6', avg_b6).set('NDMI', avg_ndmi)
 
     def get_NASADEM(self,feature):
         """
