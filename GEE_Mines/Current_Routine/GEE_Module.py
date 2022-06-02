@@ -350,7 +350,8 @@ class GEE_Mine(object):
             with_scores = self.check_false_positive(data_set3)
             # CSV header
             header_list = ['Mininum Longitude', 'Minimum Latitude', 'Maximum Longitude', 'Maximum Latitude', \
-                  'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B', 'NASADEM Elevation', 'GEDI Elevation','GEDI-SRTM Elevation','GEDI Quality Flag', 'B5', 'B6', 'NDMI']
+                  'Percent Vegetation Loss', 'Percent Bare Initial','Percent Significant VH Values', 'Average NIR/G', 'Average SWIR1/B', 'NASADEM Elevation', 'GEDI Elevation','GEDI-SRTM Elevation','GEDI Quality Flag', 'B5', 'B6', 'NDMI', 'Center Lon', 'Center Lat','Elevation Score', \
+                           'Band Variation Score']
 
             # Create CSV and add header & data
             # new file if not already existing
