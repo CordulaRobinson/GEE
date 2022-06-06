@@ -593,8 +593,8 @@ class GEE_Mine(object):
                 sar_vh = float(row[6])
                 nir_g = float(row[7])
                 swir1_b = float(row[8])
-                elevation_score = float(row[17])
-                b5_b6_score = float(row[18])
+                elevation_score = float(row[18])
+                b5_b6_score = float(row[19])
                 
                 if vegetation_loss < 20 and percent_bare > 20:
                     status = sar_vh > 25 and nir_g <= 0.3 and swir1_b < 0.65 and elevation_score >= 5 and b5_b6_score >= 4
