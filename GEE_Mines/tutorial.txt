@@ -1,0 +1,94 @@
+Get the 20m data set.
+Define a study area within this region: an area with mining pixels. 
+Make and download .kml polygons for the study area: done on Google Earth Pro (online). 
+RUN in termina: grep -n "<coordinates" kml_file.kml > list_poly.sh
+It will print the file line numbers to list_poly.sh where this string was detected in the file. However, the actual coordinates are a line below this one.
+Open list_poly.sh:
+a) Remove everything except for line number.
+b) Make the file look like this:
+#!bin/bash
+sed -n `expr 76 + 1`p  26.205_-10.733_26.368_-10.71_KML.kml
+sed -n `expr 99 + 1`p  26.205_-10.733_26.368_-10.71_KML.kml
+sed -n `expr 122 + 1`p  26.205_-10.733_26.368_-10.71_KML.kml
+sed -n `expr 145 + 1`p  26.205_-10.733_26.368_-10.71_KML.kml
+sed -n `expr 168 + 1`p  26.205_-10.733_26.368_-10.71_KML.kml
+sed -n `expr 191 + 1`p  26.205_-10.733_26.368_-10.71_KML.kml
+sed -n `expr 214 + 1`p  26.205_-10.733_26.368_-10.71_KML.kml
+sed -n `expr 237 + 1`p  26.205_-10.733_26.368_-10.71_KML.kml
+sed -n `expr 260 + 1`p  26.205_-10.733_26.368_-10.71_KML.kml
+sed -n `expr 283 + 1`p  26.205_-10.733_26.368_-10.71_KML.kml
+sed -n `expr 306 + 1`p  26.205_-10.733_26.368_-10.71_KML.kml
+sed -n `expr 329 + 1`p  26.205_-10.733_26.368_-10.71_KML.kml
+sed -n `expr 352 + 1`p  26.205_-10.733_26.368_-10.71_KML.kml
+sed -n `expr 375 + 1`p  26.205_-10.733_26.368_-10.71_KML.kml
+sed -n `expr 398 + 1`p  26.205_-10.733_26.368_-10.71_KML.kml
+sed -n `expr 421 + 1`p  26.205_-10.733_26.368_-10.71_KML.kml
+sed -n `expr 444 + 1`p  26.205_-10.733_26.368_-10.71_KML.kml
+sed -n `expr 467 + 1`p  26.205_-10.733_26.368_-10.71_KML.kml
+i.e. add "sed -n  `expr " before your line number, and a " + 1`p kml_file.kml" after it 
+Execute in terminal: bash list_poly.sh > polygons.txt
+It will look have a list of n lines (n polygons), that you created on Google Pro. 
+There will be a gap at the start of the first column, remove it on every line.
+This is the list of polygons we will use in our regression model. 
+
+Note on the above. You could also make polygons for bad data. 
+It would make training much more specific. 
+All one would do in this case is replicate the above but rename the filenames. i.e. "non_mining_polygons.sh/txt"
+
+Now we have polygons i.e. areas of interest, we should probably only use a compiled_status.csv file that 'just' covers our area of interest. 
+
+We will utilize reduce_region.f90 (on github), to reduce the size of the compiled_status.csv file 20m dataset to just cover our study area. 
+Open reduce_region.f90. 
+Change file names to match in/out files. Line 15/16.
+Change bounds on line 26/27. ".ge. means greater that or equal", so, ".le." <-> <=
+It will write a new compiled_status_cropped_file.csv that only contains points that are in this study area. 
+It is easier to work with smaller data sets as python is slow opening them up.
+
+
+Next, we need to work with the data. 
+There is a Jupyter script on Github called "LSQ_Fitting" and there are some sample files to go with it to start you off. 
+The only thing it does not do atm is make non-mining pixels from non-mining polygons, it just assumes that anything outside of a polygon is not a mine. 
+To improve accuracy, it may be more beneficial to make polygons for non-mines, but for now, let us see how we get on.
+
+The Jupyter code has the option of trimming down non-mining pixels if there are too many of them. There is a cell where this is explained. 
+It can be skipped for now. 
+It will only need to be ran, again, if there are >1million non-mining pixels and only say, <1000 mining pixels. 
+
+I set the thresholds to the current values. 
+There are 'validate' cells which runs the mine detection with these thresholds and makes a plot to ensure things look correct before proceeding. 
+
+In the end, all the minimizer is doing is changing the thresholds and therefore the classification of pixels into mine/non-mine. 
+It will aim to reduce |calc_mine_classifier - polygon_classified| to 0
+Polygon_classified are those pixels classified as mines(in polygons) and non-mines (outside polygons).
+Calc_mine_classifier are the optimized results. 
+
+In the last cell, we plot/visualize the new results. 
+
+
+In the current notebook, you will see that the initial number of incorrect pixels is 7082, but it gets it down to 6113. 
+The t_opt stored fitting metrics. 
+"scipy.optimize.minimze" will explain more. 
+t_top.x are the optimized results. 
+
+This notebook produces: [ 6.51708126 91.0731774   1.80493182  0.618034    0.6925902   2.0212863  2.02128627]
+
+This maybe suggests we need more specific training data over a city, to combat that SAR value of 1.8. 
+And then adding Mojave data to control that bare earth value of 91.
+The rest seem logical to me, but more data will improve these results. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
