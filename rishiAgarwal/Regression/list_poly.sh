@@ -1,0 +1,9 @@
+sed -n `expr 76 + 1`p Polygons_25.95_26.65_-10_-11.kml
+sed -n `expr 99 + 1`p Polygons_25.95_26.65_-10_-11.kml
+sed -n `expr 122 + 1`p Polygons_25.95_26.65_-10_-11.kml
+sed -n `expr 145 + 1`p Polygons_25.95_26.65_-10_-11.kml
+sed -n `expr 168 + 1`p Polygons_25.95_26.65_-10_-11.kml
+sed -n `expr 191 + 1`p Polygons_25.95_26.65_-10_-11.kml
+sed -n `expr 214 + 1`p Polygons_25.95_26.65_-10_-11.kml
+sed -n `expr 237 + 1`p Polygons_25.95_26.65_-10_-11.kml
+sed -n `expr 260 + 1`p Polygons_25.95_26.65_-10_-11.kml
