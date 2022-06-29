@@ -1,0 +1,271 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var s2 = ee.ImageCollection("COPERNICUS/S2_SR"),
+    active_mines = ee.FeatureCollection("users/EmilyNason/cod_mines_curated_all_opendata_p_ipis"),
+    roi1 = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[29.554129272985683, 3.1591674847348235],
+          [29.554129272985683, 3.092319151883147],
+          [29.625197083044277, 3.092319151883147],
+          [29.625197083044277, 3.1591674847348235]]]),
+    rishiArea = 
+    /* color: #98ff00 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[27.35, -7.5],
+          [27.35, -7.6],
+          [27.45, -7.6],
+          [27.45, -7.5]]]),
+    emily_area = 
+    /* color: #0b4a8b */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[25.599767416235803, -10.585427828449394],
+          [25.599767416235803, -10.82359555219894],
+          [25.977297323462366, -10.82359555219894],
+          [25.977297323462366, -10.585427828449394]]]),
+    emily_area2 = 
+    /* color: #ffc82d */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[26, -10.5],
+          [26, -10.75],
+          [26.25, -10.75],
+          [26.25, -10.5]]]),
+    rgb_vis_s2 = {"min":0,"max":3000,"bands":["B4","B3","B2"]},
+    rgb_vis_s2_scaled = {"min":0,"max":0.3,"bands":["B4","B3","B2"]},
+    urban_emily2 = /* color: #ff6400 */ee.Geometry.Polygon(
+        [[[26.11914538470564, -10.611751065879927],
+          [26.123780241883374, -10.598252723660487],
+          [26.113480559266186, -10.595721718225407]]]),
+    mine_emily2a = /* color: #bf04c2 */ee.Geometry.Polygon(
+        [[[26.181115141785718, -10.581756899146129],
+          [26.192702284730053, -10.581841270175149],
+          [26.192702284730053, -10.579225757483897],
+          [26.18128680316267, -10.57897264216896]]]),
+    tail_emily2 = /* color: #0787ff */ee.Geometry.Polygon(
+        [[[26.180256834900952, -10.572075169469752],
+          [26.181630125916577, -10.567856455345586],
+          [26.16858386126814, -10.567856455345586]]]),
+    veg_emily2 = /* color: #00ff00 */ee.Geometry.Polygon(
+        [[[26.043271056092358, -10.557984437866834],
+          [26.049794188416577, -10.549884084157304],
+          [26.035374632752514, -10.54954656478966]]]),
+    agriculture = /* color: #ffe605 */ee.Geometry.Polygon(
+        [[[25.865086546815014, -10.715561144448642],
+          [25.882596007264233, -10.715561144448642],
+          [25.884312621033764, -10.705778242264243],
+          [25.864056578553296, -10.704766199871132]]]),
+    urban_roi1 = /* color: #fb9102 */ee.Geometry.Polygon(
+        [[[29.565976288234737, 3.133806641159248],
+          [29.570010330593135, 3.135692090857592],
+          [29.567435409938838, 3.137406133088408]]]),
+    veg_roi1 = /* color: #09f20b */ee.Geometry.Polygon(
+        [[[29.615758087551143, 3.111523797072144],
+          [29.615672256862666, 3.1079242164352774],
+          [29.61807551614001, 3.1097240082894544]]]),
+    mine_roi1 = /* color: #ff00ff */ee.Geometry.Polygon(
+        [[[29.58065333596423, 3.111095276212092],
+          [29.58065333596423, 3.112209430085829],
+          [29.579022552883174, 3.111352388749021]]]),
+    tail_roi1 = /* color: #0284ff */ee.Geometry.Polygon(
+        [[[29.57936587563708, 3.1235223103327425],
+          [29.580310013210322, 3.124122232400915],
+          [29.57936587563708, 3.1244650448573656]]]),
+    veg_rishi = /* color: #02ff27 */ee.Geometry.Polygon(
+        [[[27.428445478555112, -7.551994792317604],
+          [27.430848737832456, -7.548421157423746],
+          [27.426557203408628, -7.54893167850297]]]),
+    urban_rishi = /* color: #ffb907 */ee.Geometry.Polygon(
+        [[[27.403897901650815, -7.556929763350039],
+          [27.406816145059018, -7.556249081042076],
+          [27.404927869912534, -7.554036856133306]]]),
+    mine_rishi = /* color: #ff09f2 */ee.Geometry.Polygon(
+        [[[27.399434705850034, -7.541784328555046],
+          [27.401322980996518, -7.541273799040471],
+          [27.39926304447308, -7.540422915177922]]]),
+    tail_rishi = /* color: #0792ff */ee.Geometry.Polygon(
+        [[[27.403047296133913, -7.533660341987013],
+          [27.403733941641725, -7.532383993126772],
+          [27.402703973380007, -7.53187345252996]]]),
+    urban_emily1 = /* color: #ff9f02 */ee.Geometry.Polygon(
+        [[[25.933489593430064, -10.686136027945839],
+          [25.938982757492564, -10.684111808725191],
+          [25.933489593430064, -10.680400705113238]]]),
+    tail_emily1 = /* color: #0554d6 */ee.Geometry.Polygon(
+        [[[25.858109487017227, -10.7928923768281],
+          [25.85905362459047, -10.789604175808902],
+          [25.85707951875551, -10.789519862489316]]]),
+    mine_emily1 = /* color: #f609ff */ee.Geometry.Polygon(
+        [[[25.818026555498673, -10.787833591132662],
+          [25.819399846514298, -10.786821823779542],
+          [25.816653264483048, -10.785725738639075]]]),
+    mine_emily2b = /* color: #f502ff */ee.Geometry.Polygon(
+        [[[26.157192854369608, -10.580954134555615],
+          [26.158737806762186, -10.580194792262693],
+          [26.154789595092264, -10.577663637711009]]]);
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+// cloud mask sentinel-2
+function maskS2clouds(image) {
+    var qa = image.select('QA60');
+
+    var cloudBitMask = 1 << 10;
+    var cirrusBitMask = 1 << 11;
+
+    var mask = qa.bitwiseAnd(cloudBitMask).eq(0).and(qa.bitwiseAnd(cirrusBitMask).eq(0));
+
+    return image.updateMask(mask).divide(10000).select("B.*")
+        .copyProperties(image, ["system:time_start"]); 
+}
+
+function create_whole_composite(geometry) {
+    var composite = s2
+        .filter(ee.Filter.bounds(geometry))
+        .filter(ee.Filter.date('2021-01-01', '2021-12-31'))
+        .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20))
+        .map(maskS2clouds)
+        .select('B.*')
+        .median().clip(geometry);
+    return composite;
+}
+
+var comp1 = create_whole_composite(roi1);
+var comp2 = create_whole_composite(rishiArea);
+var comp3 = create_whole_composite(emily_area);
+var comp4 = create_whole_composite(emily_area2);
+
+Map.addLayer(comp1, rgb_vis_s2_scaled, "roi1");
+Map.addLayer(comp2, rgb_vis_s2_scaled, "rishi area");
+Map.addLayer(comp3, rgb_vis_s2_scaled, "emily area");
+Map.addLayer(comp4, rgb_vis_s2_scaled, "emily area 2");
+
+function calculate_nir_g(geometry) {
+    // Images and Bands
+    var composite_s2 = s2
+        .filter(ee.Filter.bounds(geometry))
+        .filter(ee.Filter.date('2021-01-01', '2021-12-31'))
+        .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20))
+        .map(maskS2clouds)
+        .select('B.*')
+        .median().clip(geometry);
+    var nir_g_s2 = composite_s2.normalizedDifference(['B8', 'B3']).rename('NIR/G');
+    // Average NIR/G   
+    var stats_s2 = nir_g_s2.reduceRegion({
+        'reducer': ee.Reducer.mean(),
+        'geometry': nir_g_s2.geometry(),
+        'scale': 30
+    });
+    var avg_s2 = ee.Number(stats_s2.get('NIR/G'));
+    return avg_s2;
+}
+
+function calculate_swir1_b(geometry) {
+    // Images and Bands
+    var composite_s2 = s2
+        .filter(ee.Filter.bounds(geometry))
+        .filter(ee.Filter.date('2021-01-01', '2021-12-31'))
+        .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20))
+        .select('B.*')
+        .median().clip(geometry);
+    var swir1_b_s2 = composite_s2.normalizedDifference(['B11', 'B2']).rename('SWIR1/B');
+    // Average SWIR1/B   
+    var stats_s2 = swir1_b_s2.reduceRegion({
+        'reducer': ee.Reducer.mean(),
+        'geometry': swir1_b_s2.geometry(),
+        'scale': 30
+    });
+    var avg_s2 = ee.Number(stats_s2.get('SWIR1/B'));
+    return avg_s2;
+}
+
+// NIR/G
+// vegetation
+var veg_roi1_nir_g = calculate_nir_g(veg_roi1);
+print("veg roi nir/g", veg_roi1_nir_g);
+var veg_rishi_nir_g = calculate_nir_g(veg_rishi);
+print("veg rishi nir/g", veg_rishi_nir_g);
+var veg_emily2_nir_g = calculate_nir_g(veg_emily2);
+print("veg emily2 nir/g", veg_emily2_nir_g);
+
+// agriculture
+var agr_nir_g = calculate_nir_g(agriculture);
+print("agriculture nir/g", agr_nir_g);
+
+// urban
+var urban_roi1_nir_g = calculate_nir_g(urban_roi1);
+print("urban roi1 nir/g", urban_roi1_nir_g);
+var urban_rishi_nir_g = calculate_nir_g(urban_rishi);
+print("urban rishi nir/g", urban_rishi_nir_g);
+var urban_emily1_nir_g = calculate_nir_g(urban_emily1);
+print("urban emily1 nir/g", urban_emily1_nir_g);
+var urban_emily2_nir_g = calculate_nir_g(urban_emily2);
+print("urban emily2 nir/g", urban_emily2_nir_g);
+
+// tailing ponds/water
+var tail_roi1_nir_g = calculate_nir_g(tail_roi1);
+print("tail roi1 nir/g", tail_roi1_nir_g);
+var tail_rishi_nir_g = calculate_nir_g(tail_rishi);
+print("tail rishi nir/g", tail_rishi_nir_g);
+var tail_emily1_nir_g = calculate_nir_g(tail_emily1);
+print("tail emily1 nir/g", tail_emily1_nir_g);
+var tail_emily2_nir_g = calculate_nir_g(tail_emily2);
+print("tail emily2 nir/g", tail_emily2_nir_g);
+
+// mining
+var mine_roi1_nir_g = calculate_nir_g(mine_roi1);
+print("mine roi1 nir/g", mine_roi1_nir_g);
+var mine_rishi_nir_g = calculate_nir_g(mine_rishi);
+print("mine rishi nir/g", mine_rishi_nir_g);
+var mine_emily1_nir_g = calculate_nir_g(mine_emily1);
+print("mine emily1 nir/g", mine_emily1_nir_g);
+var mine_emily2a_nir_g = calculate_nir_g(mine_emily2a);
+print("mine emily2a nir/g", mine_emily2a_nir_g);
+var mine_emily2b_nir_g = calculate_nir_g(mine_emily2b);
+print("mine emily2b nir/g", mine_emily2b_nir_g);
+
+
+// SWIR1/B
+// vegetation
+var veg_roi1_swir1_b = calculate_swir1_b(veg_roi1);
+print("veg roi swir1/b", veg_roi1_swir1_b);
+var veg_rishi_swir1_b = calculate_swir1_b(veg_rishi);
+print("veg rishi swir1/b", veg_rishi_swir1_b);
+var veg_emily2_swir1_b = calculate_swir1_b(veg_emily2);
+print("veg emily2 swir1/b", veg_emily2_swir1_b);
+
+// agriculture
+var agr_swir1_b = calculate_swir1_b(agriculture);
+print("agriculture swir1/b", agr_swir1_b);
+
+// urban
+var urban_roi1_swir1_b = calculate_swir1_b(urban_roi1);
+print("urban roi1 swir1/b", urban_roi1_swir1_b);
+var urban_rishi_swir1_b = calculate_swir1_b(urban_rishi);
+print("urban rishi swir1/b", urban_rishi_swir1_b);
+var urban_emily1_swir1_b = calculate_swir1_b(urban_emily1);
+print("urban emily1 swir1/b", urban_emily1_swir1_b);
+var urban_emily2_swir1_b = calculate_swir1_b(urban_emily2);
+print("urban emily2 swir1/b", urban_emily2_swir1_b);
+
+// tailing ponds/water
+var tail_roi1_swir1_b = calculate_swir1_b(tail_roi1);
+print("tail roi1 swir1/b", tail_roi1_swir1_b);
+var tail_rishi_swir1_b = calculate_swir1_b(tail_rishi);
+print("tail rishi swir1/b", tail_rishi_swir1_b);
+var tail_emily1_swir1_b = calculate_swir1_b(tail_emily1);
+print("tail emily1 swir1/b", tail_emily1_swir1_b);
+var tail_emily2_swir1_b = calculate_swir1_b(tail_emily2);
+print("tail emily2 swir1/b", tail_emily2_swir1_b);
+
+// mining
+var mine_roi1_swir1_b = calculate_swir1_b(mine_roi1);
+print("mine roi1 swir1/b", mine_roi1_swir1_b);
+var mine_rishi_swir1_b = calculate_swir1_b(mine_rishi);
+print("mine rishi swir1/b", mine_rishi_swir1_b);
+var mine_emily1_swir1_b = calculate_swir1_b(mine_emily1);
+print("mine emily1 swir1/b", mine_emily1_swir1_b);
+var mine_emily2a_swir1_b = calculate_swir1_b(mine_emily2a);
+print("mine emily2a swir1/b", mine_emily2a_swir1_b);
+var mine_emily2b_swir1_b = calculate_swir1_b(mine_emily2b);
+print("mine emily2b swir1/b", mine_emily2b_swir1_b);

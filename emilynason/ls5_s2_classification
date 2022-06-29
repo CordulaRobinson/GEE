@@ -1,0 +1,251 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var noMine = 
+    /* color: #00ffff */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[26.05, -10.7],
+          [26.05, -10.8],
+          [26.15, -10.8],
+          [26.15, -10.7]]]),
+    region3 = 
+    /* color: #bf04c2 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[26, -10.5],
+          [26, -10.75],
+          [26.25, -10.75],
+          [26.25, -10.5]]]),
+    region1 = 
+    /* color: #ff0000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[25.75, -10.75],
+          [25.75, -10.8],
+          [25.9, -10.8],
+          [25.9, -10.75]]]),
+    total = 
+    /* color: #00ff00 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[25.8, -10.5],
+          [25.8, -10.8],
+          [26.1, -10.8],
+          [26.1, -10.5]]]),
+    region4 = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[25.95, -10.6],
+          [25.95, -10.7],
+          [26.05, -10.7],
+          [26.05, -10.6]]]),
+    region2 = 
+    /* color: #98ff00 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[25.85, -10.6],
+          [25.85, -10.7],
+          [25.95, -10.7],
+          [25.95, -10.6]]]),
+    nonVeg2020 = /* color: #f13706 */ee.FeatureCollection(
+        [ee.Feature(
+            ee.Geometry.Point([25.884051513674073, -10.612839387311823]),
+            {
+              "landcover": 1,
+              "system:index": "0"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([25.809550476076417, -10.77881944655002]),
+            {
+              "landcover": 1,
+              "system:index": "1"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([25.86070556640845, -10.781517557036542]),
+            {
+              "landcover": 1,
+              "system:index": "2"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([25.890574645998292, -10.662440494516321]),
+            {
+              "landcover": 1,
+              "system:index": "3"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([25.9788085937522, -10.64185870124958]),
+            {
+              "landcover": 1,
+              "system:index": "4"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([26.06500815525748, -10.63246528279504]),
+            {
+              "landcover": 1,
+              "system:index": "5"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([25.932501220912915, -10.613290891172372]),
+            {
+              "landcover": 1,
+              "system:index": "6"
+            })]),
+    veg2020 = /* color: #0aff0c */ee.FeatureCollection(
+        [ee.Feature(
+            ee.Geometry.Point([25.971598815920167, -10.63713481487796]),
+            {
+              "landcover": 2,
+              "system:index": "0"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([25.828776550295167, -10.650968846848661]),
+            {
+              "landcover": 2,
+              "system:index": "1"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([26.023783874513917, -10.737332956336642]),
+            {
+              "landcover": 2,
+              "system:index": "2"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([25.8689453125022, -10.767689485172806]),
+            {
+              "landcover": 2,
+              "system:index": "3"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([25.88439483642798, -10.790286248993706]),
+            {
+              "landcover": 2,
+              "system:index": "4"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([25.814382544905918, -10.56429718435804]),
+            {
+              "landcover": 2,
+              "system:index": "5"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([26.063634864241855, -10.602770155202851]),
+            {
+              "landcover": 2,
+              "system:index": "6"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([26.077367774398105, -10.745820038885466]),
+            {
+              "landcover": 2,
+              "system:index": "7"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([25.86828918457029, -10.671604444798414]),
+            {
+              "landcover": 2,
+              "system:index": "8"
+            })]),
+    rishiArea = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[27.35, -7.5],
+          [27.35, -7.6],
+          [27.45, -7.6],
+          [27.45, -7.5]]]);
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+var s2 = ee.ImageCollection('COPERNICUS/S2_SR')
+var ls5 = ee.ImageCollection('LANDSAT/LT05/C02/T1_L2')
+
+// mask clouds and scale bands for LS5
+function maskL457sr(image) {
+  // Bit 0 - Fill
+  // Bit 1 - Dilated Cloud
+  // Bit 2 - Unused
+  // Bit 3 - Cloud
+  // Bit 4 - Cloud Shadow
+  var qaMask = image.select('QA_PIXEL').bitwiseAnd(parseInt('11111', 2)).eq(0);
+  var saturationMask = image.select('QA_RADSAT').eq(0);
+
+  // Apply the scaling factors to the appropriate bands.
+  var opticalBands = image.select('SR_B.').multiply(0.0000275).add(-0.2);
+  var thermalBand = image.select('ST_B6').multiply(0.00341802).add(149.0);
+
+  // Replace the original bands with the scaled ones and apply the masks.
+  return image.addBands(opticalBands, null, true)
+      .addBands(thermalBand, null, true)
+      .updateMask(qaMask)
+      .updateMask(saturationMask);
+}
+
+// Function to mask clouds using the Sentinel-2 QA band
+function maskS2clouds(image) {
+  var qa = image.select('QA60');
+
+  // Bits 10 and 11 are clouds and cirrus, respectively.
+  var cloudBitMask = 1 << 10;
+  var cirrusBitMask = 1 << 11;
+
+  // Both flags should be set to zero, indicating clear conditions.
+  var mask = qa.bitwiseAnd(cloudBitMask).eq(0)
+      .and(qa.bitwiseAnd(cirrusBitMask).eq(0));
+
+  return image.updateMask(mask).divide(10000);
+}
+
+var bandsLS5 = ['SR_B1', 'SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B7']
+var bandsS2 = ['B2', 'B3', 'B4', 'B8', 'B11', 'B12']
+var bandNames = ['B', 'G', 'R', 'NIR', 'SWIR1', 'SWIR2']
+
+var image2000 = ls5
+                .filter(ee.Filter.bounds(total))
+                .filter(ee.Filter.date('2000-01-01', '2000-12-31'))
+                //.filter(ee.Filter.lt('CLOUDY_COVER', 20))
+                .map(maskL457sr)
+                .select(bandsLS5, bandNames)
+                .median().clip(total);
+                
+var image2020 = s2
+                .filter(ee.Filter.bounds(total))
+                .filter(ee.Filter.date('2020-01-01', '2020-12-31'))
+                .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20))
+                .map(maskS2clouds)
+                .select(bandsS2, bandNames)
+                .median().clip(total);
+
+var rgbVis = {
+  min: 0.0,
+  max: 0.3,
+  bands: ['R', 'G', 'B'],
+};
+
+Map.centerObject(total, 11)
+
+Map.addLayer(image2000, rgbVis, 'RGB 2000 (LS5)');
+Map.addLayer(image2020, rgbVis, 'RGB 2020 (S2)');
+
+// Classification
+var training = veg2020.merge(nonVeg2020)
+
+// Overlay the point on the image to get training data.
+var training = image2020.sampleRegions({
+  collection: training, 
+  properties: ['landcover'], 
+  scale: 10
+});
+
+// Train a classifier.
+var classifier = ee.Classifier.smileRandomForest(50).train({
+  features: training,  
+  classProperty: 'landcover', 
+  inputProperties: image2020.bandNames()
+});
+
+// Classify the images
+var classified2020 = image2020.classify(classifier);
+Map.addLayer(classified2020,
+  {min: 1, max: 2, palette: ['red', 'green']}, '2020_classified');
+
+var classified2000 = image2000.classify(classifier);
+Map.addLayer(classified2000,
+  {min: 1, max: 2, palette: ['red', 'green']}, '2000_classified');

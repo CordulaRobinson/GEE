@@ -1,0 +1,137 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var KinsevereMine = 
+    /* color: #f8f800 */
+    /* shown: false */
+    ee.Geometry.Point([27.569813749902575, -11.358938733753336]),
+    DikulushiMine = 
+    /* color: #f03808 */
+    /* shown: false */
+    ee.Geometry.Point([28.269495809294405, -8.893463493906145]),
+    TenkeFungurumeMine = 
+    /* color: #ff00ff */
+    /* shown: false */
+    ee.Geometry.Point([26.180313124012685, -10.569244201594577]),
+    KibaliGoldMine = 
+    /* color: #ff9999 */
+    /* shown: false */
+    ee.Geometry.Point([29.584078764613995, 3.1283035853916394]),
+    mines = ee.FeatureCollection("users/EmilyNason/cod_mines_curated_all_opendata_p_ipis"),
+    table = ee.FeatureCollection("users/EmilyNason/Democratic_Republic_of_the_Congo_mining_permits"),
+    big_mine_final = 
+    /* color: #ff0000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[25.34, -10.78],
+          [25.34, -10.675],
+          [25.475, -10.675],
+          [25.475, -10.78]]]),
+    ray_mine_final = 
+    /* color: #ff0000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[29.56, 3.1],
+          [29.56, 3.155],
+          [29.615, 3.155],
+          [29.615, 3.1]]]),
+    rishi_mine_final = 
+    /* color: #ff0000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[27.355, -7.56],
+          [27.355, -7.51],
+          [27.415, -7.51],
+          [27.415, -7.56]]]),
+    three_mines = /* color: #ff0000 */ee.Geometry.MultiPoint(
+        [[25.374970001726542, -10.722162720932825],
+         [27.330536407976542, -7.511733293172194],
+         [29.571747345476542, 3.165726310183623]]),
+    rgbVis = {"min":0,"max":3000,"bands":["B4","B3","B2"]},
+    s2 = ee.ImageCollection("COPERNICUS/S2_SR"),
+    countries = ee.FeatureCollection("FAO/GAUL/2015/level0");
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+Map.setCenter(20.01, -3.8, 6.5);
+var repOfCongo = countries.filter(ee.Filter.eq('system:index', '00000000000000000098'));
+var demRepOfCongo = countries.filter(ee.Filter.eq('system:index', '00000000000000000099'));
+
+var geometry = repOfCongo.merge(demRepOfCongo).geometry();
+
+var filtered = s2.filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 30))
+  .filter(ee.Filter.date('2019-01-01', '2020-01-01'))
+var image = filtered.median();
+
+//Map.addLayer(repOfCongo, {color: 'red'}, 'Republic of Congo');
+//Map.addLayer(demRepOfCongo, {color: 'blue'}, 'DRC');
+Map.addLayer(mines, {color: 'blue'}, 'ipis mines')
+//Map.addLayer(image.clip(geometry), rgbVis, 'True Color');
+
+Map.addLayer(table, {color: 'blue'}, 'Mining Permits');
+var ta_permits = table.filter(ee.Filter.stringContains('resource', 'Ta'));
+Map.addLayer(ta_permits, {color: 'red'}, 'Ta Permits');
+var ta_mines = mines.filter(ee.Filter.or(ee.Filter.eq('mineral1', 'Coltan'), ee.Filter.eq('mineral2', 'Coltan'), ee.Filter.eq('mineral3', 'Coltan')));
+Map.addLayer(ta_mines, {color: 'green'}, 'Coltan Mines')
+
+
+////////////////////////LEGEND////////////////////////////
+// set position of panel
+var legend = ui.Panel({
+  style: {
+    position: 'bottom-left',
+    padding: '8px 15px'
+  }
+});
+ 
+// Create legend title
+var legendTitle = ui.Label({
+  value: 'Legend',
+  style: {
+    fontWeight: 'bold',
+    fontSize: '18px',
+    margin: '0 0 4px 0',
+    padding: '0'
+    }
+});
+ 
+// Add the title to the panel
+legend.add(legendTitle);
+ 
+// Creates and styles 1 row of the legend.
+var makeRow = function(color, name) {
+ 
+      // Create the label that is actually the colored box.
+      var colorBox = ui.Label({
+        style: {
+          backgroundColor: '#' + color,
+          // Use padding to give the box height and width.
+          padding: '8px',
+          margin: '0 0 4px 0'
+        }
+      });
+ 
+      // Create the label filled with the description text.
+      var description = ui.Label({
+        value: name,
+        style: {margin: '0 0 4px 6px'}
+      });
+ 
+      // return the panel
+      return ui.Panel({
+        widgets: [colorBox, description],
+        layout: ui.Panel.Layout.Flow('horizontal')
+      });
+};
+ 
+//  Palette with the colors
+//var palette =['0000FF'];
+var palette = ['0000FF', 'FF0000', '00FF00']
+ 
+// name of the legend
+//var names = ['IPIS Mining Locations'];
+var names = ['Mining Permits', 'Ta Mining Permits', 'IPIS Mines: Coltan'];
+ 
+// Add color and and names
+legend.add(makeRow(palette[0], names[0]));
+legend.add(makeRow(palette[1], names[1]));
+legend.add(makeRow(palette[2], names[2]));
+
+// add legend to map (alternatively you can also print the legend to the console)
+Map.add(legend);
