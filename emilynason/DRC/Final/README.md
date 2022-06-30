@@ -18,7 +18,7 @@ and optionally exports passing mines as a feature collection to GEE.
 The code can resize the file such that only squares within a certain region are in the file, and changes the status from "Pass" and "Fail" to 1 and 0
 
 "visualize_results" is a GEE script that I use to visualize my results.  
-Links for assets used in this scripts:
+Links for assets used in this scripts:  
 IPIS mines:
 https://code.earthengine.google.com/?asset=users/EmilyNason/cod_mines_curated_all_opendata_p_ipis  
 Region Results for 25.25, -11, 25.95, -10:  
