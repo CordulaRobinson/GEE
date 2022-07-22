@@ -30,7 +30,7 @@ open(2,file=outfile,status='unknown',action='write')
 
 300 format(A1)
 100 format(9(f13.8,A1),4(f12.5,A1),5(f13.8,A1),2(f3.1,A1),i1)
-!200 format(A17,A16,A17,A16,A23,A20,A29,A12,A14,A9,A9,A9,A15,A8,A8,A4,A10,A10,A15,A20,A6)
+!200 format(20(A32),A32)
 200 format(A17,A1,A16,A1,A17,A1,A16,A1,A23,A1,A20,A1,A29,A1,A13,A1,A15,A1,A9,&
 A1,A9,A1,A9,A1,A15,A1,A8,A1,A8,A1,A4,A1,A10,A1,A10,A1,A15,A1,A20,A1,A6)
 
@@ -60,13 +60,9 @@ a21 = 'Status'
 a22 = 'Status_GEDI'
 
 ! write headers
-!write(2,200)a1,',',a2,',',a3,',',a4,',',a5,',',a6,',',a7,',',&
-!a8,',',a9,',',a10,',',a11,',',a12,',',a13,',',&
-!a14,',',a15,',',a16,',',a17,',',a18,',',a19,',',a20,',',a21!,&
-!',',a22
 write(2,200)a1,sep,a2,sep,a3,sep,a4,sep,a5,sep,a6,sep,a7,sep,&
 a8,sep,a9,sep,a10,sep,a11,sep,a12,sep,a13,sep,&
-a14,sep,a15,sep,a16,sep,a17,sep,a18,sep,a19,sep,a20,sep,a21!,&
+a14,sep,a15,sep,a16,sep,a17,sep,a18,sep,a19,sep,a20,sep,a21!,&a22
 
 do i=1,1
 read(1,*)
@@ -77,31 +73,15 @@ read(1,*,END=99) min_lon,min_lat,max_lon,max_lat,vg_loss,bare_init,&
 vh,nirg,swir,nasa_elev,gedi_elev,gedi_loss,qual_flag,&
 b5,b6,ndmi,clon,clat,elev_sc,band_sc
 
-
-! Normal Routine
-if(( vg_loss .lt. 20.0d0 ) .and. ( bare_init .gt. 20.d0)  ) then 
-
-    if( ( vh .gt. 25.0d0) .and. (nirg .le. 0.3d0)  .and. (swir .lt.0.65d0  ) &
-     .and. (elev_sc .ge. 5)  .and. (band_sc.ge.4)  )  then
-    stat = 1
-    else
-    stat = 0
-    end if
-
-else 
-
-    if((vg_loss .gt. 20.0d0) .and. (vh .gt. 25.0d0) .and.(nirg .le. 0.3d0 )  .and. (swir .lt. 0.65d0)  ) then 
-    stat = 1
-    else
-    stat = 0
-    end if
-
-end if
-
+if ( (min_lon .ge. 25.5d0) .and. (min_lat .le. -10.68d0) .and. (max_lon .le.25.7d0) &
+.and. (max_lat .ge. -10.75d0)  )  then
 
 write(2,100) min_lon,sep,min_lat,sep,max_lon,sep,max_lat,sep,vg_loss,sep,bare_init,sep,&
 vh,sep,nirg,sep,swir,sep,nasa_elev,sep,gedi_elev,sep,gedi_loss,sep,qual_flag,sep,&
 b5,sep,b6,sep,ndmi,sep,clon,sep,clat,sep,elev_sc,sep,band_sc,sep,int(stat)
+else
+continue 
+end if
 
 end do
 
