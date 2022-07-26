@@ -20,6 +20,11 @@ class reduce_class(object):
     
     def perfilecall(self,file,resolutions):
         
+        col = ['Mininum Longitude','Minimum Latitude','Maximum Longitude','Maximum Latitude',\
+        'Percent Vegetation Loss','Percent Bare Initial','Percent Significant VH Values','Average NIR/G','Average SWIR1/B','NASA Elev',\
+        'Elev Loss','GEDI Qual. Flag','B5 Value','B6 Value','Elevation Score','Band Variation Score','NDMI',\
+        'Center Lon','Center Lat','Status','GEDI Elev',\
+                  'Elev Std','Elev %','B5 Std','B5 %','B6 Std','B6 %']
         pdf = pd.read_csv(file)
 
         x = reduce_class()
@@ -64,7 +69,7 @@ class reduce_class(object):
         y = np.linspace(0,len(self.lon_min)-1,len(self.lon_min))
         y = np.array(y,dtype=int)
         y = list(y)
-        pool = Pool(processes=40)#multiprocessing.cpu_count())                        
+        pool = Pool(processes=multiprocessing.cpu_count())                        
         d1,d2,d3,d4,d5,d6 = zip(*pool.map(self.looper, y))
 
         
@@ -154,11 +159,6 @@ class reduce_class(object):
 
 if __name__ == '__main__':
     
-    col = ['Mininum Longitude','Minimum Latitude','Maximum Longitude','Maximum Latitude',\
-        'Percent Vegetation Loss','Percent Bare Initial','Percent Significant VH Values','Average NIR/G','Average SWIR1/B','NASA Elev',\
-        'Elev Loss','GEDI Qual. Flag','B5 Value','B6 Value','Elevation Score','Band Variation Score','NDMI',\
-        'Center Lon','Center Lat','Status','GEDI Elev',\
-                  'Elev Std','Elev %','B5 Std','B5 %','B6 Std','B6 %']
     
     tz = time.time()
     
